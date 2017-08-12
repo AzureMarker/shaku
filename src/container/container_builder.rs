@@ -57,10 +57,10 @@ impl ContainerBuilder {
         /// Register a new component with this builder.
         /// If that component was already registered, the old Component is replaced (same as `HashMap.insert()` except we don't return the old Component).
         ///
-        /// This method returns a mutable [PendingRegisteredType](struct.PendingRegisteredType.html)
+        /// This method returns a mutable [TemporaryRegisteredType](struct.TemporaryRegisteredType.html)
         /// allowing to chain calls to:
         ///
-        /// 1. [as_type()](struct.PendingRegisteredType.html#method.as): to set the interface this Component implements,
+        /// 1. [as_type()](struct.TemporaryRegisteredType.html#method.as): to set the interface this Component implements,
         /// 2. [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter) or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter): to add parameters to be used to instantiate this Component.
         ///
         /// To be properly registered, [as_type()](struct.RegisteredType.html#method.as)

@@ -64,5 +64,5 @@ mod container_builder;
 mod registered_type;
 
 pub use self::map_container::Container;
-pub use self::container_builder::ContainerBuilder;
+pub use self::container_builder::*;
 pub use self::registered_type::RegisteredType;
