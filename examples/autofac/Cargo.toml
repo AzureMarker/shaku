@@ -1,8 +1,0 @@
-[package]
-name = "autofac"
-version = "0.1.0"
-authors = ["Boris <boris@humanenginuity.com>"]
-
-[dependencies]
-shaku = { path = "../../shaku" }
-shaku_derive = { path = "../../shaku_derive" }
