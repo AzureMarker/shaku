@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "shaku",
+    "shaku_derive",
+    "shaku_internals",
+    "examples/autofac",
+]

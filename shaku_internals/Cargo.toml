@@ -1,0 +1,13 @@
+[package]
+name = "shaku_internals"
+version = "0.2.0"
+authors = ["Boris <boris@humanenginuity.com>"]
+description = "Common code for shaku crates"
+repository = "https://github.com/bgbahoue/he-di"
+documentation = "https://docs.rs/crate/shaku"
+keywords = ["di", "ioc", "injection", "inversion", "control"]
+categories = ["rust-patterns"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+fluent_validator = "0.1.0"

@@ -1,0 +1,26 @@
+[package]
+name = "shaku"
+version = "0.3.1"
+authors = ["Boris <boris@humanenginuity.com>"]
+documentation = "https://docs.rs/crate/shaku"
+repository = "https://github.com/bgbahoue/he-di"
+categories = ["rust-patterns"]
+description = "Dependency Inversion / Dependency Injection / Inversion of control container for Rust"
+keywords = ["di", "ioc", "SOLID", "dependency", "inversion"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+shaku_internals = { version = "0.2", path = "../shaku_internals" }
+
+anymap = "0.12.1"
+clippy = { version = "0.0.140", optional = true }
+log = "0.3"
+unsafe-any = "0.4"
+
+[dev-dependencies]
+shaku_derive = { path = "../shaku_derive", version = "0.3" }
+
+[features]
+default = ["thread_safe"]
+
+thread_safe = []
