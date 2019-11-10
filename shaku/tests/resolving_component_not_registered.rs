@@ -30,7 +30,7 @@ fn resolving_component_not_registered_without_parameters_should_err() {
     let foo = container.resolve::<Foo>();
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
-        assert_eq!(err, "no component Foo registered in this container");
+        assert_eq!(err, "no component dyn resolving_component_not_registered::Foo registered in this container");
     } else {
         panic!("unexpected state > foo should be Err");
     }
@@ -44,7 +44,7 @@ fn resolving_component_not_registered_with_parameters_should_err() {
         .resolve::<Foo>();
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
-        assert_eq!(err, "no component Foo registered in this container");
+        assert_eq!(err, "no component dyn resolving_component_not_registered::Foo registered in this container");
     } else {
         panic!("unexpected state > foo should be Err");
     }

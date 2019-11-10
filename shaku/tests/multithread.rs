@@ -1,5 +1,4 @@
 #![allow(non_snake_case)]
-#![feature(rand)]
 
 extern crate shaku;
 #[macro_use] extern crate shaku_derive;
@@ -57,7 +56,7 @@ fn simple_multithreaded_resolve_ref() {
             .name(format!("reader #{}", &i).into())
             .spawn(move || {
                 // Inject some randomness in the test
-                let sleep = Duration::from_millis(std::__rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
+                let sleep = Duration::from_millis(rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
                 let handle = thread::current();
                 thread::sleep(sleep);
 
@@ -101,18 +100,18 @@ fn simple_multithreaded_resolve_ref_n_mut() {
             .name(format!("reader #{}", &i).into())
             .spawn(move || {
                 // Inject some randomness in the test
-                let sleep = Duration::from_millis(std::__rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
+                let sleep = Duration::from_millis(rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
                 let handle = thread::current();
                 thread::sleep(sleep);
 
                 // Resolve the container
-                let use_mut = std::__rand::thread_rng().gen_range(0, 10) < 5;
+                let use_mut = rand::thread_rng().gen_range(0, 10) < 5;
                 {
                     let mut container = shared_container.lock().unwrap();
 
                     if use_mut {
                         let mut foo = container.resolve_mut::<Foo>().unwrap();
-                        let new_value : usize = std::__rand::thread_rng().gen_range(0, 256);
+                        let new_value : usize = rand::thread_rng().gen_range(0, 256);
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
                         
@@ -156,7 +155,7 @@ fn simple_multithreaded_resolve_n_own() {
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();    
-    let owner = std::__rand::thread_rng().gen_range(0, 10);
+    let owner = rand::thread_rng().gen_range(0, 10);
     println!("Owner is {}", owner);
 
     for i in 0..NB_THREADS {
@@ -166,7 +165,7 @@ fn simple_multithreaded_resolve_n_own() {
             .name(format!("reader #{}", &i).into())
             .spawn(move || {
                 // Inject some randomness in the test
-                let sleep = Duration::from_millis(std::__rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
+                let sleep = Duration::from_millis(rand::thread_rng().gen_range(0, MAX_SLEEP_TIME));
                 let handle = thread::current();
                 thread::sleep(sleep);
 
@@ -180,7 +179,7 @@ fn simple_multithreaded_resolve_n_own() {
 
                     *was_owned.lock().unwrap() = true;
                 } else if i != owner {
-                    let use_mut = std::__rand::thread_rng().gen_range(0, 10) < 5;
+                    let use_mut = rand::thread_rng().gen_range(0, 10) < 5;
                     {
                         let mut container = shared_container.lock().unwrap();
 
@@ -191,7 +190,7 @@ fn simple_multithreaded_resolve_n_own() {
                         } else {
                             if use_mut {
                                 let mut foo = container.resolve_mut::<Foo>().unwrap();
-                                let new_value : usize = std::__rand::thread_rng().gen_range(0, 256);
+                                let new_value : usize = rand::thread_rng().gen_range(0, 256);
                                 foo.set_value(new_value);
                                 assert_eq!(foo.get_value(), new_value);
                                 
