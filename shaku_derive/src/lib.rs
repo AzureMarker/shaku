@@ -29,7 +29,6 @@
 
 // The `quote!` macro requires deep recursion.
 #![recursion_limit = "128"]
-#![feature(custom_attribute)]
 
 extern crate anymap;
 extern crate shaku_internals;
