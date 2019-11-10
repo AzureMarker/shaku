@@ -14,7 +14,7 @@
 // =======================================================================
 // LIBRARY IMPORTS
 // =======================================================================
-use std::any::TypeId;
+use std::any::{TypeId, type_name};
 use std::collections::HashMap;
 
 use component::{Built, ComponentBuilder, ComponentIndex};
@@ -68,9 +68,7 @@ impl ContainerBuilder {
         /// To enforce this, a Component is will actually be registered only after [as_type()](struct.RegisteredType.html#method.as) is called.
     pub fn register_type<'c, C: Built + ?Sized + 'static>(&'c mut self) -> TemporaryRegisteredType<'c> {
         // Get the type name from the turbo-fish input
-        let type_id = (TypeId::of::<C>(), unsafe {
-            ::std::intrinsics::type_name::<C>().to_string()
-        });
+        let type_id = (TypeId::of::<C>(), type_name::<C>().to_string());
 
         TemporaryRegisteredType {
             component: type_id,
@@ -186,7 +184,7 @@ impl<'c> TemporaryRegisteredType<'c> {
         if old_value.is_some() {
             warn!(
                 "::shaku::ContainerBuilder::register_type::as_type::warning trait {:?} already had Component '{:?}) registered to it",
-                unsafe { ::std::intrinsics::type_name::<T>() },
+                type_name::<T>(),
                 &old_value.unwrap().component.1
             );
         }

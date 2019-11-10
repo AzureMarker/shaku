@@ -43,7 +43,7 @@ macro_rules! implements_with {
             pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<ComponentBuilder>) -> RegisteredType {
                 RegisteredType {
                     component: comp,
-                    as_trait: (TypeId::of::<T>(), unsafe { ::std::intrinsics::type_name::<T>().to_string() }),
+                    as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
                     builder: build,
                     parameters: $map::new(),
                 }
@@ -71,7 +71,7 @@ macro_rules! implements_with {
                 {
                     warn!(
                         "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}", 
-                        unsafe { ::std::intrinsics::type_name::<V>() }
+                        ::std::any::type_name::<V>()
                     );
                 }
                 self

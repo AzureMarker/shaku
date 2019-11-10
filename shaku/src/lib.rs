@@ -170,8 +170,6 @@
     //! - `#[derive(Component)]` should be tested against complex cases & more tests are to be written (e.g, struct with lifetime, generics, ...)
     //! - we should support closures as a way to create parameters (at register or resolve time)
 
-#![feature(core_intrinsics)] // used in container/map_container.rs for error logging purpose
-
 // Linting
 #![allow(unknown_lints)] // in case clippy is not use to compile
 

@@ -144,7 +144,7 @@ macro_rules! implements_with {
                         || {
                             panic!(
                                 "invalid state: unable to remove existing component {}",
-                                unsafe { ::std::intrinsics::type_name::<T>() }
+                                ::std::any::type_name::<T>()
                             )
                         },
                     ) // ok to panic, this would be a bug
@@ -158,7 +158,7 @@ macro_rules! implements_with {
                         .ok_or_else(|| {
                             DIError::ResolveError(format!(
                                 "no component {} registered in this container",
-                                unsafe { ::std::intrinsics::type_name::<T>() }
+                                ::std::any::type_name::<T>()
                             ))
                         })?;
                     let mut result_map = registered_type.builder.build(
@@ -168,9 +168,9 @@ macro_rules! implements_with {
 
                     #[allow(or_fun_call)]
                     result_map.remove::<Box<T>>().ok_or(DIError::ResolveError(
-                        format!("Unable to create a new instance of {}", unsafe {
-                            ::std::intrinsics::type_name::<T>()
-                        }),
+                        format!("Unable to create a new instance of {}",
+                            ::std::any::type_name::<T>()
+                        ),
                     ))
                 }
             }
@@ -199,7 +199,7 @@ macro_rules! implements_with {
                     .ok_or(
                         DIError::ResolveError(format!(
                             "Unable to create a reference of component {}",
-                            unsafe { ::std::intrinsics::type_name::<T>() }
+                            ::std::any::type_name::<T>()
                         )),
                     )?;
                 Ok(coerced_result)
@@ -227,7 +227,7 @@ macro_rules! implements_with {
                 let coerced_result: &mut T = self.resolved_component_map.get_mut::<Box<T>>().ok_or(
                     DIError::ResolveError(format!(
                         "Unable to get a mutable reference of component {}",
-                        unsafe { ::std::intrinsics::type_name::<T>() }
+                        ::std::any::type_name::<T>()
                     )),
                 )?;
                 Ok(coerced_result)
@@ -256,9 +256,9 @@ macro_rules! implements_with {
                         &ComponentIndex::Id(TypeId::of::<T>()),
                     );
                     if registered_type.is_none() {
-                        warn!("no component {} registered in this container", unsafe {
-                            ::std::intrinsics::type_name::<T>()
-                        });
+                        warn!("no component {} registered in this container",
+                            ::std::any::type_name::<T>()
+                        );
                     } else {
                         let _ = registered_type.unwrap().with_named_parameter(name, value);
                     }
@@ -285,9 +285,9 @@ macro_rules! implements_with {
                         &ComponentIndex::Id(TypeId::of::<T>()),
                     );
                     if registered_type.is_none() {
-                        warn!("no component {} registered in this container", unsafe {
-                            ::std::intrinsics::type_name::<T>()
-                        });
+                        warn!("no component {} registered in this container",
+                            ::std::any::type_name::<T>()
+                        );
                     } else {
                         let _ = registered_type.unwrap().with_typed_parameter(value);
                     }
