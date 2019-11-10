@@ -11,6 +11,7 @@ Cargo.lock
 # IDE config files
 .vscode
 rls.toml
+/.idea/
 
 # Rustfmt backups
 **/*.rs.bk
