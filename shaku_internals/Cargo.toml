@@ -10,4 +10,3 @@ categories = ["rust-patterns"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-assayer = "0.2.2"

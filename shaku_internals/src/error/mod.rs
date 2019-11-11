@@ -12,8 +12,6 @@
 use std::error::Error as StdError;
 use std::fmt;
 
-use assayer::Error as ValidatorError;
-
 // =======================================================================
 // STRUCT DEFINITION
 // =======================================================================
@@ -26,8 +24,6 @@ pub enum Error {
     ParseError(String),
     /// Error possibly received when calling any of the `resolve` method of [Container](struct.Container.html#method.resolve).
     ResolveError(String),
-    /// Error when calling [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build).
-    RegistrationError(ValidatorError),
     /// Simple, unqualified error. Not used as part of this crate.
     Basic(String),
 }
@@ -41,16 +37,12 @@ impl StdError for Error {
             Error::ExtractError(ref msg) => msg.as_str(),
             Error::ParseError(ref msg) => msg.as_str(),
             Error::ResolveError(ref msg) => msg.as_str(),
-            Error::RegistrationError(_) => "Registration error",
             Error::Basic(ref message) => message.as_str(),
         }
     }
 
     fn cause(&self) -> Option<&StdError> {
-        match *self {
-            Error::RegistrationError(ref err) => Some(err),
-            _ => None,
-        }
+        None
     }
 }
 
@@ -63,7 +55,6 @@ impl fmt::Display for Error {
             Error::ParseError(_) => f.write_str(format!("Parse Error > {}", self.description()).as_str()),
             Error::ResolveError(_) => f.write_str(format!("Resolve Error > {}", self.description()).as_str()),
             Error::Basic(_) => f.write_str(format!("Basic Error > {}", self.description()).as_str()),
-            Error::RegistrationError(ref err) => f.write_str(format!("Registration Error > {}", &err.to_string()).as_str()),
         }
     }
 }
@@ -72,12 +63,5 @@ impl fmt::Display for Error {
 impl fmt::Debug for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt::Display::fmt(&self, f)
-    }
-}
-
-/// Convert a ValidatorError into a RegistrationError
-impl From<ValidatorError> for Error {
-    fn from(error: ValidatorError) -> Self {
-        Error::RegistrationError(error)
     }
 }
