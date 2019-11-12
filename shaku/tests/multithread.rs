@@ -110,7 +110,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                     let mut container = shared_container.lock().unwrap();
 
                     if use_mut {
-                        let mut foo = container.resolve_mut::<Foo>().unwrap();
+                        let foo = container.resolve_mut::<Foo>().unwrap();
                         let new_value : usize = rand::thread_rng().gen_range(0, 256);
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
@@ -189,7 +189,7 @@ fn simple_multithreaded_resolve_n_own() {
                             println!("In thread {:?} > resolve ok > was owned", &handle.name().unwrap());
                         } else {
                             if use_mut {
-                                let mut foo = container.resolve_mut::<Foo>().unwrap();
+                                let foo = container.resolve_mut::<Foo>().unwrap();
                                 let new_value : usize = rand::thread_rng().gen_range(0, 256);
                                 foo.set_value(new_value);
                                 assert_eq!(foo.get_value(), new_value);
