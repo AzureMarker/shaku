@@ -1,17 +1,17 @@
 use shaku_internals::error::Error as DIError;
-use syn::{ self, AngleBracketedParameterData, Ty };
+use syn::{ self, AngleBracketedGenericArguments, Type };
 
 use parser::{ Extractor, ExtractorIterator };
 
-/// Extract `syn::AngleBracketedParameterData` data from a `syn::Ty` parameter
+/// Extract `syn::AngleBracketedParameterData` data from a `syn::Type` parameter
 /// - Path => lookup for AngleBracketed PathParameters into a Path's segments
-impl Extractor<AngleBracketedParameterData> for syn::Ty {
-    fn extract(&self) -> Result<ExtractorIterator<AngleBracketedParameterData>, DIError> {
-        let abpd_vect : Vec<AngleBracketedParameterData> = match *self {
-            Ty::Path(_, ref path) => Ok(path.segments.iter()
-                .filter_map(|path_segments| match path_segments.parameters { // filter our the PathParameters that are not AngleBracketed 
-                    syn::PathParameters::AngleBracketed(ref abpd) => Some(abpd.clone()),
-                    syn::PathParameters::Parenthesized(_) => None,
+impl Extractor<AngleBracketedGenericArguments> for syn::Type {
+    fn extract(&self) -> Result<ExtractorIterator<AngleBracketedGenericArguments>, DIError> {
+        let abpd_vect : Vec<AngleBracketedGenericArguments> = match self {
+            Type::Path(path) => Ok(path.path.segments.iter()
+                .filter_map(|path_segments| match &path_segments.arguments { // filter our the PathParameters that are not AngleBracketed
+                    syn::PathArguments::AngleBracketed(abpd) => Some(abpd.clone()),
+                    _ => None,
                 }).collect()),
             _ => Err(DIError::ExtractError(format!("unable to extract AngleBracketedParameterData from {:?}", &self))),
         }?;
@@ -20,4 +20,4 @@ impl Extractor<AngleBracketedParameterData> for syn::Ty {
     }
 }
 
-// TODO : add unit test for Ty with 0, 1, many ABPD
+// TODO : add unit test for Type with 0, 1, many ABPD

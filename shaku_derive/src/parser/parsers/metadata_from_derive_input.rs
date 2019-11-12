@@ -11,21 +11,21 @@ impl Parser<MetaData> for syn::DeriveInput {
     fn parse_into(&self) -> Result<MetaData, DIError> {
 
         // Look for 'trait' attribute
-        if let Some(ref interface_attribute) = self.attrs.iter().find(|a| a.name() == consts::INTERFACE_ATTR_NAME) {
-            if interface_attribute.style == syn::AttrStyle::Inner {
+        if let Some(ref interface_attribute) = self.attrs.iter().find(|a| a.path.is_ident(consts::INTERFACE_ATTR_NAME)) {
+            if let syn::AttrStyle::Inner(_) = interface_attribute.style {
                 return Err(DIError::ParseError(format!("invalid attribute format > '{:?}' can't be an inner attribute ", interface_attribute)));
             }
             
-            match interface_attribute.value {
-                syn::MetaItem::Word(_) => Err(DIError::ParseError(format!("invalid attribute format > '{:?}' the name of the trait is missing", interface_attribute))),
+            match interface_attribute.parse_meta().unwrap() {
+                syn::Meta::Path(_) => Err(DIError::ParseError(format!("invalid attribute format > '{:?}' the name of the trait is missing", interface_attribute))),
 
-                syn::MetaItem::NameValue(_, ref lit) => Ok(MetaData { interface: Some(syn::Ident::new(format!("{:?}",lit))) }),
+                syn::Meta::NameValue(lit) => Ok(MetaData { interface: Some(lit.path.get_ident().unwrap().clone()) }),
 
-                syn::MetaItem::List(_, ref nested) => {
-                    let mut traits : Vec<syn::Ident> = nested.iter()
+                syn::Meta::List(nested) => {
+                    let mut traits : Vec<syn::Ident> = nested.nested.iter()
                         .filter_map(|meta_item| {
-                            if let syn::NestedMetaItem::MetaItem(syn::MetaItem::Word(ref ident)) = *meta_item {
-                                Some(ident.clone())
+                            if let syn::NestedMeta::Meta(syn::Meta::Path(path)) = meta_item {
+                                Some(path.get_ident().unwrap().clone())
                             } else {
                                 None
                             }

@@ -32,11 +32,11 @@
 
 extern crate anymap;
 extern crate shaku_internals;
-// #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;
 extern crate proc_macro;
 #[macro_use] extern crate quote;
 extern crate syn;
+extern crate proc_macro2;
 
 use proc_macro::TokenStream;
 
@@ -47,11 +47,7 @@ pub(crate) mod consts;
 
 #[proc_macro_derive(Component, attributes(interface, inject))]
 pub fn component(input: TokenStream) -> TokenStream {
-    syn::parse_derive_input(&input.to_string()) // Result<DeriveInput, String>
-        .map(|ref input| {
-            match component::expand_derive_component(&input) {
-                Ok(expanded) => expanded.parse().unwrap(),
-                Err(msg) => panic!(msg),
-            }
-        }).unwrap_or_else(|err| panic!(err))
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+
+    TokenStream::from(component::expand_derive_component(&input))
 }

@@ -1,5 +1,6 @@
 use shaku_internals::error::Error as DIError;
-use syn::{ self, AngleBracketedParameterData, Ident, Path, Ty };
+use syn::{self, AngleBracketedGenericArguments, Ident, Path, Type, GenericArgument};
+use proc_macro2::Span;
 
 use internals::Property;
 use parser::{ Extractor, Parser };
@@ -11,12 +12,12 @@ use consts;
 impl Parser<Property> for syn::Field {
     fn parse_into(&self) -> Result<Property, DIError> {
         // println!("Property::from_field > parsing field = {:#?}", &field);
-        let is_injected = self.attrs.iter().find(|a| a.name() == consts::INJECT_ATTR_NAME).is_some();
-        match self.ty {
+        let is_injected = self.attrs.iter().find(|a| a.path.is_ident(consts::INJECT_ATTR_NAME)).is_some();
+        match &self.ty {
             // Box object => continue parsing to recover `Property::traits` information
-            Ty::Path(_, ref path) => 
-                if path.segments[0].ident == Ident::new("Box") {
-                    let mut abpd_vect : Vec<AngleBracketedParameterData> = self.ty.extract() // ~ Result<ExtractorIterator<AngleBracketedParameterData>>
+            Type::Path(path) =>
+                if path.path.segments[0].ident == Ident::new("Box", Span::call_site()) {
+                    let mut abpd_vect : Vec<AngleBracketedGenericArguments> = self.ty.extract() // ~ Result<ExtractorIterator<AngleBracketedParameterData>>
                         .map_err(|_| DIError::ParseError(format!("unexpected field structure > no PathParameters::AngleBracketed in a trait object > field = {:?}", &self)))?
                         .collect();
 
@@ -25,13 +26,25 @@ impl Parser<Property> for syn::Field {
                     }
 
                     let abpd = abpd_vect.remove(0);
-                    if !abpd.lifetimes.is_empty() || !abpd.bindings.is_empty() {
+                    let has_lifetimes = abpd.args.iter().any(|arg| match arg {
+                        GenericArgument::Lifetime(_) => true,
+                        _ => false
+                    });
+
+                    let has_bindings = abpd.args.iter().any(|arg| match arg {
+                        GenericArgument::Binding(_) => true,
+                        _ => false
+                    });
+
+                    if has_lifetimes || has_bindings {
                         return Err(DIError::ParseError(format!("unsupported AngleBracketedParameterData > lifetimes or bindings data and not empty > {:?}", &abpd)));
                     }
                     // All ok => return a Property object
-                    let traits : Vec<Path> = abpd.types.iter()
-                        .map(|ty| ty.extract()) // Ty > Path; ~ Vec<Result<ExtractorIterator<Path>, DIError>>
-                        .filter_map(|result| if result.is_ok() { Some(result.unwrap()) } else { None } ) // transform into a Vec<ExtractorIterator<Path>> discarding errors
+                    let traits : Vec<Path> = abpd.args.iter()
+                        .filter_map(|arg| match arg {
+                            GenericArgument::Type(ty) => ty.extract().ok(),
+                            _ => None
+                        })
                         .fold(
                             Vec::new(),
                             |mut aggreg, ref mut iter| { aggreg.append(&mut iter.collect::<Vec<_>>()); aggreg }
@@ -45,7 +58,7 @@ impl Parser<Property> for syn::Field {
                             traits: Some(traits),
                             is_parsed: true,
                             is_boxed: true,
-                            is_injected: is_injected,
+                            is_injected,
                             _field: self.clone(),
                         })
                     }

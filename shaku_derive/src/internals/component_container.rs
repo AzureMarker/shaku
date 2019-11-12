@@ -13,11 +13,12 @@ use std::error::Error;
 use std::fmt;
 
 use shaku_internals::error::Error as DIError;
-use quote::{ Tokens, ToTokens };
+use quote::ToTokens;
 use syn::{ self, DeriveInput, Field, Ident };
 
 use super::ParsingContext;
 use parser::Parser;
+use proc_macro2::TokenStream;
 
 // =======================================================================
 // STRUCT/ENUM
@@ -29,7 +30,6 @@ use parser::Parser;
         pub metadata: MetaData,
         pub identifier: Identifier,
         pub properties: Vec<Property>,
-        pub _body: syn::Body,
     }
 
     impl ComponentContainer {
@@ -52,16 +52,11 @@ use parser::Parser;
                                     ctxt.error(di_err.description());
                                     Ok(Vec::new())
                                 }).unwrap(),
-                _body: input.body.clone(),
             }
         }
 
         pub fn is_struct(&self) -> bool {
             self.identifier.is_struct()
-        }
-
-        pub fn is_enum(&self) -> bool {
-            self.identifier.is_enum()
         }
     }
 
@@ -79,7 +74,6 @@ use parser::Parser;
     #[derive(Clone, Debug)]
     pub enum Identifier {
         Null,
-        Enum(syn::Ident),
         Struct(syn::Ident),
     }
 
@@ -88,7 +82,6 @@ use parser::Parser;
         
         pub fn get_name(&self) -> &syn::Ident {
             match *self {
-                Identifier::Enum(ref ident) => ident,
                 Identifier::Struct(ref ident) => ident,
                 Identifier::Null => panic!("trying to get name from an empty Identifier"),
             }
@@ -96,16 +89,7 @@ use parser::Parser;
 
         pub fn is_struct(&self) -> bool {
             match *self {
-                Identifier::Enum(_) => false,
                 Identifier::Struct(_) => true,
-                Identifier::Null => false,
-            }
-        }
-
-        pub fn is_enum(&self) -> bool {
-            match *self {
-                Identifier::Enum(_) => true,
-                Identifier::Struct(_) => false,
                 Identifier::Null => false,
             }
         }
@@ -150,13 +134,13 @@ use parser::Parser;
             self.traits.as_ref().unwrap().len() == 1
         }
 
-        pub fn name_to_tokens(&self, tokens: &mut Tokens) {
+        pub fn name_to_tokens(&self, tokens: &mut TokenStream) {
             if self.property_name.is_some() {
                 self.property_name.as_ref().unwrap().to_tokens(tokens)
             }
         }
 
-        pub fn type_to_tokens(&self, tokens: &mut Tokens) {
+        pub fn type_to_tokens(&self, tokens: &mut TokenStream) {
             if self.is_parsed && self.traits.is_some() && self.traits.as_ref().unwrap().len() > 0 {
                 if self.traits.as_ref().unwrap().len() > 1 {
                     warn!("warning: {} traits entries for property {:?} while expecting only 1 > traits = {:?}", self.traits.as_ref().unwrap().len(), self.property_name, self.traits.as_ref().unwrap());

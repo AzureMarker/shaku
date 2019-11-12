@@ -1,5 +1,5 @@
 use shaku_internals::error::Error as DIError;
-use syn::{ self, Body, Field, VariantData };
+use syn::{ self, Data, Field };
 
 use parser::{ Extractor, ExtractorIterator };
 
@@ -9,15 +9,11 @@ use parser::{ Extractor, ExtractorIterator };
 /// - Other cases => return a `ExtractorIterator<Field>`
 impl Extractor<Field> for syn::DeriveInput {
     fn extract(&self) -> Result<ExtractorIterator<Field>, DIError> {
-        let fields_vect = match self.body {
-            Body::Enum(_) => Err(DIError::ExtractError("enum are currently not supported".to_string())),
-            Body::Struct(ref variant_data) => Ok(variant_data),
-        }.map(|variant_data| match *variant_data {
-            VariantData::Struct(ref vec_fields) => vec_fields.clone(),
-            VariantData::Tuple(ref vec_fields) => vec_fields.clone(),
-            _ => Vec::new(), // Unit variant => no properties
-        })?;
-        
+        let fields_vect = match self.data {
+            Data::Struct(ref variant_data) => Ok(variant_data.fields.clone()),
+            _ => Err(DIError::ExtractError("only structs are currently supported".to_string())),
+        }?;
+
         Ok(ExtractorIterator::from(fields_vect.into_iter()))
     }
 }
