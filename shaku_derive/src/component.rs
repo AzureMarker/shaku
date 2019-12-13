@@ -15,8 +15,8 @@ use proc_macro2::{Span, TokenStream};
 use quote::TokenStreamExt;
 use syn::{DeriveInput, Ident};
 
-use consts;
-use internals::{ComponentContainer, ParsingContext};
+use crate::consts;
+use crate::internals::{ComponentContainer, ParsingContext};
 
 // =======================================================================
 // PUBLIC METHODS

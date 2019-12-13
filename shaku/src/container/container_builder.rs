@@ -17,9 +17,9 @@
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
-use component::{Built, ComponentBuilder, ComponentIndex};
-use container::{Container, RegisteredType};
-use result::Result as DIResult;
+use crate::component::{Built, ComponentBuilder, ComponentIndex};
+use crate::container::{Container, RegisteredType};
+use crate::result::Result as DIResult;
 
 // =======================================================================
 // STRUCT DEFINITION

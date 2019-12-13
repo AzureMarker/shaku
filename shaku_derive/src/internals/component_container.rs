@@ -16,8 +16,9 @@ use proc_macro2::TokenStream;
 use quote::{TokenStreamExt, ToTokens};
 use syn::{self, DeriveInput, Field, Ident};
 
-use parser::Parser;
 use shaku_internals::error::Error as DIError;
+
+use crate::parser::Parser;
 
 use super::ParsingContext;
 

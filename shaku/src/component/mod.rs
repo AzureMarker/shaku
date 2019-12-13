@@ -7,8 +7,8 @@ use std::any::Any;
 
 use anymap::AnyMap;
 
-use container::Container;
-use parameter::ParameterMap;
+use crate::container::Container;
+use crate::parameter::ParameterMap;
 
 // =======================================================================
 // TYPE, TRAIT, STRUCT DEFINITION

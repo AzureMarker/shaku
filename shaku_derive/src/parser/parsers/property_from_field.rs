@@ -1,10 +1,11 @@
-use shaku_internals::error::Error as DIError;
-use syn::{self, AngleBracketedGenericArguments, Ident, Path, Type, GenericArgument};
 use proc_macro2::Span;
+use syn::{self, AngleBracketedGenericArguments, GenericArgument, Ident, Path, Type};
 
-use internals::Property;
-use parser::{ Extractor, Parser };
-use consts;
+use shaku_internals::error::Error as DIError;
+
+use crate::consts;
+use crate::internals::Property;
+use crate::parser::{Extractor, Parser};
 
 /// Parse a `syn::DeriveInput` into a `Property` object
 /// - Trait object (i.e. "Box<...>") => parse into a complete `Property` object

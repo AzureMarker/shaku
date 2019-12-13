@@ -2,8 +2,9 @@ use std::iter;
 
 use syn::{self, Path, Type, TypeParamBound};
 
-use parser::{Extractor, ExtractorIterator};
 use shaku_internals::error::Error as DIError;
+
+use crate::parser::{Extractor, ExtractorIterator};
 
 /// Extract the path for this type (ex. `std::collections::HashMap`)
 impl Extractor<Path> for syn::Type {

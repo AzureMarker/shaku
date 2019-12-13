@@ -1,8 +1,9 @@
-use shaku_internals::error::Error as DIError;
 use syn;
 
-use internals::{ Property };
-use parser::{ Extractor, Parser };
+use shaku_internals::error::Error as DIError;
+
+use crate::internals::Property;
+use crate::parser::{Extractor, Parser};
 
 /// Parse a DeriveInput into a vector of Property objects
 /// 1. extract Field data

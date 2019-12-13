@@ -1,7 +1,8 @@
-use shaku_internals::error::Error as DIError;
-use syn::{ self, AngleBracketedGenericArguments, Type };
+use syn::{self, AngleBracketedGenericArguments, Type};
 
-use parser::{ Extractor, ExtractorIterator };
+use shaku_internals::error::Error as DIError;
+
+use crate::parser::{Extractor, ExtractorIterator};
 
 /// Extract `syn::AngleBracketedParameterData` data from a `syn::Type` parameter
 /// - Path => lookup for AngleBracketed PathParameters into a Path's segments

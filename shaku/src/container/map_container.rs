@@ -19,10 +19,11 @@ use std::collections::HashMap;
 use anymap::any::Any as AnyMapAny;
 use anymap::Map as GenericAnyMap;
 
-use component::ComponentIndex;
-use container::RegisteredType;
-use result::Result as DIResult;
 use shaku_internals::error::Error as DIError;
+
+use crate::component::ComponentIndex;
+use crate::container::RegisteredType;
+use crate::result::Result as DIResult;
 
 // =======================================================================
 // STRUCT DEFINITION

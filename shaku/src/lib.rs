@@ -179,12 +179,30 @@
 #![deny(unused_must_use)]
 #![allow(new_without_default_derive)]
 
-// Reexport of [anymap](https://crates.io/crates/anymap) 
+// Reexport of [anymap](https://crates.io/crates/anymap)
 #[doc(hidden)]
 pub extern crate anymap;
 #[macro_use] extern crate log;
-extern crate unsafe_any;
+// For tests
+#[cfg(test)]
+#[allow(unused_imports)]
+#[macro_use] extern crate shaku_derive;
 extern crate shaku_internals;
+extern crate unsafe_any;
+
+// Reexport Error type from shaku_internals
+pub use shaku_internals::error::Error;
+
+#[doc(hidden)]
+pub use crate::component::Built;
+#[doc(hidden)]
+pub use crate::component::Component;
+#[doc(hidden)]
+pub use crate::component::ComponentBuilder;
+// Shortcut to main types / traits
+pub use crate::container::Container;
+pub use crate::container::ContainerBuilder;
+pub use crate::result::Result;
 
 // Hide modules from public API
 pub mod container;
@@ -194,29 +212,9 @@ pub mod consts;
 pub mod component;
 pub mod parameter;
 
-// Shortcut to main types / traits
-pub use container::Container;
-pub use container::ContainerBuilder;
-
-#[doc(hidden)]
-pub use component::Built;
-#[doc(hidden)]
-pub use component::Component;
-#[doc(hidden)]
-pub use component::ComponentBuilder;
-
-// Reexport Error type from shaku_internals
-pub use shaku_internals::error::Error;
-
 // Main DI Result type mapping
 #[doc(hidden)]
 pub mod result {
     /// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
     pub type Result<T> = ::std::result::Result<T, super::shaku_internals::error::Error>;
 }
-pub use result::Result;
-
-// For tests
-#[cfg(test)]
-#[allow(unused_imports)]
-#[macro_use] extern crate shaku_derive;

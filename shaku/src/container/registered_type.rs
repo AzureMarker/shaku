@@ -12,8 +12,8 @@
 // =======================================================================
 use std::any::{Any, TypeId};
 
-use component::ComponentBuilder;
-use parameter::*;
+use crate::component::ComponentBuilder;
+use crate::parameter::*;
 
 // =======================================================================
 // STRUCT DEFINITION & IMPLEMENTATION
@@ -102,10 +102,10 @@ mod tests {
 
     use anymap::AnyMap;
 
-    use component::{Component, ComponentBuilder};
-    use container::Container;
-    use parameter::*;
-    use result::Result;
+    use crate::component::{Component, ComponentBuilder};
+    use crate::container::Container;
+    use crate::parameter::*;
+    use crate::result::Result;
 
     use super::RegisteredType;
 

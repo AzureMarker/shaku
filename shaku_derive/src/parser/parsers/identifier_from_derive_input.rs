@@ -1,8 +1,9 @@
-use shaku_internals::error::Error as DIError;
 use syn;
 
-use internals::Identifier;
-use parser::Parser;
+use shaku_internals::error::Error as DIError;
+
+use crate::internals::Identifier;
+use crate::parser::Parser;
 
 /// Parse a DeriveInput into an Identifier object
 impl Parser<Identifier> for syn::DeriveInput {

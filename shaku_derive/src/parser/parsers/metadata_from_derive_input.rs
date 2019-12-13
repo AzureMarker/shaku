@@ -1,10 +1,10 @@
-use shaku_internals::error::Error as DIError;
 use syn;
 
-use internals::{ MetaData };
-use parser::Parser;
+use shaku_internals::error::Error as DIError;
 
-use consts;
+use crate::consts;
+use crate::internals::MetaData;
+use crate::parser::Parser;
 
 /// Parse DeriveInput's attributes to populate ComponentContainer's MetaData
 impl Parser<MetaData> for syn::DeriveInput {

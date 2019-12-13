@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use unsafe_any::UnsafeAny;
 
-use parameter::*;
+use crate::parameter::*;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 enum Key {
@@ -114,7 +114,7 @@ impl ::std::fmt::Debug for AnySendParameterMap {
 mod tests {
     #![allow(non_snake_case)]
 
-    use parameter::*;
+    use crate::parameter::*;
 
     macro_rules! generate_insert_remove_test {
         ($map:ident, $param:ident) => {
