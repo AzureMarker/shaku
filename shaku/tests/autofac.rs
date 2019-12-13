@@ -49,7 +49,7 @@ trait IDateWriter : Send {
 #[interface(IDateWriter)]
 struct TodayWriter {
     #[inject]
-    output: Box<IOutput>,
+    output: Box<dyn IOutput>,
     today: String,
 }
 
@@ -74,12 +74,12 @@ fn main_test() {
 
     builder
         .register_type::<ConsoleOutput>()
-        .as_type::<IOutput>()
+        .as_type::<dyn IOutput>()
         .with_named_parameter("prefix", "PREFIX > ".to_string())
         .with_typed_parameter::<usize>(117 as usize);
     builder
         .register_type::<TodayWriter>()
-        .as_type::<IDateWriter>();
+        .as_type::<dyn IDateWriter>();
     let mut container = builder.build().unwrap();
 
     // The WriteDate method is where we'll make use
@@ -87,8 +87,8 @@ fn main_test() {
     // in a bit.
 
     let writer = container
-        .with_typed_parameter::<IDateWriter, String>("June 19".to_string())
-        .resolve::<IDateWriter>()
+        .with_typed_parameter::<dyn IDateWriter, String>("June 19".to_string())
+        .resolve::<dyn IDateWriter>()
         .unwrap();
     writer.write_date();
     let date = writer.get_date();

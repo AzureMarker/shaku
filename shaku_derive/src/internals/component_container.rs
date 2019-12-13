@@ -12,13 +12,14 @@
 use std::error::Error;
 use std::fmt;
 
+use proc_macro2::TokenStream;
+use quote::{TokenStreamExt, ToTokens};
+use syn::{self, DeriveInput, Field, Ident};
+
+use parser::Parser;
 use shaku_internals::error::Error as DIError;
-use quote::ToTokens;
-use syn::{ self, DeriveInput, Field, Ident };
 
 use super::ParsingContext;
-use parser::Parser;
-use proc_macro2::TokenStream;
 
 // =======================================================================
 // STRUCT/ENUM
@@ -102,7 +103,8 @@ use proc_macro2::TokenStream;
     /// so we don't need to parse the other properties
     ///
     /// Currently parsed types
-    /// - Box<...> == syn::Ty::Path(Option<QSelf>, Path),
+    /// - Box<...> == syn::Type::Path(Option<QSelf>, Path),
+    /// - Box<...> == syn::Type::TraitObject
     ///
     /// Note:
     /// - Vec<Box<...>> => not sure how to inject such parameters => ignored for now
@@ -145,7 +147,15 @@ use proc_macro2::TokenStream;
                 if self.traits.as_ref().unwrap().len() > 1 {
                     warn!("warning: {} traits entries for property {:?} while expecting only 1 > traits = {:?}", self.traits.as_ref().unwrap().len(), self.property_name, self.traits.as_ref().unwrap());
                 }
-                self.traits.as_ref().unwrap().get(0).to_tokens(tokens);
+
+                if self.is_injected {
+                    // The "trait" should be an actual trait, so use dyn Trait syntax
+                    let trait_ident = &self.traits.as_ref().unwrap()[0];
+                    tokens.append_all(quote! { dyn #trait_ident });
+                } else {
+                    // The "trait" could be a struct (ex. String), so don't do anything special
+                    self.traits.as_ref().unwrap().get(0).to_tokens(tokens);
+                }
             } else {
                 self._field.ty.to_tokens(tokens);
             }

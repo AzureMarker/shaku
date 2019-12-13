@@ -11,12 +11,12 @@
 // =======================================================================
 use std::env;
 
+use proc_macro2::{Span, TokenStream};
 use quote::TokenStreamExt;
 use syn::{DeriveInput, Ident};
 
-use internals::{ComponentContainer, ParsingContext};
 use consts;
-use proc_macro2::{TokenStream, Span};
+use internals::{ComponentContainer, ParsingContext};
 
 // =======================================================================
 // PUBLIC METHODS
@@ -182,7 +182,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
                 // Build the output
                 let mut result = ::shaku::anymap::AnyMap::new();
-                result.insert::<Box<#interface>>(Box::new(#component_name {
+                result.insert::<Box<dyn #interface>>(Box::new(#component_name {
                     #properties_block
                 }));
                 Ok(result)

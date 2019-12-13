@@ -14,7 +14,7 @@
 // =======================================================================
 // LIBRARY IMPORTS
 // =======================================================================
-use std::any::{TypeId, type_name};
+use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
 use component::{Built, ComponentBuilder, ComponentIndex};
@@ -41,7 +41,7 @@ pub struct ContainerBuilder {
 pub struct TemporaryRegisteredType<'c> {
     component: (TypeId, String),
     container_builder: &'c mut ContainerBuilder,
-    builder: Box<ComponentBuilder>,
+    builder: Box<dyn ComponentBuilder>,
 }
 
 // =======================================================================

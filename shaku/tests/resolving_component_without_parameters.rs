@@ -17,7 +17,7 @@ trait Foo : Debug + Send {
 struct FooImpl {
     value: String,
     #[inject]
-    bar: Box<Bar>,
+    bar: Box<dyn Bar>,
 }
 
 impl Foo for FooImpl {
@@ -47,11 +47,11 @@ fn resolving_component_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>();
+        .as_type::<dyn Foo>();
     let mut container = builder.build().unwrap();
     
     let foo = container
-        .resolve::<Foo>();
+        .resolve::<dyn Foo>();
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
@@ -66,16 +66,16 @@ fn resolving_component_dependency_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>()
+        .as_type::<dyn Foo>()
         .with_named_parameter("value", "world is foo".to_string());
 
     builder
         .register_type::<BarImpl>()
-        .as_type::<Bar>();
+        .as_type::<dyn Bar>();
     let mut container = builder.build().unwrap();
     
     let foo = container
-        .resolve::<Foo>();
+        .resolve::<dyn Foo>();
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
@@ -90,16 +90,16 @@ fn resolving_component_dependency_with_parameters_dont_err() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>()
+        .as_type::<dyn Foo>()
         .with_named_parameter("value", "world is foo".to_string());
 
     builder
         .register_type::<BarImpl>()
-        .as_type::<Bar>();
+        .as_type::<dyn Bar>();
     let mut container = builder.build().unwrap();
     
     let foo = container
-        .with_named_parameter::<Bar, String>("bar_value", "world is bar".to_string())
-        .resolve::<Foo>();
+        .with_named_parameter::<dyn Bar, String>("bar_value", "world is bar".to_string())
+        .resolve::<dyn Foo>();
     assert_eq!(foo.unwrap().foo(), "FooImpl > foo > value = world is foo ; bar = BarImpl > bar > bar_value = world is bar");
 }

@@ -16,13 +16,13 @@ use std::any::{Any, TypeId};
 use std::boxed::Box;
 use std::collections::HashMap;
 
-use anymap::Map as GenericAnyMap;
 use anymap::any::Any as AnyMapAny;
-use shaku_internals::error::Error as DIError;
+use anymap::Map as GenericAnyMap;
 
-use result::Result as DIResult;
 use component::ComponentIndex;
 use container::RegisteredType;
+use result::Result as DIResult;
+use shaku_internals::error::Error as DIError;
 
 // =======================================================================
 // STRUCT DEFINITION
@@ -30,7 +30,7 @@ use container::RegisteredType;
 #[cfg(not(feature = "thread_safe"))]
 type Map = GenericAnyMap<AnyMapAny>;
 #[cfg(feature = "thread_safe")]
-type Map = GenericAnyMap<AnyMapAny+Send>;
+type Map = GenericAnyMap<dyn AnyMapAny + Send>;
 
 // <clic to unfold doc>
     /// Struct containing all the components registered during the build phase, used to `resolve` Components.

@@ -1,15 +1,16 @@
 #![allow(non_snake_case)]
 
+extern crate rand;
 extern crate shaku;
 #[macro_use] extern crate shaku_derive;
-extern crate rand;
 
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
-use shaku::ContainerBuilder;
 use rand::Rng;
+
+use shaku::ContainerBuilder;
 
 trait Foo : Send {
     fn get_value(&self) -> usize;
@@ -41,7 +42,7 @@ fn simple_multithreaded_resolve_ref() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>()
+        .as_type::<dyn Foo>()
         .with_named_parameter("value", 17 as usize);
 
     let container = builder.build().unwrap();
@@ -63,7 +64,7 @@ fn simple_multithreaded_resolve_ref() {
                 // Get a handle on the container
                 {
                     let mut container = shared_container.lock().unwrap();
-                    let foo = container.resolve_ref::<Foo>().unwrap();
+                    let foo = container.resolve_ref::<dyn Foo>().unwrap();
                     assert_eq!(foo.get_value(), 17);
                     println!("In thread {:?} > resolve ok > value = {}", &handle.name().unwrap(), foo.get_value());
                 } // release the lock
@@ -84,7 +85,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>()
+        .as_type::<dyn Foo>()
         .with_named_parameter("value", first_value);
 
     let container = builder.build().unwrap();
@@ -110,7 +111,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                     let mut container = shared_container.lock().unwrap();
 
                     if use_mut {
-                        let foo = container.resolve_mut::<Foo>().unwrap();
+                        let foo = container.resolve_mut::<dyn Foo>().unwrap();
                         let new_value : usize = rand::thread_rng().gen_range(0, 256);
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
@@ -121,7 +122,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                         println!("In thread {:?} > resolve ok > value changed to {}", &handle.name().unwrap(), foo.get_value());
                     }
                     else {
-                        let foo = container.resolve_ref::<Foo>().unwrap();
+                        let foo = container.resolve_ref::<dyn Foo>().unwrap();
                         let data = latest_data.lock().unwrap();
 
                         println!("In thread {:?} > resolve ok > value should be {}", &handle.name().unwrap(), *data);
@@ -145,7 +146,7 @@ fn simple_multithreaded_resolve_n_own() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<Foo>()
+        .as_type::<dyn Foo>()
         .with_named_parameter("value", first_value);
 
     let container = builder.build().unwrap();
@@ -172,7 +173,7 @@ fn simple_multithreaded_resolve_n_own() {
                 // Resolve the container
                 if i == owner {
                     let mut container = shared_container.lock().unwrap();
-                    let foo = container.resolve::<Foo>().unwrap();
+                    let foo = container.resolve::<dyn Foo>().unwrap();
                     let data = latest_data.lock().unwrap();
                     println!("In thread {:?} > owner > resolve ok > value should be {}", &handle.name().unwrap(), *data);
                     assert_eq!(foo.get_value(), *data);
@@ -184,12 +185,12 @@ fn simple_multithreaded_resolve_n_own() {
                         let mut container = shared_container.lock().unwrap();
 
                         if *was_owned.lock().unwrap() {
-                            let err = container.resolve_ref::<Foo>();
+                            let err = container.resolve_ref::<dyn Foo>();
                             assert!(err.is_err());
                             println!("In thread {:?} > resolve ok > was owned", &handle.name().unwrap());
                         } else {
                             if use_mut {
-                                let foo = container.resolve_mut::<Foo>().unwrap();
+                                let foo = container.resolve_mut::<dyn Foo>().unwrap();
                                 let new_value : usize = rand::thread_rng().gen_range(0, 256);
                                 foo.set_value(new_value);
                                 assert_eq!(foo.get_value(), new_value);
@@ -200,7 +201,7 @@ fn simple_multithreaded_resolve_n_own() {
                                 println!("In thread {:?} > resolve ok > value changed to {}", &handle.name().unwrap(), foo.get_value());
                             }
                             else {
-                                let foo = container.resolve_ref::<Foo>().unwrap();
+                                let foo = container.resolve_ref::<dyn Foo>().unwrap();
                                 let data = latest_data.lock().unwrap();
 
                                 println!("In thread {:?} > resolve ok > value should be {}", &handle.name().unwrap(), *data);

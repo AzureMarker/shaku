@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
-#[macro_use] extern crate shaku_derive;
 extern crate shaku;
+#[macro_use]
+extern crate shaku_derive;
 
 #[derive(Component)]
 #[interface(Foo)]
@@ -10,15 +11,21 @@ struct TestComponent {
     var2: usize,
     var3: Box<String>,
     #[inject]
-    var5: Box<OtherStruct>,
+    var5: Box<dyn Bar>,
 }
 
-struct OtherStruct {
+#[derive(Component)]
+#[interface(Bar)]
+struct BarImpl {
     val: usize,
 }
 
-trait Foo {
+trait Foo: Send {
     fn foo(&self);
+}
+
+trait Bar: Send {
+    fn bar(&self);
 }
 
 impl Foo for TestComponent {
@@ -27,6 +34,11 @@ impl Foo for TestComponent {
     }
 }
 
-#[test]
-fn compile_ok() {
+impl Bar for BarImpl {
+    fn bar(&self) {
+        ()
+    }
 }
+
+#[test]
+fn compile_ok() {}

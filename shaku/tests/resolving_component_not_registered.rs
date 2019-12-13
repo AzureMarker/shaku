@@ -27,7 +27,7 @@ impl Foo for FooImpl {
 #[test]
 fn resolving_component_not_registered_without_parameters_should_err() {
     let mut container = ContainerBuilder::new().build().unwrap();
-    let foo = container.resolve::<Foo>();
+    let foo = container.resolve::<dyn Foo>();
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
         assert_eq!(err, "no component dyn resolving_component_not_registered::Foo registered in this container");
@@ -40,8 +40,8 @@ fn resolving_component_not_registered_without_parameters_should_err() {
 fn resolving_component_not_registered_with_parameters_should_err() {
     let mut container = ContainerBuilder::new().build().unwrap();
     let foo = container
-        .with_named_parameter::<Foo, usize>("empty", 213 as usize)
-        .resolve::<Foo>();
+        .with_named_parameter::<dyn Foo, usize>("empty", 213 as usize)
+        .resolve::<dyn Foo>();
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
         assert_eq!(err, "no component dyn resolving_component_not_registered::Foo registered in this container");

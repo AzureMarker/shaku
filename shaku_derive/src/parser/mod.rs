@@ -5,15 +5,15 @@ use std::iter::Iterator;
 
 use shaku_internals::error::Error as DIError;
 
+pub use self::extractors::*;
+pub use self::msgs::*;
+
 // =======================================================================
 // INNER MODULES
 // =======================================================================
 mod msgs;
 mod extractors;
 mod parsers;
-
-pub use self::msgs::*;
-pub use self::extractors::*;
 
 // =======================================================================
 // TRAIT DEFINITION
@@ -34,7 +34,7 @@ pub trait Extractor<T> {
 }
 
 pub struct ExtractorIterator<T> {
-    iter_owned: Box<Iterator<Item=T>>,
+    iter_owned: Box<dyn Iterator<Item=T>>,
 }
 
 impl<T> ExtractorIterator<T> {

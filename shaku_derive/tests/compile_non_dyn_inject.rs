@@ -1,24 +1,24 @@
 #![allow(dead_code)]
 
+// This test ensures that injected components still work without using `dyn`
+#![allow(bare_trait_objects)]
+
 extern crate shaku;
 #[macro_use]
 extern crate shaku_derive;
 
 #[derive(Component)]
 #[interface(Foo)]
-struct TestComponent1 {
+struct TestComponent {
+    var1: String,
+    var2: usize,
+    var3: Box<String>,
     #[inject]
-    var: Box<dyn Bar>,
+    var5: Box<Bar>,
 }
 
 #[derive(Component)]
-#[interface(Foo)]
-struct TestComponent2 {
-    var1: usize,
-    #[inject]
-    var2: Box<dyn Bar>,
-}
-
+#[interface(Bar)]
 struct BarImpl {
     val: usize,
 }
@@ -31,13 +31,7 @@ trait Bar: Send {
     fn bar(&self);
 }
 
-impl Foo for TestComponent1 {
-    fn foo(&self) {
-        ()
-    }
-}
-
-impl Foo for TestComponent2 {
+impl Foo for TestComponent {
     fn foo(&self) {
         ()
     }

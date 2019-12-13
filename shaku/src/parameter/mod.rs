@@ -13,12 +13,12 @@ use std::any::{Any, TypeId};
 
 use unsafe_any::{UnsafeAny, UnsafeAnyExt};
 
+pub use self::parameter_map::*;
+
 // =======================================================================
 // OTHER MODULES
 // =======================================================================
 mod parameter_map;
-pub use self::parameter_map::*;
-
 // =======================================================================
 // PRIVATE STRUCT DEFINITION
 // =======================================================================
@@ -28,7 +28,7 @@ macro_rules! implement {
         struct $name {
             name: String,
             type_of: TypeId,
-            value: Box<$base $(+ $bounds)*>,
+            value: Box<dyn $base $(+ $bounds)*>,
         }
 
         impl $name {

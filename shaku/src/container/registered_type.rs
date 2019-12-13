@@ -32,7 +32,7 @@ macro_rules! implements_with {
             #[doc(hidden)]
             pub(crate) as_trait: (TypeId, String),
             #[doc(hidden)]
-            pub(crate) builder: Box<ComponentBuilder>,
+            pub(crate) builder: Box<dyn ComponentBuilder>,
             #[doc(hidden)]
             pub(crate) parameters: $map,
         }
@@ -40,7 +40,7 @@ macro_rules! implements_with {
         impl RegisteredType {
             /// Create a new RegisteredType.
             #[doc(hidden)]
-            pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<ComponentBuilder>) -> RegisteredType {
+            pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
                 RegisteredType {
                     component: comp,
                     as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
@@ -98,14 +98,16 @@ impl ::std::fmt::Debug for RegisteredType {
 mod tests {
     #![allow(non_snake_case)]
 
-    use super::RegisteredType;
-
     use std::any::TypeId;
-    use component::{ Component, ComponentBuilder };
+
+    use anymap::AnyMap;
+
+    use component::{Component, ComponentBuilder};
     use container::Container;
     use parameter::*;
     use result::Result;
-    use anymap::AnyMap;
+
+    use super::RegisteredType;
 
     trait Foo {
         fn foo(&self);
@@ -132,7 +134,7 @@ mod tests {
     #[test]
     fn RegisteredType_test_overwrite() {
         let foo_builder = Box::new(FooImplBuilder {});
-        let mut x = RegisteredType::new::<Foo>(
+        let mut x = RegisteredType::new::<dyn Foo>(
             (TypeId::of::<FooImpl>(), "FooImpl".to_string()),
             foo_builder,
         );
