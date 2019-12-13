@@ -8,5 +8,6 @@ documentation = "https://docs.rs/crate/shaku"
 keywords = ["di", "ioc", "injection", "inversion", "control"]
 categories = ["rust-patterns"]
 license = "MIT/Apache-2.0"
+edition = "2018"
 
 [dependencies]

@@ -8,6 +8,7 @@ categories = ["rust-patterns"]
 description = "Dependency Inversion / Dependency Injection / Inversion of control container for Rust"
 keywords = ["di", "ioc", "SOLID", "dependency", "inversion"]
 license = "MIT/Apache-2.0"
+edition = "2018"
 
 [dependencies]
 shaku_internals = "~0.2.1"
