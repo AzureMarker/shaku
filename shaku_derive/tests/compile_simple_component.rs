@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 
-extern crate shaku;
-#[macro_use]
-extern crate shaku_derive;
+use shaku_derive::Component;
 
 #[derive(Component)]
 #[interface(Foo)]

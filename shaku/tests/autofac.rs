@@ -1,8 +1,7 @@
 //! Examples based on AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
-extern crate shaku;
-#[macro_use]
-extern crate shaku_derive;
+
+use shaku_derive::Component;
 
 // IOutput & ConsoleOutput implementation
 // ---------------------------------------------------------------------

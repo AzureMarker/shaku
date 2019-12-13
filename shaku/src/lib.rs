@@ -83,7 +83,7 @@
     //! In our example:
     //! 
     //! ```rust,ignore
-    //! #[macro_use] extern crate shaku_derive;
+    //! use shaku_derive::Component;
     //!
     //! #[derive(Component)] // <--- mark a struct as a Component that can be registered & resolved
     //! #[interface(IDateWriter)] // <--- specify which interface it implements
@@ -183,12 +183,6 @@
 #[doc(hidden)]
 pub extern crate anymap;
 #[macro_use] extern crate log;
-// For tests
-#[cfg(test)]
-#[allow(unused_imports)]
-#[macro_use] extern crate shaku_derive;
-extern crate shaku_internals;
-extern crate unsafe_any;
 
 // Reexport Error type from shaku_internals
 pub use shaku_internals::error::Error;
@@ -216,5 +210,5 @@ pub mod parameter;
 #[doc(hidden)]
 pub mod result {
     /// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
-    pub type Result<T> = ::std::result::Result<T, super::shaku_internals::error::Error>;
+    pub type Result<T> = ::std::result::Result<T, shaku_internals::error::Error>;
 }

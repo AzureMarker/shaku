@@ -66,7 +66,7 @@ impl ContainerBuilder {
         /// To be properly registered, [as_type()](struct.RegisteredType.html#method.as)
         /// *must* be called before calling [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build).
         /// To enforce this, a Component is will actually be registered only after [as_type()](struct.RegisteredType.html#method.as) is called.
-    pub fn register_type<'c, C: Built + ?Sized + 'static>(&'c mut self) -> TemporaryRegisteredType<'c> {
+    pub fn register_type<C: Built + ?Sized + 'static>(&mut self) -> TemporaryRegisteredType {
         // Get the type name from the turbo-fish input
         let type_id = (TypeId::of::<C>(), type_name::<C>().to_string());
 
@@ -89,68 +89,67 @@ impl ContainerBuilder {
         /// # Examples
         ///
         /// ```rust
-        /// extern crate shaku;
-        /// #[macro_use] extern crate shaku_derive;
-        /// 
+        /// use shaku_derive::Component;
+        ///
         /// use shaku::Error as DIError;
-        /// 
+        ///
         /// trait Foo : Send { fn foo(&self); }
         /// trait FooInvalid : Send { fn foo(&self); }
         /// trait FooDuplicate : Send { fn foo(&self) -> String; }
-        /// 
+        ///
         /// #[derive(Component)]
         /// #[interface(Foo)]
         /// struct FooImpl;
-        /// 
+        ///
         /// #[derive(Component)]
         /// #[interface(FooInvalid)]
         /// struct FooInvalidImpl;
-        /// 
+        ///
         /// #[derive(Component)]
         /// #[interface(FooDuplicate)]
         /// struct FooDuplicateImpl1;
-        /// 
+        ///
         /// #[derive(Component)]
         /// #[interface(FooDuplicate)]
         /// struct FooDuplicateImpl2;
-        /// 
+        ///
         /// impl Foo for FooImpl { fn foo(&self) { } }
         /// impl FooInvalid for FooInvalidImpl { fn foo(&self) { } }
         /// impl FooDuplicate for FooDuplicateImpl1 { fn foo(&self) -> String { "FooDuplicateImpl1".to_string() } }
         /// impl FooDuplicate for FooDuplicateImpl2 { fn foo(&self) -> String { "FooDuplicateImpl2".to_string() } }
-        /// 
+        ///
         /// fn main() {
         ///     let mut builder = shaku::ContainerBuilder::new();
         ///
         ///     // Valid registration
         ///     builder.register_type::<FooImpl>()
-        ///         .as_type::<Foo>();
-        /// 
+        ///         .as_type::<dyn Foo>();
+        ///
         ///     let container = builder.build();
         ///     assert!(container.is_ok());
-        ///     let foo = container.unwrap().resolve::<Foo>();
+        ///     let foo = container.unwrap().resolve::<dyn Foo>();
         ///     assert!(foo.is_ok());
-        ///     
+        ///
         ///     // Invalid registration, 'as_type()' wasn't called => `FooInvalidImpl` isn't registered
         ///     let mut builder = shaku::ContainerBuilder::new();
         ///     builder.register_type::<FooInvalidImpl>();
-        /// 
+        ///
         ///     let mut container = builder.build();
         ///     assert!(container.is_ok());
         ///     let foo = container.unwrap().resolve::<FooInvalidImpl>();
         ///     assert!(foo.is_err());
-        /// 
+        ///
         ///     // Invalid registration, duplicate => only the latest Component registered is kept
         ///     let mut builder = shaku::ContainerBuilder::new();
         ///     builder.register_type::<FooDuplicateImpl1>()
-        ///         .as_type::<FooDuplicate>();
+        ///         .as_type::<dyn FooDuplicate>();
         ///     builder.register_type::<FooDuplicateImpl2>()
-        ///         .as_type::<FooDuplicate>();
-        /// 
+        ///         .as_type::<dyn FooDuplicate>();
+        ///
         ///     let container = builder.build();
         ///     assert!(container.is_ok());
         ///     let mut container = container.unwrap();
-        ///     let foo = container.resolve::<FooDuplicate>();
+        ///     let foo = container.resolve::<dyn FooDuplicate>();
         ///     assert!(foo.is_ok());
         ///     assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
         /// }
@@ -172,8 +171,8 @@ impl<'c> TemporaryRegisteredType<'c> {
     /// `T` generally being a trait.
     ///
     /// Upon a successfull call to this method, the Component is actually
-    /// registered into its parent ContainerBuilder 
-    /// and a proper [RegisteredType](struct.RegisteredType.html) is returned 
+    /// registered into its parent ContainerBuilder
+    /// and a proper [RegisteredType](struct.RegisteredType.html) is returned
     /// to e.g. chain parameter initialization.
     pub fn as_type<T: ?Sized + 'static>(self) -> &'c mut RegisteredType {
         let index = ComponentIndex::Id(TypeId::of::<T>());

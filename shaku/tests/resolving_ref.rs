@@ -1,9 +1,7 @@
 #![allow(non_snake_case)]
 
-extern crate shaku;
-#[macro_use] extern crate shaku_derive;
-
 use shaku::ContainerBuilder;
+use shaku_derive::Component;
 
 trait Foo : Send {
     fn get_value(&self) -> usize;

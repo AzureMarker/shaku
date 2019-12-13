@@ -1,12 +1,10 @@
 #![allow(non_snake_case)]
 
-extern crate shaku;
-#[macro_use] extern crate shaku_derive;
-
 use std::fmt::Debug;
 
 use shaku::ContainerBuilder;
 use shaku::Error as DIError;
+use shaku_derive::Component;
 
 trait Foo : Debug + Send {
     fn foo(&self) -> String;

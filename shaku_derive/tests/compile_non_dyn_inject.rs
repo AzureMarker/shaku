@@ -3,9 +3,7 @@
 // This test ensures that injected components still work without using `dyn`
 #![allow(bare_trait_objects)]
 
-extern crate shaku;
-#[macro_use]
-extern crate shaku_derive;
+use shaku_derive::Component;
 
 #[derive(Component)]
 #[interface(Foo)]

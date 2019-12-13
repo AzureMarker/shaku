@@ -29,7 +29,7 @@ use crate::result::Result as DIResult;
 // STRUCT DEFINITION
 // =======================================================================
 #[cfg(not(feature = "thread_safe"))]
-type Map = GenericAnyMap<AnyMapAny>;
+type Map = GenericAnyMap<dyn AnyMapAny>;
 #[cfg(feature = "thread_safe")]
 type Map = GenericAnyMap<dyn AnyMapAny + Send>;
 
@@ -45,8 +45,7 @@ type Map = GenericAnyMap<dyn AnyMapAny + Send>;
     /// # Examples
     ///
     /// ```rust
-    /// extern crate shaku;
-    /// #[macro_use] extern crate shaku_derive;
+    /// use shaku_derive::Component;
     ///
     /// trait FooValue : Send {
     ///     fn get_value(&self) -> usize;
@@ -73,34 +72,34 @@ type Map = GenericAnyMap<dyn AnyMapAny + Send>;
     ///     let mut builder = shaku::ContainerBuilder::new();
     ///     builder
     ///         .register_type::<FooImpl>()
-    ///         .as_type::<FooValue>()
+    ///         .as_type::<dyn FooValue>()
     ///         .with_named_parameter("value", 17 as usize);
     ///
     ///     let mut container = builder.build().unwrap();
     ///
     ///     {
-    ///         let foo : &FooValue = container.resolve_ref::<FooValue>().unwrap();
+    ///         let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
     ///         assert_eq!(foo.get_value(), 17);
     ///     }
     ///
     ///     {
-    ///         let foo : &mut FooValue = container.resolve_mut::<FooValue>().unwrap();
+    ///         let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
     ///         assert_eq!(foo.get_value(), 17);
     ///         foo.set_value(99);
     ///     }
     ///
     ///     {
-    ///         let foo : Box<FooValue> = container.resolve::<FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
+    ///         let foo : Box<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
     ///         assert_eq!(foo.get_value(), 99);
     ///     }
     ///
     ///     {
-    ///         let foo = container.resolve_ref::<FooValue>();
+    ///         let foo = container.resolve_ref::<dyn FooValue>();
     ///         assert!(foo.is_err());
     ///     }
     ///
     ///     {
-    ///         let foo = container.resolve_mut::<FooValue>();
+    ///         let foo = container.resolve_mut::<dyn FooValue>();
     ///         assert!(foo.is_err());
     ///     }
     /// }
@@ -131,7 +130,7 @@ macro_rules! implements_with {
             /// Further resolve calls on the same container for the same trait `T` will fail.
             ///
             /// # Errors
-            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component 
+            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component
             /// from the Container (most likely your Component wasn't properly registered)
             ///
             /// # Examples
@@ -180,7 +179,7 @@ macro_rules! implements_with {
             /// This component can later be resolved with any other resolve method.
             ///
             /// # Errors
-            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component 
+            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component
             /// from the Container (most likely your Component wasn't properly registered)
             ///
             /// # Examples
@@ -210,7 +209,7 @@ macro_rules! implements_with {
             /// This component can later be resolved with any other resolve method.
             ///
             /// # Errors
-            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component 
+            /// Returns a [Error::ResolveError](enum.Error.html) if we can't resolve your Component
             /// from the Container (most likely your Component wasn't properly registered)
             ///
             /// # Examples
@@ -233,7 +232,7 @@ macro_rules! implements_with {
                 )?;
                 Ok(coerced_result)
             }
-    
+
             /// Add a new named parameter for an already registered Component `T`.
             /// If `T` wasn't previously registered, it does nothing.
             ///
