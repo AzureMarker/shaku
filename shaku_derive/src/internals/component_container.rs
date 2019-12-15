@@ -14,7 +14,7 @@ use std::fmt;
 
 use proc_macro2::TokenStream;
 use quote::{TokenStreamExt, ToTokens};
-use syn::{self, DeriveInput, Field, Ident};
+use syn::{self, DeriveInput, Field, Ident, Visibility};
 
 use shaku_internals::error::Error as DIError;
 
@@ -32,6 +32,7 @@ use super::ParsingContext;
         pub metadata: MetaData,
         pub identifier: Identifier,
         pub properties: Vec<Property>,
+        pub visibility: Visibility,
     }
 
     impl ComponentContainer {
@@ -54,6 +55,7 @@ use super::ParsingContext;
                                     ctxt.error(di_err.description());
                                     Ok(Vec::new())
                                 }).unwrap(),
+                visibility: input.vis.clone(),
             }
         }
 

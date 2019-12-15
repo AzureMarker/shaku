@@ -54,6 +54,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         &format!("{}__DI_Builder", container.identifier.get_name()),
         Span::call_site()
     );
+    let builder_vis = container.visibility;
 
     // Block building the component map (in `fn build()`)
     // Try to resolve each candidate component, if resolve fails, don't insert into component map
@@ -166,7 +167,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         }
 
         #[allow(non_camel_case_types)]
-        struct #component_builder_name;
+        #builder_vis struct #component_builder_name;
         impl ::shaku::ComponentBuilder for #component_builder_name {
             fn new() -> Self {
                 #component_builder_name {}
