@@ -168,7 +168,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
         #[allow(non_camel_case_types)]
         #builder_vis struct #component_builder_name;
-        impl ::shaku::ComponentBuilder for #component_builder_name {
+        impl ::shaku::ComponentBuilderImpl for #component_builder_name {
             fn new() -> Self {
                 #component_builder_name {}
             }

@@ -18,72 +18,77 @@ use crate::parameter::*;
 // =======================================================================
 // STRUCT DEFINITION & IMPLEMENTATION
 // =======================================================================
-macro_rules! implements_with {
-    ($map:ident, $any_base:ident, $(+ $bounds:ident)*) => {
-        /// DI Container entry associated with a unique Component (i.e. struct).
-        ///
-        /// When running the following command
-        /// `container_builder.register_type::<MyImplOfTrait>().as_type::<Trait>();`
-        /// - `MyImplOfTrait` -> `component`
-        /// - `Trait` -> `as_trait`
-        pub struct RegisteredType {
-            #[doc(hidden)]
-            pub(crate) component: (TypeId, String),
-            #[doc(hidden)]
-            pub(crate) as_trait: (TypeId, String),
-            #[doc(hidden)]
-            pub(crate) builder: Box<dyn ComponentBuilder>,
-            #[doc(hidden)]
-            pub(crate) parameters: $map,
-        }
-
-        impl RegisteredType {
-            /// Create a new RegisteredType.
-            #[doc(hidden)]
-            pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
-                RegisteredType {
-                    component: comp,
-                    as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
-                    builder: build,
-                    parameters: $map::new(),
-                }
-            }
-
-            /// Add a new parameter for this Container entry.
-            ///
-            /// `name` must match one of the struct's property name of the current Component.
-            pub fn with_named_parameter<S: Into<String> + Clone, V: $any_base $(+ $bounds)*>(&mut self, name: S, value: V) -> &mut RegisteredType {
-                if self.parameters.insert_with_name(name.clone(), value).is_some()
-                {
-                    warn!(
-                        "::RegisteredType::with_named_parameter::warning overwritting existing value for property {}",
-                        &name.into()
-                    );
-                }
-                self
-            }
-
-            /// Add a new parameter for this Container entry.
-            ///
-            /// `type` must refer to a unique property's.
-            pub fn with_typed_parameter<V: $any_base $(+ $bounds)*>(&mut self, value: V) -> &mut RegisteredType {
-                if self.parameters.insert_with_type(value).is_some() 
-                {
-                    warn!(
-                        "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}", 
-                        ::std::any::type_name::<V>()
-                    );
-                }
-                self
-            }
-        }
-    }
+/// DI Container entry associated with a unique Component (i.e. struct).
+///
+/// When running the following command
+/// `container_builder.register_type::<MyImplOfTrait>().as_type::<Trait>();`
+/// - `MyImplOfTrait` -> `component`
+/// - `Trait` -> `as_trait`
+pub struct RegisteredType {
+    #[doc(hidden)]
+    pub(crate) component: (TypeId, String),
+    #[doc(hidden)]
+    pub(crate) as_trait: (TypeId, String),
+    #[doc(hidden)]
+    pub(crate) builder: Box<dyn ComponentBuilder>,
+    #[cfg(not(feature = "thread_safe"))]
+    #[doc(hidden)]
+    pub(crate) parameters: AnyParameterMap,
+    #[cfg(feature = "thread_safe")]
+    #[doc(hidden)]
+    pub(crate) parameters: AnySendParameterMap,
 }
 
-#[cfg(not(feature = "thread_safe"))]
-implements_with!(AnyParameterMap,Any,);
-#[cfg(feature = "thread_safe")]
-implements_with!(AnySendParameterMap,Any,+Send);
+impl RegisteredType {
+    /// Create a new RegisteredType.
+    #[doc(hidden)]
+    pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
+        RegisteredType {
+            component: comp,
+            as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
+            builder: build,
+            #[cfg(not(feature = "thread_safe"))]
+            parameters: AnyParameterMap::new(),
+            #[cfg(feature = "thread_safe")]
+            parameters: AnySendParameterMap::new(),
+        }
+    }
+
+    /// Add a new parameter for this Container entry.
+    ///
+    /// `name` must match one of the struct's property name of the current Component.
+    pub fn with_named_parameter<
+        S: Into<String> + Clone,
+        #[cfg(not(feature = "thread_safe"))] V: Any,
+        #[cfg(feature = "thread_safe")] V: Any + Send,
+    >(&mut self, name: S, value: V) -> &mut RegisteredType {
+        if self.parameters.insert_with_name(name.clone(), value).is_some()
+        {
+            warn!(
+                "::RegisteredType::with_named_parameter::warning overwritting existing value for property {}",
+                &name.into()
+            );
+        }
+        self
+    }
+
+    /// Add a new parameter for this Container entry.
+    ///
+    /// `type` must refer to a unique property's.
+    pub fn with_typed_parameter<
+        #[cfg(not(feature = "thread_safe"))] V: Any,
+        #[cfg(feature = "thread_safe")] V: Any + Send,
+    >(&mut self, value: V) -> &mut RegisteredType {
+        if self.parameters.insert_with_type(value).is_some()
+        {
+            warn!(
+                "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
+                ::std::any::type_name::<V>()
+            );
+        }
+        self
+    }
+}
 
 impl ::std::fmt::Debug for RegisteredType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
@@ -102,7 +107,7 @@ mod tests {
 
     use anymap::AnyMap;
 
-    use crate::component::{Component, ComponentBuilder};
+    use crate::component::{Component, ComponentBuilderImpl};
     use crate::container::Container;
     use crate::parameter::*;
     use crate::result::Result;
@@ -121,7 +126,7 @@ mod tests {
     impl Component for FooImpl {}
 
     struct FooImplBuilder;
-    impl ComponentBuilder for FooImplBuilder {
+    impl ComponentBuilderImpl for FooImplBuilder {
         fn new() -> Self {
             FooImplBuilder {}
         }

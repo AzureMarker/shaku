@@ -17,7 +17,7 @@
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
-use crate::component::{Built, ComponentBuilder, ComponentIndex};
+use crate::component::{Built, ComponentBuilder, ComponentBuilderImpl, ComponentIndex};
 use crate::container::{Container, RegisteredType};
 use crate::result::Result as DIResult;
 

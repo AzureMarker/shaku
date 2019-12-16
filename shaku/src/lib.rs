@@ -192,7 +192,7 @@ pub use crate::component::Built;
 #[doc(hidden)]
 pub use crate::component::Component;
 #[doc(hidden)]
-pub use crate::component::ComponentBuilder;
+pub use crate::component::ComponentBuilderImpl;
 // Shortcut to main types / traits
 pub use crate::container::Container;
 pub use crate::container::ContainerBuilder;

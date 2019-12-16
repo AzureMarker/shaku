@@ -25,14 +25,22 @@ pub trait Built {
     type Builder: ComponentBuilder;
 }
 
-#[cfg(not(feature = "thread_safe"))]
-pub trait ComponentBuilder {
+// Adapted from https://stackoverflow.com/a/30293051/3267834
+// FIXME: Use real trait aliases when they are stabilized:
+//        https://github.com/rust-lang/rust/issues/41517
+macro_rules! trait_alias {
+    ($visibility:vis $name:ident = $base1:ident $(+ $base2:ident)*) => {
+        $visibility trait $name: $base1 $(+ $base2)* { }
+        impl<T: $base1 $(+ $base2)*> $name for T { }
+    };
+}
+
+pub trait ComponentBuilderImpl {
     fn new() -> Self where Self: Sized;
     fn build(&self, _: &mut Container, _: &mut ParameterMap) -> super::Result<AnyMap>;
 }
 
+#[cfg(not(feature = "thread_safe"))]
+trait_alias!(pub ComponentBuilder = ComponentBuilderImpl);
 #[cfg(feature = "thread_safe")]
-pub trait ComponentBuilder : Send {
-    fn new() -> Self where Self: Sized;
-    fn build(&self, _: &mut Container, _: &mut ParameterMap) -> super::Result<AnyMap>;
-}
+trait_alias!(pub ComponentBuilder = ComponentBuilderImpl + Send);
