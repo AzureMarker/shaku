@@ -3,7 +3,7 @@
 // =======================================================================
 // LIBRARY IMPORTS
 // =======================================================================
-use std::any::Any;
+use std::any::{Any, TypeId};
 
 use anymap::AnyMap;
 
@@ -37,6 +37,8 @@ macro_rules! trait_alias {
 
 pub trait ComponentBuilderImpl {
     fn new() -> Self where Self: Sized;
+    fn interface_type_id() -> TypeId where Self: Sized;
+    fn interface_type_name() -> &'static str where Self: Sized;
     fn build(&self, _: &mut Container, _: &mut ParameterMap) -> super::Result<AnyMap>;
 }
 

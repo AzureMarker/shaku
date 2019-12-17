@@ -72,7 +72,6 @@ type Map = GenericAnyMap<dyn AnyMapAny + Send>;
     ///     let mut builder = shaku::ContainerBuilder::new();
     ///     builder
     ///         .register_type::<FooImpl>()
-    ///         .as_type::<dyn FooValue>()
     ///         .with_named_parameter("value", 17 as usize);
     ///
     ///     let mut container = builder.build().unwrap();

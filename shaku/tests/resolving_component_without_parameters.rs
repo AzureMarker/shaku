@@ -43,13 +43,10 @@ impl Bar for BarImpl {
 #[test]
 fn resolving_component_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .as_type::<dyn Foo>();
+    builder.register_type::<FooImpl>();
     let mut container = builder.build().unwrap();
     
-    let foo = container
-        .resolve::<dyn Foo>();
+    let foo = container.resolve::<dyn Foo>();
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
@@ -64,16 +61,12 @@ fn resolving_component_dependency_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<dyn Foo>()
         .with_named_parameter("value", "world is foo".to_string());
 
-    builder
-        .register_type::<BarImpl>()
-        .as_type::<dyn Bar>();
+    builder.register_type::<BarImpl>();
     let mut container = builder.build().unwrap();
     
-    let foo = container
-        .resolve::<dyn Foo>();
+    let foo = container.resolve::<dyn Foo>();
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
@@ -88,12 +81,9 @@ fn resolving_component_dependency_with_parameters_dont_err() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<dyn Foo>()
         .with_named_parameter("value", "world is foo".to_string());
 
-    builder
-        .register_type::<BarImpl>()
-        .as_type::<dyn Bar>();
+    builder.register_type::<BarImpl>();
     let mut container = builder.build().unwrap();
     
     let foo = container

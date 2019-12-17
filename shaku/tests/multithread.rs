@@ -39,7 +39,6 @@ fn simple_multithreaded_resolve_ref() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<dyn Foo>()
         .with_named_parameter("value", 17 as usize);
 
     let container = builder.build().unwrap();
@@ -82,7 +81,6 @@ fn simple_multithreaded_resolve_ref_n_mut() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<dyn Foo>()
         .with_named_parameter("value", first_value);
 
     let container = builder.build().unwrap();
@@ -143,7 +141,6 @@ fn simple_multithreaded_resolve_n_own() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
-        .as_type::<dyn Foo>()
         .with_named_parameter("value", first_value);
 
     let container = builder.build().unwrap();

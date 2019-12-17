@@ -73,12 +73,9 @@ fn main_test() {
 
     builder
         .register_type::<ConsoleOutput>()
-        .as_type::<dyn IOutput>()
         .with_named_parameter("prefix", "PREFIX > ".to_string())
         .with_typed_parameter::<usize>(117 as usize);
-    builder
-        .register_type::<TodayWriter>()
-        .as_type::<dyn IDateWriter>();
+    builder.register_type::<TodayWriter>();
     let mut container = builder.build().unwrap();
 
     // The WriteDate method is where we'll make use

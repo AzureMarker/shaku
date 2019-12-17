@@ -173,6 +173,14 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                 #component_builder_name {}
             }
 
+            fn interface_type_id() -> ::std::any::TypeId {
+                ::std::any::TypeId::of::<dyn #interface>()
+            }
+
+            fn interface_type_name() -> &'static str {
+                ::std::any::type_name::<dyn #interface>()
+            }
+
             #[allow(unused_variables, unused_mut)]
             fn build(&self, container: &mut ::shaku::Container, params: &mut ::shaku::parameter::ParameterMap) -> ::shaku::Result<::shaku::anymap::AnyMap> {
                 // Build the parameter map to be injected into the constructor

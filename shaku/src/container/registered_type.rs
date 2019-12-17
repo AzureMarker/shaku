@@ -38,10 +38,10 @@ pub struct RegisteredType {
 impl RegisteredType {
     /// Create a new RegisteredType.
     #[doc(hidden)]
-    pub(crate) fn new<T: ?Sized + 'static>(comp: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
+    pub(crate) fn new(comp: (TypeId, String), interface: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
         RegisteredType {
             component: comp,
-            as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
+            as_trait: interface,
             builder: build,
             parameters: ParameterMap::new(),
         }
@@ -96,7 +96,7 @@ impl ::std::fmt::Debug for RegisteredType {
 mod tests {
     #![allow(non_snake_case)]
 
-    use std::any::TypeId;
+    use std::any::{type_name, TypeId};
 
     use anymap::AnyMap;
 
@@ -124,6 +124,14 @@ mod tests {
             FooImplBuilder {}
         }
 
+        fn interface_type_id() -> TypeId {
+            TypeId::of::<dyn Foo>()
+        }
+
+        fn interface_type_name() -> &'static str where Self: Sized {
+            type_name::<dyn Foo>()
+        }
+
         fn build(&self, _: &mut Container, _: &mut ParameterMap) -> Result<AnyMap> {
             unimplemented!() // test doesn't require this fn
         }
@@ -132,8 +140,9 @@ mod tests {
     #[test]
     fn RegisteredType_test_overwrite() {
         let foo_builder = Box::new(FooImplBuilder {});
-        let mut x = RegisteredType::new::<dyn Foo>(
+        let mut x = RegisteredType::new(
             (TypeId::of::<FooImpl>(), "FooImpl".to_string()),
+            (TypeId::of::<dyn Foo>(), "Foo".to_string()),
             foo_builder,
         );
 
