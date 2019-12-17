@@ -164,6 +164,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
         impl ::shaku::Built for #component_name {
             type Builder = #component_builder_name;
+            type Interface = dyn #interface;
         }
 
         #[allow(non_camel_case_types)]
@@ -171,14 +172,6 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         impl ::shaku::ComponentBuilderImpl for #component_builder_name {
             fn new() -> Self {
                 #component_builder_name {}
-            }
-
-            fn interface_type_id() -> ::std::any::TypeId {
-                ::std::any::TypeId::of::<dyn #interface>()
-            }
-
-            fn interface_type_name() -> &'static str {
-                ::std::any::type_name::<dyn #interface>()
             }
 
             #[allow(unused_variables, unused_mut)]

@@ -3,7 +3,7 @@
 // =======================================================================
 // LIBRARY IMPORTS
 // =======================================================================
-use std::any::{Any, TypeId};
+use std::any::Any;
 
 use anymap::AnyMap;
 
@@ -23,6 +23,7 @@ pub enum ComponentIndex {
 
 pub trait Built {
     type Builder: ComponentBuilder;
+    type Interface: ?Sized;
 }
 
 // Adapted from https://stackoverflow.com/a/30293051/3267834
@@ -37,8 +38,6 @@ macro_rules! trait_alias {
 
 pub trait ComponentBuilderImpl {
     fn new() -> Self where Self: Sized;
-    fn interface_type_id() -> TypeId where Self: Sized;
-    fn interface_type_name() -> &'static str where Self: Sized;
     fn build(&self, _: &mut Container, _: &mut ParameterMap) -> super::Result<AnyMap>;
 }
 

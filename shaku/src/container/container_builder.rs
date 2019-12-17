@@ -56,8 +56,8 @@ impl ContainerBuilder {
     pub fn register_type<C: Built + ?Sized + 'static>(&mut self) -> &mut RegisteredType {
         // Get the type name from the turbo-fish input
         let component_type_info = (TypeId::of::<C>(), type_name::<C>().to_string());
-        let interface_type_id = C::Builder::interface_type_id();
-        let interface_type_name = C::Builder::interface_type_name();
+        let interface_type_id = TypeId::of::<C::Interface>();
+        let interface_type_name = type_name::<C::Interface>();
         let index = ComponentIndex::Id(interface_type_id);
 
         let registered_type = RegisteredType::new(

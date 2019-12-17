@@ -96,7 +96,7 @@ impl ::std::fmt::Debug for RegisteredType {
 mod tests {
     #![allow(non_snake_case)]
 
-    use std::any::{type_name, TypeId};
+    use std::any::TypeId;
 
     use anymap::AnyMap;
 
@@ -122,14 +122,6 @@ mod tests {
     impl ComponentBuilderImpl for FooImplBuilder {
         fn new() -> Self {
             FooImplBuilder {}
-        }
-
-        fn interface_type_id() -> TypeId {
-            TypeId::of::<dyn Foo>()
-        }
-
-        fn interface_type_name() -> &'static str where Self: Sized {
-            type_name::<dyn Foo>()
         }
 
         fn build(&self, _: &mut Container, _: &mut ParameterMap) -> Result<AnyMap> {
