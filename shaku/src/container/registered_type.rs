@@ -31,12 +31,8 @@ pub struct RegisteredType {
     pub(crate) as_trait: (TypeId, String),
     #[doc(hidden)]
     pub(crate) builder: Box<dyn ComponentBuilder>,
-    #[cfg(not(feature = "thread_safe"))]
     #[doc(hidden)]
-    pub(crate) parameters: AnyParameterMap,
-    #[cfg(feature = "thread_safe")]
-    #[doc(hidden)]
-    pub(crate) parameters: AnySendParameterMap,
+    pub(crate) parameters: ParameterMap,
 }
 
 impl RegisteredType {
@@ -47,10 +43,7 @@ impl RegisteredType {
             component: comp,
             as_trait: (TypeId::of::<T>(), ::std::any::type_name::<T>().to_string()),
             builder: build,
-            #[cfg(not(feature = "thread_safe"))]
-            parameters: AnyParameterMap::new(),
-            #[cfg(feature = "thread_safe")]
-            parameters: AnySendParameterMap::new(),
+            parameters: ParameterMap::new(),
         }
     }
 
