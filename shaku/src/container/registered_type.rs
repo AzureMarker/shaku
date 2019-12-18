@@ -116,7 +116,10 @@ mod tests {
         fn foo(&self) {}
     }
 
-    impl Component for FooImpl {}
+    impl Component for FooImpl {
+        type Builder = FooImplBuilder;
+        type Interface = dyn Foo;
+    }
 
     struct FooImplBuilder;
     impl ComponentBuilderImpl for FooImplBuilder {

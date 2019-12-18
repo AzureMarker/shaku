@@ -17,7 +17,7 @@
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
-use crate::component::{Built, ComponentBuilderImpl, ComponentIndex};
+use crate::component::{Component, ComponentBuilderImpl, ComponentIndex};
 use crate::container::{Container, RegisteredType};
 use crate::result::Result as DIResult;
 
@@ -53,7 +53,7 @@ impl ContainerBuilder {
         /// allowing to chain calls to [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter)
         /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
         /// to add parameters to be used to instantiate this Component.
-    pub fn register_type<C: Built + ?Sized + 'static>(&mut self) -> &mut RegisteredType {
+    pub fn register_type<C: Component + ?Sized + 'static>(&mut self) -> &mut RegisteredType {
         // Get the type name from the turbo-fish input
         let component_type_info = (TypeId::of::<C>(), type_name::<C>().to_string());
         let interface_type_id = TypeId::of::<C::Interface>();

@@ -13,17 +13,15 @@ use crate::parameter::ParameterMap;
 // =======================================================================
 // TYPE, TRAIT, STRUCT DEFINITION
 // =======================================================================
-pub trait Component: Any {}
+pub trait Component: Any {
+    type Builder: ComponentBuilder;
+    type Interface: ?Sized;
+}
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum ComponentIndex {
     String(String),
     Id(::std::any::TypeId),
-}
-
-pub trait Built {
-    type Builder: ComponentBuilder;
-    type Interface: ?Sized;
 }
 
 // Adapted from https://stackoverflow.com/a/30293051/3267834

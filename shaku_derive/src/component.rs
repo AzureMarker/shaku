@@ -160,9 +160,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
     // Main implementation block
     let impl_block = quote! {
-        impl ::shaku::Component for #component_name { }
-
-        impl ::shaku::Built for #component_name {
+        impl ::shaku::Component for #component_name {
             type Builder = #component_builder_name;
             type Interface = dyn #interface;
         }

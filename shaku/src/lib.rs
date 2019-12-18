@@ -188,8 +188,6 @@ pub extern crate anymap;
 pub use shaku_internals::error::Error;
 
 #[doc(hidden)]
-pub use crate::component::Built;
-#[doc(hidden)]
 pub use crate::component::Component;
 #[doc(hidden)]
 pub use crate::component::ComponentBuilderImpl;
