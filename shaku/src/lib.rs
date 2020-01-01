@@ -199,8 +199,6 @@ pub use crate::result::Result;
 // Hide modules from public API
 pub mod container;
 #[doc(hidden)]
-pub mod consts;
-#[doc(hidden)]
 pub mod component;
 pub mod parameter;
 
