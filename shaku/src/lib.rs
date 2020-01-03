@@ -171,13 +171,8 @@
     //! - we should support closures as a way to create parameters (at register or resolve time)
 
 // Linting
-#![allow(unknown_lints)] // in case clippy is not use to compile
-
-// Clippy
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
 #![deny(unused_must_use)]
-#![allow(new_without_default_derive)]
+#![allow(clippy::new_without_default)]
 
 // Reexport of [anymap](https://crates.io/crates/anymap)
 #[doc(hidden)]

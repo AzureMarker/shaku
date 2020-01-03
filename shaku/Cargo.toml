@@ -13,7 +13,6 @@ edition = "2018"
 [dependencies]
 shaku_internals = "~0.2.1"
 anymap = "0.12.1"
-clippy = { version = "0.0.140", optional = true }
 log = "0.3"
 unsafe-any = "0.4"
 

@@ -166,7 +166,7 @@ impl Container {
                 &mut registered_type.parameters,
             )?; // AnyMap
 
-            #[allow(or_fun_call)]
+            #[allow(clippy::or_fun_call)]
             result_map.remove::<Box<T>>().ok_or(DIError::ResolveError(
                 format!("Unable to create a new instance of {}",
                     ::std::any::type_name::<T>()
@@ -197,7 +197,7 @@ impl Container {
         }
 
         // Note: the following works because Box<T> coerces into &T
-        #[allow(or_fun_call)]
+        #[allow(clippy::or_fun_call)]
         let coerced_result: &T = self.resolved_component_map.get::<Box<T>>()
             .ok_or(
                 DIError::ResolveError(format!(
@@ -229,7 +229,7 @@ impl Container {
             self.resolved_component_map.insert(component);
         }
 
-        #[allow(or_fun_call)]
+        #[allow(clippy::or_fun_call)]
         let coerced_result: &mut T = self.resolved_component_map.get_mut::<Box<T>>().ok_or(
             DIError::ResolveError(format!(
                 "Unable to get a mutable reference of component {}",
