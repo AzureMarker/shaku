@@ -34,7 +34,7 @@ trait IDateWriter : Send {
 }
 
 struct TodayWriter {
-    output: Box<IOutput>,
+    output: Box<dyn IOutput>,
     today: String,
     year: String,
 }
@@ -81,7 +81,7 @@ In our example:
 #[interface(IDateWriter)] // <--- specify which interface it implements
 struct TodayWriter {
     #[inject] // <--- flag 'output' as a property which can be injected
-    output: Box<IOutput>,
+    output: Box<dyn IOutput>,
     today: String,
     year: usize,
 }
@@ -95,13 +95,8 @@ In our example, we register `ConsoleOutput` and `TodayWriter` with a `ContainerB
 // Create your builder.
 let mut builder = ContainerBuilder::new();
 
-builder
-    .register_type::<ConsoleOutput>()
-    .as_type::<IOutput>();
-
-builder
-    .register_type::<TodayWriter>()
-    .as_type::<IDateWriter>();
+builder.register_type::<ConsoleOutput>();
+builder.register_type::<TodayWriter>();
 
 // Create a Container holding the DI magic
 let mut container = builder.build().unwrap();
@@ -123,7 +118,6 @@ Passing parameters at registration time is done using the `with_named_parameter(
 ```rust
 builder
     .register_type::<ConsoleOutput>()
-    .as_type::<IOutput>()
     .with_named_parameter("prefix", "PREFIX >".to_string())
     .with_typed_parameter::<usize>(117 as usize);
 ```
@@ -136,9 +130,9 @@ For our sample app, we created a `write_date()` method to resolve the writer fro
 ```rust
 fn write_date(container: &mut Container) {
     let writer = container
-        .with_typed_parameter::<IDateWriter, String>("June 20".to_string())
-        .with_named_parameter::<IDateWriter, usize>("year", 2017 as usize)
-        .resolve::<IDateWriter>()
+        .with_typed_parameter::<dyn IDateWriter, String>("June 20".to_string())
+        .with_named_parameter::<dyn IDateWriter, usize>("year", 2017 as usize)
+        .resolve::<dyn IDateWriter>()
         .unwrap();
     writer.write_date();
 }
