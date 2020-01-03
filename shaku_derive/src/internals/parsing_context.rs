@@ -11,7 +11,7 @@ pub struct ParsingContext {
 
 impl ParsingContext {
     pub fn new() -> Self {
-        ParsingContext { 
+        ParsingContext {
             errors: RefCell::new(Some(Vec::new())),
             warnings: RefCell::new(Some(Vec::new())),
         }

@@ -19,12 +19,13 @@ pub trait Extractor<T> {
 }
 
 pub struct ExtractorIterator<T> {
-    iter_owned: Box<dyn Iterator<Item=T>>,
+    iter_owned: Box<dyn Iterator<Item = T>>,
 }
 
 impl<T> ExtractorIterator<T> {
-    pub fn from<I>(content: I) -> ExtractorIterator<T> 
-        where I: Iterator<Item=T> + Sized + 'static,
+    pub fn from<I>(content: I) -> ExtractorIterator<T>
+    where
+        I: Iterator<Item = T> + Sized + 'static,
     {
         ExtractorIterator {
             iter_owned: Box::new(content),

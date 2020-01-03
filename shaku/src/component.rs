@@ -29,7 +29,9 @@ macro_rules! trait_alias {
 }
 
 pub trait ComponentBuilderImpl {
-    fn new() -> Self where Self: Sized;
+    fn new() -> Self
+    where
+        Self: Sized;
     fn build(&self, _: &mut Container, _: &mut ParameterMap) -> super::Result<AnyMap>;
 }
 

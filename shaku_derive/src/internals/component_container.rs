@@ -26,28 +26,34 @@ impl ComponentContainer {
 
     pub fn from_derive_input(ctxt: &ParsingContext, input: &DeriveInput) -> Self {
         ComponentContainer {
-            metadata: input.parse_into()
-                             .or_else::<DIError, _>(|di_err| {
-                                ctxt.error(di_err.description());
-                                Ok(MetaData { interface: None })
-                            }).unwrap(),
-           identifier: input.parse_into()
-                            .or_else::<DIError, _>(|di_err| {
-                                ctxt.error(di_err.description());
-                                Ok(Identifier::Null)
-                            }).unwrap(),
-            properties: input.parse_into()
-                            .or_else::<DIError, _>(|di_err| {
-                                ctxt.error(di_err.description());
-                                Ok(Vec::new())
-                            }).unwrap(),
+            metadata: input
+                .parse_into()
+                .or_else::<DIError, _>(|di_err| {
+                    ctxt.error(di_err.description());
+                    Ok(MetaData { interface: None })
+                })
+                .unwrap(),
+            identifier: input
+                .parse_into()
+                .or_else::<DIError, _>(|di_err| {
+                    ctxt.error(di_err.description());
+                    Ok(Identifier::Null)
+                })
+                .unwrap(),
+            properties: input
+                .parse_into()
+                .or_else::<DIError, _>(|di_err| {
+                    ctxt.error(di_err.description());
+                    Ok(Vec::new())
+                })
+                .unwrap(),
             visibility: input.vis.clone(),
         }
     }
 
     pub fn is_struct(&self) -> bool {
-                                  self.identifier.is_struct()
-                                                             }
+        self.identifier.is_struct()
+    }
 }
 
 /// MetaData for this ComponentContainer
@@ -112,11 +118,11 @@ impl fmt::Debug for Property {
 impl Property {
     /// Return true if the current `Property` is a potential candidate for injection
     pub fn is_component(&self) -> bool {
-        self.is_parsed &&
-        self.is_injected &&
-        self.property_name.is_some() &&
-        self.traits.is_some() &&
-        self.traits.as_ref().unwrap().len() == 1
+        self.is_parsed
+            && self.is_injected
+            && self.property_name.is_some()
+            && self.traits.is_some()
+            && self.traits.as_ref().unwrap().len() == 1
     }
 
     pub fn name_to_tokens(&self, tokens: &mut TokenStream) {
@@ -146,12 +152,13 @@ impl Property {
 
     /// Return the property name as a String without the extra ""
     pub fn get_name_without_quotes(&self) -> String {
-                                                  self.get_name().replace("\"", "")
-                                                                                     }
+        self.get_name().replace("\"", "")
+    }
 
     /// Return the property name as a String (with quotes)
     pub fn get_name(&self) -> String {
-        self.property_name.as_ref()
+        self.property_name
+            .as_ref()
             .map(|ident| ident.to_string())
             .unwrap_or_else(|| "".to_string())
     }

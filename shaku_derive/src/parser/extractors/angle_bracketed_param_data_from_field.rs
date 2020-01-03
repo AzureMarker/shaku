@@ -8,13 +8,21 @@ use crate::parser::{Extractor, ExtractorIterator};
 /// - Path => lookup for AngleBracketed PathParameters into a Path's segments
 impl Extractor<AngleBracketedGenericArguments> for syn::Type {
     fn extract(&self) -> Result<ExtractorIterator<AngleBracketedGenericArguments>, DIError> {
-        let abpd_vect : Vec<AngleBracketedGenericArguments> = match self {
-            Type::Path(path) => Ok(path.path.segments.iter()
-                .filter_map(|path_segments| match &path_segments.arguments { // filter our the PathParameters that are not AngleBracketed
+        let abpd_vect: Vec<AngleBracketedGenericArguments> = match self {
+            Type::Path(path) => Ok(path
+                .path
+                .segments
+                .iter()
+                .filter_map(|path_segments| match &path_segments.arguments {
+                    // filter our the PathParameters that are not AngleBracketed
                     syn::PathArguments::AngleBracketed(abpd) => Some(abpd.clone()),
                     _ => None,
-                }).collect()),
-            _ => Err(DIError::ExtractError(format!("unable to extract AngleBracketedParameterData from {:?}", &self))),
+                })
+                .collect()),
+            _ => Err(DIError::ExtractError(format!(
+                "unable to extract AngleBracketedParameterData from {:?}",
+                &self
+            ))),
         }?;
 
         Ok(ExtractorIterator::from(abpd_vect.into_iter()))

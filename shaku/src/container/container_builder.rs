@@ -21,7 +21,9 @@ pub struct ContainerBuilder {
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
-        ContainerBuilder { map: HashMap::new() }
+        ContainerBuilder {
+            map: HashMap::new(),
+        }
     }
 }
 
@@ -48,7 +50,7 @@ impl ContainerBuilder {
         let registered_type = RegisteredType::new(
             component_type_info,
             (interface_type_id, interface_type_name.to_owned()),
-            Box::new(C::Builder::new())
+            Box::new(C::Builder::new()),
         );
 
         let old_value = self.map.insert(index.clone(), registered_type);

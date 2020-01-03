@@ -10,8 +10,9 @@ use crate::parser::{Extractor, Parser};
 /// 2. parse each Field into a Property
 impl Parser<Vec<Property>> for syn::DeriveInput {
     fn parse_into(&self) -> Result<Vec<Property>, DIError> {
-        let vect : Vec<Result<Property, DIError>> = self.extract()? // ~ Result<ExtractorIterator<Field>>
-            .map(|field : syn::Field| field.parse_into()) // ~ Iterator<Result<Property>>
+        let vect: Vec<Result<Property, DIError>> = self
+            .extract()? // ~ Result<ExtractorIterator<Field>>
+            .map(|field: syn::Field| field.parse_into()) // ~ Iterator<Result<Property>>
             .collect();
 
         if let Some(first_err) = vect.iter().find(|&result| result.is_err()) {
@@ -19,5 +20,5 @@ impl Parser<Vec<Property>> for syn::DeriveInput {
         } else {
             Ok(vect.iter().map(|result| result.clone().unwrap()).collect())
         }
-    } 
+    }
 }

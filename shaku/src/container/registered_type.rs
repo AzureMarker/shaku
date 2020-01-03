@@ -25,7 +25,11 @@ pub struct RegisteredType {
 impl RegisteredType {
     /// Create a new RegisteredType.
     #[doc(hidden)]
-    pub(crate) fn new(comp: (TypeId, String), interface: (TypeId, String), build: Box<dyn ComponentBuilder>) -> RegisteredType {
+    pub(crate) fn new(
+        comp: (TypeId, String),
+        interface: (TypeId, String),
+        build: Box<dyn ComponentBuilder>,
+    ) -> RegisteredType {
         RegisteredType {
             component: comp,
             as_trait: interface,
@@ -41,8 +45,15 @@ impl RegisteredType {
         S: Into<String> + Clone,
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
-    >(&mut self, name: S, value: V) -> &mut RegisteredType {
-        if self.parameters.insert_with_name(name.clone(), value).is_some()
+    >(
+        &mut self,
+        name: S,
+        value: V,
+    ) -> &mut RegisteredType {
+        if self
+            .parameters
+            .insert_with_name(name.clone(), value)
+            .is_some()
         {
             warn!(
                 "::RegisteredType::with_named_parameter::warning overwritting existing value for property {}",
@@ -58,9 +69,11 @@ impl RegisteredType {
     pub fn with_typed_parameter<
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
-    >(&mut self, value: V) -> &mut RegisteredType {
-        if self.parameters.insert_with_type(value).is_some()
-        {
+    >(
+        &mut self,
+        value: V,
+    ) -> &mut RegisteredType {
+        if self.parameters.insert_with_type(value).is_some() {
             warn!(
                 "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
                 ::std::any::type_name::<V>()
@@ -72,7 +85,11 @@ impl RegisteredType {
 
 impl ::std::fmt::Debug for RegisteredType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "RegisteredType {{component: {:?}, as_trait: {:?}, parameters: {:?} }}", &self.component, &self.as_trait, &self.parameters)
+        write!(
+            f,
+            "RegisteredType {{component: {:?}, as_trait: {:?}, parameters: {:?} }}",
+            &self.component, &self.as_trait, &self.parameters
+        )
     }
 }
 
@@ -135,6 +152,6 @@ mod tests {
         x.with_typed_parameter(18 as usize);
 
         let value = x.parameters.remove_with_type::<usize>();
-        assert_eq!(*value.unwrap(),18);
+        assert_eq!(*value.unwrap(), 18);
     }
 }

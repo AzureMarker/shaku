@@ -5,7 +5,7 @@ use shaku_derive::Component;
 
 // IOutput & ConsoleOutput implementation
 // ---------------------------------------------------------------------
-trait IOutput : Send {
+trait IOutput: Send {
     fn write(&self, content: String);
     fn get_date(&self, content: String) -> String;
 }
@@ -21,25 +21,18 @@ impl IOutput for ConsoleOutput {
     fn write(&self, content: String) {
         println!(
             "[Outputting to the console] {} #{} {}",
-            self.prefix,
-            self.other_param,
-            content
+            self.prefix, self.other_param, content
         );
     }
 
     fn get_date(&self, content: String) -> String {
-        format!(
-            "{}#{} {}",
-            self.prefix,
-            self.other_param,
-            content
-        )
+        format!("{}#{} {}", self.prefix, self.other_param, content)
     }
 }
 
 // IDateWriter & TodayWriter implementation
 // ---------------------------------------------------------------------
-trait IDateWriter : Send {
+trait IDateWriter: Send {
     fn write_date(&self);
     fn get_date(&self) -> String;
 }

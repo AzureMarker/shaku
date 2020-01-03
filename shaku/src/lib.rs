@@ -169,7 +169,8 @@
 // Reexport of [anymap](https://crates.io/crates/anymap)
 #[doc(hidden)]
 pub extern crate anymap;
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 // Reexport Error type from shaku_internals
 pub use shaku_internals::error::Error;
@@ -184,9 +185,9 @@ pub use crate::container::ContainerBuilder;
 pub use crate::result::Result;
 
 // Hide modules from public API
-pub mod container;
 #[doc(hidden)]
 pub mod component;
+pub mod container;
 pub mod parameter;
 
 // Main DI Result type mapping

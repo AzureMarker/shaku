@@ -96,20 +96,28 @@ macro_rules! implement {
     }
 }
 
-implement!(AnyParameterMap,Parameter,Any,);
+implement!(AnyParameterMap, Parameter, Any,);
 implement!(AnySendParameterMap,SendParameter,Any,+Send);
-implement!(UnsafeAnyParameterMap,UnsafeParameter,UnsafeAny,);
+implement!(UnsafeAnyParameterMap, UnsafeParameter, UnsafeAny,);
 implement!(UnsafeAnySendSyncParameterMap,UnsafeSendSyncParameter,UnsafeAny,+Send+Sync);
 
 impl ::std::fmt::Debug for AnyParameterMap {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "AnyParameterMap {{ map: {:?}, type_map: {:?} }}", &self.map, &self.type_map)
+        write!(
+            f,
+            "AnyParameterMap {{ map: {:?}, type_map: {:?} }}",
+            &self.map, &self.type_map
+        )
     }
 }
 
 impl ::std::fmt::Debug for AnySendParameterMap {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "AnySendParameterMap {{ map: {:?}, type_map: {:?} }}", &self.map, &self.type_map)
+        write!(
+            f,
+            "AnySendParameterMap {{ map: {:?}, type_map: {:?} }}",
+            &self.map, &self.type_map
+        )
     }
 }
 
@@ -166,7 +174,7 @@ mod tests {
                 assert_eq!(*map.remove_with_type::<usize>().unwrap(), 123);
                 assert_eq!(*map.remove_with_type::<bool>().unwrap(), true); // overwrite data
             }
-        }
+        };
     }
 
     generate_insert_remove_test!(AnyParameterMap, Parameter);

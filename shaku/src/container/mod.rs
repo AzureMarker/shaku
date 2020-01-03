@@ -62,7 +62,6 @@ pub use self::container_builder::*;
 pub use self::map_container::Container;
 pub use self::registered_type::RegisteredType;
 
-mod map_container;
 mod container_builder;
+mod map_container;
 mod registered_type;
-

@@ -60,7 +60,11 @@ implement_method!([get_value] Parameter,Any,,downcast);
 
 impl ::std::fmt::Debug for Parameter {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "Parameter {{name: {:?}, type_of: {:?}, value: {:?} }}", &self.name, &self.type_of, &self.value)
+        write!(
+            f,
+            "Parameter {{name: {:?}, type_of: {:?}, value: {:?} }}",
+            &self.name, &self.type_of, &self.value
+        )
     }
 }
 
@@ -69,7 +73,11 @@ implement_method!([get_value] SendParameter,Any,+Send,downcast);
 
 impl ::std::fmt::Debug for SendParameter {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(f, "SendParameter {{name: {:?}, type_of: {:?}, value: {:?} }}", &self.name, &self.type_of, &self.value)
+        write!(
+            f,
+            "SendParameter {{name: {:?}, type_of: {:?}, value: {:?} }}",
+            &self.name, &self.type_of, &self.value
+        )
     }
 }
 implement!(UnsafeParameter,UnsafeAny,,);

@@ -117,22 +117,25 @@ impl Container {
     pub fn resolve<
         #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
         #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
-    >(&mut self) -> DIResult<Box<T>> {
+    >(
+        &mut self,
+    ) -> DIResult<Box<T>> {
         if self.resolved_component_map.contains::<Box<T>>() {
-            self.resolved_component_map.remove::<Box<T>>().ok_or_else(
-                || {
+            self.resolved_component_map
+                .remove::<Box<T>>()
+                .ok_or_else(|| {
                     panic!(
                         "invalid state: unable to remove existing component {}",
                         ::std::any::type_name::<T>()
                     )
-                },
-            ) // ok to panic, this would be a bug
+                }) // ok to panic, this would be a bug
         } else {
             // Note: for now we have no other way than to remove the RegisterType from the map
             // meaning that we would be able to get only 1 instance of each type registered
             // until we find a way to Clone parameters
             // TODO work around this
-            let mut registered_type = self.component_map
+            let mut registered_type = self
+                .component_map
                 .remove(&ComponentIndex::Id(TypeId::of::<T>()))
                 .ok_or_else(|| {
                     DIError::ResolveError(format!(
@@ -140,16 +143,16 @@ impl Container {
                         ::std::any::type_name::<T>()
                     ))
                 })?;
-            let mut result_map = registered_type.builder.build(
-                self,
-                &mut registered_type.parameters,
-            )?; // AnyMap
+            let mut result_map = registered_type
+                .builder
+                .build(self, &mut registered_type.parameters)?; // AnyMap
 
-            result_map.remove::<Box<T>>().ok_or_else(|| DIError::ResolveError(
-                format!("Unable to create a new instance of {}",
+            result_map.remove::<Box<T>>().ok_or_else(|| {
+                DIError::ResolveError(format!(
+                    "Unable to create a new instance of {}",
                     ::std::any::type_name::<T>()
-                ),
-            ))
+                ))
+            })
         }
     }
 
@@ -168,18 +171,21 @@ impl Container {
     pub fn resolve_ref<
         #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
         #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
-    >(&mut self) -> DIResult<&T> {
+    >(
+        &mut self,
+    ) -> DIResult<&T> {
         if !self.resolved_component_map.contains::<Box<T>>() {
             let component = self.resolve::<T>()?;
             self.resolved_component_map.insert(component); // insert a Box<T>
         }
 
         // Note: the following works because Box<T> coerces into &T
-        let coerced_result: &T = self.resolved_component_map.get::<Box<T>>()
-            .ok_or_else(|| DIError::ResolveError(format!(
+        let coerced_result: &T = self.resolved_component_map.get::<Box<T>>().ok_or_else(|| {
+            DIError::ResolveError(format!(
                 "Unable to create a reference of component {}",
                 ::std::any::type_name::<T>()
-            )))?;
+            ))
+        })?;
         Ok(coerced_result)
     }
 
@@ -198,17 +204,23 @@ impl Container {
     pub fn resolve_mut<
         #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
         #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
-    >(&mut self) -> DIResult<&mut T> {
+    >(
+        &mut self,
+    ) -> DIResult<&mut T> {
         if !self.resolved_component_map.contains::<Box<T>>() {
             let component = self.resolve::<T>()?;
             self.resolved_component_map.insert(component);
         }
 
-        let coerced_result: &mut T = self.resolved_component_map.get_mut::<Box<T>>()
-            .ok_or_else(|| DIError::ResolveError(format!(
-                "Unable to get a mutable reference of component {}",
-                ::std::any::type_name::<T>()
-            )))?;
+        let coerced_result: &mut T =
+            self.resolved_component_map
+                .get_mut::<Box<T>>()
+                .ok_or_else(|| {
+                    DIError::ResolveError(format!(
+                        "Unable to get a mutable reference of component {}",
+                        ::std::any::type_name::<T>()
+                    ))
+                })?;
         Ok(coerced_result)
     }
 
@@ -229,22 +241,23 @@ impl Container {
         #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
         #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
         #[cfg(not(feature = "thread_safe"))] V: Any,
-        #[cfg(feature = "thread_safe")] V: Any + Send
+        #[cfg(feature = "thread_safe")] V: Any + Send,
     >(
         &mut self,
         name: &str,
         value: V,
     ) -> &mut Self {
         {
-            let registered_type = self.component_map.get_mut(
-                &ComponentIndex::Id(TypeId::of::<T>()),
-            );
+            let registered_type = self
+                .component_map
+                .get_mut(&ComponentIndex::Id(TypeId::of::<T>()));
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_named_parameter(name, value);
             } else {
-                warn!("no component {} registered in this container",
-                      ::std::any::type_name::<T>()
+                warn!(
+                    "no component {} registered in this container",
+                    ::std::any::type_name::<T>()
                 );
             }
         } // release mutable borrow
@@ -268,18 +281,22 @@ impl Container {
         #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
         #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
         #[cfg(not(feature = "thread_safe"))] V: Any,
-        #[cfg(feature = "thread_safe")] V: Any + Send
-    >(&mut self, value: V) -> &mut Self {
+        #[cfg(feature = "thread_safe")] V: Any + Send,
+    >(
+        &mut self,
+        value: V,
+    ) -> &mut Self {
         {
-            let registered_type = self.component_map.get_mut(
-                &ComponentIndex::Id(TypeId::of::<T>()),
-            );
+            let registered_type = self
+                .component_map
+                .get_mut(&ComponentIndex::Id(TypeId::of::<T>()));
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_typed_parameter(value);
             } else {
-                warn!("no component {} registered in this container",
-                      ::std::any::type_name::<T>()
+                warn!(
+                    "no component {} registered in this container",
+                    ::std::any::type_name::<T>()
                 );
             }
         } // release mutable borrow

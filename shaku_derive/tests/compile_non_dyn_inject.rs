@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-
 // This test ensures that injected components still work without using `dyn`
 #![allow(bare_trait_objects)]
 

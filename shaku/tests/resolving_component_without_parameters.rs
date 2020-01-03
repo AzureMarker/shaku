@@ -6,7 +6,7 @@ use shaku::ContainerBuilder;
 use shaku::Error as DIError;
 use shaku_derive::Component;
 
-trait Foo : Debug + Send {
+trait Foo: Debug + Send {
     fn foo(&self) -> String;
 }
 
@@ -20,11 +20,15 @@ struct FooImpl {
 
 impl Foo for FooImpl {
     fn foo(&self) -> String {
-        format!("FooImpl > foo > value = {} ; bar = {}", self.value, self.bar.bar())
+        format!(
+            "FooImpl > foo > value = {} ; bar = {}",
+            self.value,
+            self.bar.bar()
+        )
     }
 }
 
-trait Bar : Debug + Send {
+trait Bar: Debug + Send {
     fn bar(&self) -> String;
 }
 
@@ -45,12 +49,15 @@ fn resolving_component_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
     builder.register_type::<FooImpl>();
     let mut container = builder.build().unwrap();
-    
+
     let foo = container.resolve::<dyn Foo>();
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
-        assert_eq!(err, "unable to find parameter with name or type for property value");
+        assert_eq!(
+            err,
+            "unable to find parameter with name or type for property value"
+        );
     } else {
         panic!("unexpected state > foo should be Err");
     }
@@ -65,7 +72,7 @@ fn resolving_component_dependency_without_parameters_should_err() {
 
     builder.register_type::<BarImpl>();
     let mut container = builder.build().unwrap();
-    
+
     let foo = container.resolve::<dyn Foo>();
 
     assert!(foo.is_err());
@@ -85,9 +92,12 @@ fn resolving_component_dependency_with_parameters_dont_err() {
 
     builder.register_type::<BarImpl>();
     let mut container = builder.build().unwrap();
-    
+
     let foo = container
         .with_named_parameter::<dyn Bar, String>("bar_value", "world is bar".to_string())
         .resolve::<dyn Foo>();
-    assert_eq!(foo.unwrap().foo(), "FooImpl > foo > value = world is foo ; bar = BarImpl > bar > bar_value = world is bar");
+    assert_eq!(
+        foo.unwrap().foo(),
+        "FooImpl > foo > value = world is foo ; bar = BarImpl > bar > bar_value = world is bar"
+    );
 }

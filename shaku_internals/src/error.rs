@@ -1,7 +1,7 @@
 //! Generic error type
 
 use std::error::Error as StdError;
-use std::fmt;
+use std::fmt::{self, Debug, Display, Formatter};
 
 /// This type represents all possible errors that can occur when registering or resolving components or when generating the code to do so.
 #[derive(Clone)]
@@ -36,17 +36,25 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::ExtractError(_) => f.write_str(format!("Extract Error > {}", self.description()).as_str()),
-            Error::ParseError(_) => f.write_str(format!("Parse Error > {}", self.description()).as_str()),
-            Error::ResolveError(_) => f.write_str(format!("Resolve Error > {}", self.description()).as_str()),
-            Error::Basic(_) => f.write_str(format!("Basic Error > {}", self.description()).as_str()),
+            Error::ExtractError(_) => {
+                f.write_str(format!("Extract Error > {}", self.description()).as_str())
+            }
+            Error::ParseError(_) => {
+                f.write_str(format!("Parse Error > {}", self.description()).as_str())
+            }
+            Error::ResolveError(_) => {
+                f.write_str(format!("Resolve Error > {}", self.description()).as_str())
+            }
+            Error::Basic(_) => {
+                f.write_str(format!("Basic Error > {}", self.description()).as_str())
+            }
         }
     }
 }
 
 /// Same as Display.
-impl fmt::Debug for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        fmt::Display::fmt(&self, f)
+impl Debug for Error {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        Display::fmt(&self, f)
     }
 }

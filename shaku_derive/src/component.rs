@@ -15,8 +15,9 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
     let debug_level = env::vars()
         .find(|&(ref key, ref value)| {
-            key == consts::DEBUG_ENV_VAR && value.parse::<usize>().is_ok() && 
-            value.parse::<usize>().unwrap() > 0
+            key == consts::DEBUG_ENV_VAR
+                && value.parse::<usize>().is_ok()
+                && value.parse::<usize>().unwrap() > 0
         })
         .map(|(_, value)| value.parse::<usize>().unwrap())
         .unwrap_or(0);
@@ -27,7 +28,9 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
     // Assert overall preconditions
     precondition(&ctxt, &container);
-    ctxt.check().map_err(|error_message| panic!(error_message)).unwrap();
+    ctxt.check()
+        .map_err(|error_message| panic!(error_message))
+        .unwrap();
 
     if container.metadata.interface.is_none() {
         // If no interface was found, nothing has to be generated
@@ -40,32 +43,29 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     let interface = container.metadata.interface.unwrap();
     let component_builder_name = Ident::new(
         &format!("{}__DI_Builder", container.identifier.get_name()),
-        Span::call_site()
+        Span::call_site(),
     );
     let builder_vis = container.visibility;
 
     // Block building the component map (in `fn build()`)
     // Try to resolve each candidate component, if resolve fails, don't insert into component map
     let mut component_map_inserts = TokenStream::new();
-    component_map_inserts.append_all(
-        container.properties.iter()
-            .filter_map(|ref property|
-                if property.is_component() {
-                    let mut property_type = TokenStream::new();
-                    property.type_to_tokens(&mut property_type);
+    component_map_inserts.append_all(container.properties.iter().filter_map(|ref property| {
+        if property.is_component() {
+            let mut property_type = TokenStream::new();
+            property.type_to_tokens(&mut property_type);
 
-                    Some(quote! {
-                        let tmp = container.resolve::<#property_type>();
+            Some(quote! {
+                let tmp = container.resolve::<#property_type>();
 
-                        if tmp.is_ok() {
-                            component_map.insert::<Box<#property_type>>(tmp.unwrap());
-                        }
-                    })
-                } else {
-                    None
+                if tmp.is_ok() {
+                    component_map.insert::<Box<#property_type>>(tmp.unwrap());
                 }
-            )
-    );
+            })
+        } else {
+            None
+        }
+    }));
 
     let component_map_block = quote! {
         let mut component_map = ::shaku::anymap::AnyMap::new();
@@ -135,7 +135,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                 let mut tokens = TokenStream::new();
                 property.name_to_tokens(&mut tokens); // property name
 
-                let property_ident = Ident::new(&format!("{}{}", &PREFIX, property.get_name_without_quotes()), Span::call_site());
+                let property_ident = Ident::new(
+                    &format!("{}{}", &PREFIX, property.get_name_without_quotes()),
+                    Span::call_site(),
+                );
                 tokens.append_all(quote! { : #property_ident });
 
                 Some(tokens)
@@ -189,9 +192,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 fn precondition(ctxt: &ParsingContext, cont: &ComponentContainer) {
     // Supports only struct for now
     if !cont.is_struct() {
-        ctxt.error(
-            "#[derive(Component)] is only defined for structs, not for enums yet!",
-        );
+        ctxt.error("#[derive(Component)] is only defined for structs, not for enums yet!");
     }
 
     // Ensure we have one interface defined
