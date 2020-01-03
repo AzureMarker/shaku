@@ -1,14 +1,5 @@
 //! Implementation of '#[derive(Component)]' procedural macro
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.0
-//!
-//! ## Release notes
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::env;
 
 use proc_macro2::{Span, TokenStream};
@@ -18,9 +9,6 @@ use syn::{DeriveInput, Ident};
 use crate::consts;
 use crate::internals::{ComponentContainer, ParsingContext};
 
-// =======================================================================
-// PUBLIC METHODS
-// =======================================================================
 pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream {
     let ctxt = ParsingContext::new();
     let container = ComponentContainer::from_derive_input(&ctxt, input);

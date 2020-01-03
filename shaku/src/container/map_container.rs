@@ -1,17 +1,5 @@
 //! Implementation of a `Container` based on a `HashMap`
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.3
-//!
-//! ## Release notes
-//! - v1.3 : new() no longer need to reverse input map as it is now properly keyed on interface
-//! - v1.2 : remove multi-thread support (imposed an unnecessary Sync+Send marker on parameters)
-//! - v1.1 : replace static function by methods & added a constructor `get_scope()`
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::any::{Any, TypeId};
 use std::boxed::Box;
 use std::collections::HashMap;
@@ -25,9 +13,6 @@ use crate::component::ComponentIndex;
 use crate::container::RegisteredType;
 use crate::result::Result as DIResult;
 
-// =======================================================================
-// STRUCT DEFINITION
-// =======================================================================
 #[cfg(not(feature = "thread_safe"))]
 type Map = GenericAnyMap<dyn AnyMapAny>;
 #[cfg(feature = "thread_safe")]
@@ -107,9 +92,6 @@ pub struct Container {
     resolved_component_map: Map,
 }
 
-// =======================================================================
-// STRUCT IMPLEMENTATION
-// =======================================================================
 impl Container {
     /// Create a new Container from a ContainerBuilder's init_map
     pub(crate) fn new(init_map: HashMap<ComponentIndex, RegisteredType>) -> Self {

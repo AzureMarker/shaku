@@ -1,23 +1,10 @@
 //! Implementation of a `RegisteredType`
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.1
-//!
-//! ## Release notes
-//! - v1.1 : added `with_parameter()` method
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::any::{Any, TypeId};
 
 use crate::component::ComponentBuilder;
 use crate::parameter::*;
 
-// =======================================================================
-// STRUCT DEFINITION & IMPLEMENTATION
-// =======================================================================
 /// DI Container entry associated with a unique Component (i.e. struct).
 ///
 /// When running the following command
@@ -89,9 +76,6 @@ impl ::std::fmt::Debug for RegisteredType {
     }
 }
 
-// =======================================================================
-// UNIT TESTS
-// =======================================================================
 #[cfg(test)]
 mod tests {
     #![allow(non_snake_case)]

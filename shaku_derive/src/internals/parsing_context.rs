@@ -1,20 +1,8 @@
 //! Holds the overall parsing context logging e.g. parsing errors
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.0
-//!
-//! ## Release notes
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
-use std::fmt::Display;
 use std::cell::RefCell;
+use std::fmt::Display;
 
-// =======================================================================
-// STRUCT DEFINITION & IMPLEMENTATION
-// =======================================================================
 #[derive(Default)]
 pub struct ParsingContext {
     errors: RefCell<Option<Vec<String>>>,

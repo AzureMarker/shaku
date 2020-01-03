@@ -4,24 +4,15 @@
 //! - [SendParameterMap](struct.SendParameterMap.html): simplest Map for Any + Send entries; requires that parameters implements `Send` (see [passing parameters](../container/index.html#passing-parameters)),
 //! - [UnsafeParameterMap](struct.UnsafeParameterMap.html): map based on [UnsafeAny](https://github.com/reem/rust-unsafe-any) entries,
 //! - [UnsafeSendSyncParameterMap](struct.UnsafeSendSyncParameterMap.html): map based on [UnsafeAny](https://github.com/reem/rust-unsafe-any) entries, used to offer multithread support of DI Container but impose that Parameter are `Send+Sync` (see [passing parameters](../container/index.html#passing-parameters)),
-//!
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::any::{Any, TypeId};
 
 use unsafe_any::{UnsafeAny, UnsafeAnyExt};
 
 pub use self::parameter_map::*;
 
-// =======================================================================
-// OTHER MODULES
-// =======================================================================
 mod parameter_map;
-// =======================================================================
-// PRIVATE STRUCT DEFINITION
-// =======================================================================
+
 macro_rules! implement {
     ($name:ident, $base:ident, $(+ $bounds:ident)*, $(+ $other_bounds:ident)*) => {
         #[allow(dead_code)]

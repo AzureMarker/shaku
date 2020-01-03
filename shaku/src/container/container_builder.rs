@@ -1,19 +1,5 @@
 //! Implementation of a `ContainerBuilder` based on a `HashMap`
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.4
-//!
-//! ## Release notes
-//! - v1.4 : changed register logic to introduce TemporaryRegisteredType
-//! - v1.3 : build() returns a DIResult to allow for RegistrationErrors
-//! - v1.2 : removed singleton instance of Container which imposed a Send+Sync on parameters;
-//! let the calling class handle the passing of a mut reference where needed
-//! - v1.1 : using `TypeId` instead of `type_name`
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
@@ -21,9 +7,6 @@ use crate::component::{Component, ComponentBuilderImpl, ComponentIndex};
 use crate::container::{Container, RegisteredType};
 use crate::result::Result as DIResult;
 
-// =======================================================================
-// STRUCT DEFINITION
-// =======================================================================
 /// Build a [Container](struct.Container.html) registering components
 /// with or without parameters.
 ///
@@ -36,9 +19,6 @@ pub struct ContainerBuilder {
     map: HashMap<ComponentIndex, RegisteredType>,
 }
 
-// =======================================================================
-// STRUCT IMPLEMENTATION
-// =======================================================================
 impl Default for ContainerBuilder {
     fn default() -> Self {
         ContainerBuilder { map: HashMap::new() }
@@ -141,12 +121,6 @@ impl ContainerBuilder {
     /// ```
     ///
     pub fn build(self) -> DIResult<Container> {
-        self.into_container()
-    }
-
-    #[doc(hidden)]
-    // To chain calls in `build()` with prior fluent validators
-    fn into_container(self) -> DIResult<Container> {
         Ok(Container::new(self.map))
     }
 }

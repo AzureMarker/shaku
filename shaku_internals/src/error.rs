@@ -1,20 +1,8 @@
 //! Generic error type
-//!
-//! Author: [Boris](mailto:boris@humanenginuity.com)
-//! Version: 1.0
-//!
-//! ## Release notes
-//! - v1.0 : creation
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::error::Error as StdError;
 use std::fmt;
 
-// =======================================================================
-// STRUCT DEFINITION
-// =======================================================================
 /// This type represents all possible errors that can occur when registering or resolving components or when generating the code to do so.
 #[derive(Clone)]
 pub enum Error {
@@ -28,9 +16,6 @@ pub enum Error {
     Basic(String),
 }
 
-// =======================================================================
-// STRUCT IMPLEMENTATION
-// =======================================================================
 impl StdError for Error {
     fn description(&self) -> &str {
         match *self {

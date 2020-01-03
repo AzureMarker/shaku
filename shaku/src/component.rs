@@ -1,8 +1,5 @@
 //! Trait and structs used by the #derive macro to build Component objects
 
-// =======================================================================
-// LIBRARY IMPORTS
-// =======================================================================
 use std::any::Any;
 
 use anymap::AnyMap;
@@ -10,9 +7,6 @@ use anymap::AnyMap;
 use crate::container::Container;
 use crate::parameter::ParameterMap;
 
-// =======================================================================
-// TYPE, TRAIT, STRUCT DEFINITION
-// =======================================================================
 pub trait Component: Any {
     type Builder: ComponentBuilder;
     type Interface: ?Sized;
