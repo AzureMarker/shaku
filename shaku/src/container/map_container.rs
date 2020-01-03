@@ -33,75 +33,74 @@ type Map = GenericAnyMap<dyn AnyMapAny>;
 #[cfg(feature = "thread_safe")]
 type Map = GenericAnyMap<dyn AnyMapAny + Send>;
 
-// <clic to unfold doc>
-    /// Struct containing all the components registered during the build phase, used to `resolve` Components.
-    ///
-    /// A Container can't be used as a builder/factory of components from the same type,
-    /// [resolve()](struct.Container.html#method.resolve) will consume registration data.
-    /// Use [resolve_ref()](struct.Container.html#method.resolve_ref) or
-    /// [resolve_mut()](struct.Container.html#method.resolve_mut)
-    /// if you just want to borrow a (mutable) reference of a Component.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use shaku_derive::Component;
-    ///
-    /// trait FooValue : Send {
-    ///     fn get_value(&self) -> usize;
-    ///     fn set_value(&mut self, _: usize);
-    /// }
-    ///
-    /// #[derive(Component)]
-    /// #[interface(FooValue)]
-    /// struct FooImpl {
-    ///     value: usize,
-    /// }
-    ///
-    /// impl FooValue for FooImpl {
-    ///     fn get_value(&self) -> usize {
-    ///         self.value
-    ///     }
-    ///
-    ///     fn set_value(&mut self, val: usize) {
-    ///         self.value = val;
-    ///     }
-    /// }
-    ///
-    /// let mut builder = shaku::ContainerBuilder::new();
-    /// builder
-    ///     .register_type::<FooImpl>()
-    ///     .with_named_parameter("value", 17 as usize);
-    ///
-    /// let mut container = builder.build().unwrap();
-    ///
-    /// {
-    ///     let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
-    ///     assert_eq!(foo.get_value(), 17);
-    /// }
-    ///
-    /// {
-    ///     let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
-    ///     assert_eq!(foo.get_value(), 17);
-    ///     foo.set_value(99);
-    /// }
-    ///
-    /// {
-    ///     let foo : Box<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
-    ///     assert_eq!(foo.get_value(), 99);
-    /// }
-    ///
-    /// {
-    ///     let foo = container.resolve_ref::<dyn FooValue>();
-    ///     assert!(foo.is_err());
-    /// }
-    ///
-    /// {
-    ///     let foo = container.resolve_mut::<dyn FooValue>();
-    ///     assert!(foo.is_err());
-    /// }
-    /// ```
-    /// See also [module documentation](index.html) for more details.
+/// Struct containing all the components registered during the build phase, used to `resolve` Components.
+///
+/// A Container can't be used as a builder/factory of components from the same type,
+/// [resolve()](struct.Container.html#method.resolve) will consume registration data.
+/// Use [resolve_ref()](struct.Container.html#method.resolve_ref) or
+/// [resolve_mut()](struct.Container.html#method.resolve_mut)
+/// if you just want to borrow a (mutable) reference of a Component.
+///
+/// # Examples
+///
+/// ```rust
+/// use shaku_derive::Component;
+///
+/// trait FooValue : Send {
+///     fn get_value(&self) -> usize;
+///     fn set_value(&mut self, _: usize);
+/// }
+///
+/// #[derive(Component)]
+/// #[interface(FooValue)]
+/// struct FooImpl {
+///     value: usize,
+/// }
+///
+/// impl FooValue for FooImpl {
+///     fn get_value(&self) -> usize {
+///         self.value
+///     }
+///
+///     fn set_value(&mut self, val: usize) {
+///         self.value = val;
+///     }
+/// }
+///
+/// let mut builder = shaku::ContainerBuilder::new();
+/// builder
+///     .register_type::<FooImpl>()
+///     .with_named_parameter("value", 17 as usize);
+///
+/// let mut container = builder.build().unwrap();
+///
+/// {
+///     let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
+///     assert_eq!(foo.get_value(), 17);
+/// }
+///
+/// {
+///     let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
+///     assert_eq!(foo.get_value(), 17);
+///     foo.set_value(99);
+/// }
+///
+/// {
+///     let foo : Box<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
+///     assert_eq!(foo.get_value(), 99);
+/// }
+///
+/// {
+///     let foo = container.resolve_ref::<dyn FooValue>();
+///     assert!(foo.is_err());
+/// }
+///
+/// {
+///     let foo = container.resolve_mut::<dyn FooValue>();
+///     assert!(foo.is_err());
+/// }
+/// ```
+/// See also [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container {
     component_map: HashMap<ComponentIndex, RegisteredType>,
