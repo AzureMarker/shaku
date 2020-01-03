@@ -13,7 +13,7 @@ use crate::parser::{Extractor, Parser};
 impl Parser<Property> for syn::Field {
     fn parse_into(&self) -> Result<Property, DIError> {
         // println!("Property::from_field > parsing field = {:#?}", &field);
-        let is_injected = self.attrs.iter().find(|a| a.path.is_ident(consts::INJECT_ATTR_NAME)).is_some();
+        let is_injected = self.attrs.iter().any(|a| a.path.is_ident(consts::INJECT_ATTR_NAME));
         match &self.ty {
             // Box object => continue parsing to recover `Property::traits` information
             Type::Path(path) =>

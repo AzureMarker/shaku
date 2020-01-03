@@ -39,10 +39,16 @@ pub struct ContainerBuilder {
 // =======================================================================
 // STRUCT IMPLEMENTATION
 // =======================================================================
+impl Default for ContainerBuilder {
+    fn default() -> Self {
+        ContainerBuilder { map: HashMap::new() }
+    }
+}
+
 impl ContainerBuilder {
     /// Create a new ContainerBuilder.
-    pub fn new() -> ContainerBuilder {
-        ContainerBuilder { map: HashMap::new() }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     // <Unfold to see doc>
@@ -67,11 +73,11 @@ impl ContainerBuilder {
         );
 
         let old_value = self.map.insert(index.clone(), registered_type);
-        if old_value.is_some() {
+        if let Some(old_value) = old_value {
             warn!(
                 "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
                 interface_type_name,
-                &old_value.unwrap().component.1
+                &old_value.component.1
             );
         }
 
@@ -113,29 +119,27 @@ impl ContainerBuilder {
         /// impl FooDuplicate for FooDuplicateImpl1 { fn foo(&self) -> String { "FooDuplicateImpl1".to_string() } }
         /// impl FooDuplicate for FooDuplicateImpl2 { fn foo(&self) -> String { "FooDuplicateImpl2".to_string() } }
         ///
-        /// fn main() {
-        ///     let mut builder = shaku::ContainerBuilder::new();
+        /// let mut builder = shaku::ContainerBuilder::new();
         ///
-        ///     // Valid registration
-        ///     builder.register_type::<FooImpl>();
+        /// // Valid registration
+        /// builder.register_type::<FooImpl>();
         ///
-        ///     let container = builder.build();
-        ///     assert!(container.is_ok());
-        ///     let foo = container.unwrap().resolve::<dyn Foo>();
-        ///     assert!(foo.is_ok());
+        /// let container = builder.build();
+        /// assert!(container.is_ok());
+        /// let foo = container.unwrap().resolve::<dyn Foo>();
+        /// assert!(foo.is_ok());
         ///
-        ///     // Invalid registration, duplicate => only the latest Component registered is kept
-        ///     let mut builder = shaku::ContainerBuilder::new();
-        ///     builder.register_type::<FooDuplicateImpl1>();
-        ///     builder.register_type::<FooDuplicateImpl2>();
+        /// // Invalid registration, duplicate => only the latest Component registered is kept
+        /// let mut builder = shaku::ContainerBuilder::new();
+        /// builder.register_type::<FooDuplicateImpl1>();
+        /// builder.register_type::<FooDuplicateImpl2>();
         ///
-        ///     let container = builder.build();
-        ///     assert!(container.is_ok());
-        ///     let mut container = container.unwrap();
-        ///     let foo = container.resolve::<dyn FooDuplicate>();
-        ///     assert!(foo.is_ok());
-        ///     assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
-        /// }
+        /// let container = builder.build();
+        /// assert!(container.is_ok());
+        /// let mut container = container.unwrap();
+        /// let foo = container.resolve::<dyn FooDuplicate>();
+        /// assert!(foo.is_ok());
+        /// assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
         /// ```
         ///
     pub fn build(self) -> DIResult<Container> {

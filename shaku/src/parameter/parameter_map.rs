@@ -26,14 +26,20 @@ macro_rules! implement {
             type_map: HashMap<Key, TypeId>,
         }
 
-        impl $name {
-            #![allow(dead_code)]
-
-            pub fn new() -> $name {
+        impl Default for $name {
+            fn default() -> Self {
                 $name {
                     map: HashMap::new(),
                     type_map: HashMap::new(),
                 }
+            }
+        }
+
+        impl $name {
+            #![allow(dead_code)]
+
+            pub fn new() -> Self {
+                Self::default()
             }
 
             pub fn insert_with_name<S: Into<String> + Clone, V: $any_base $(+ $bounds)*>(&mut self, key: S, value: V) -> Option<V> {

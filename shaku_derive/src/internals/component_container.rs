@@ -146,7 +146,7 @@ use super::ParsingContext;
         }
 
         pub fn type_to_tokens(&self, tokens: &mut TokenStream) {
-            if self.is_parsed && self.traits.is_some() && self.traits.as_ref().unwrap().len() > 0 {
+            if self.is_parsed && self.traits.is_some() && !self.traits.as_ref().unwrap().is_empty() {
                 if self.traits.as_ref().unwrap().len() > 1 {
                     warn!("warning: {} traits entries for property {:?} while expecting only 1 > traits = {:?}", self.traits.as_ref().unwrap().len(), self.property_name, self.traits.as_ref().unwrap());
                 }
@@ -173,6 +173,6 @@ use super::ParsingContext;
         pub fn get_name(&self) -> String {
             self.property_name.as_ref()
                 .map(|ident| ident.to_string())
-                .unwrap_or("".to_string())
+                .unwrap_or_else(|| "".to_string())
         }
     }

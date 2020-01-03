@@ -172,7 +172,6 @@
 
 // Linting
 #![deny(unused_must_use)]
-#![allow(clippy::new_without_default)]
 
 // Reexport of [anymap](https://crates.io/crates/anymap)
 #[doc(hidden)]

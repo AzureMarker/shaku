@@ -85,7 +85,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     };
 
     // Temp variable block (in `fn block()`)
-    const PREFIX: &'static str = "__di_";
+    const PREFIX: &str = "__di_";
     let mut parameters_block = TokenStream::new();
     parameters_block.append_all(
         container.properties.iter()

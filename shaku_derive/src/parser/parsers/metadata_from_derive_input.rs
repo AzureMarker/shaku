@@ -33,7 +33,7 @@ impl Parser<MetaData> for syn::DeriveInput {
                     match traits.len() {
                         0 => Err(DIError::ParseError(format!("invalid attribute format > '{:?}' the name of the trait is missing", interface_attribute))),
                         1 => Ok(MetaData { interface: Some(traits.remove(0)) }),
-                        n @ _ => Err(DIError::ParseError(format!("invalid attribute format > expecting only one trait/interface, found {}", n))),
+                        n => Err(DIError::ParseError(format!("invalid attribute format > expecting only one trait/interface, found {}", n))),
                     }
                 }
             }

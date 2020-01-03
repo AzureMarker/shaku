@@ -68,39 +68,37 @@ type Map = GenericAnyMap<dyn AnyMapAny + Send>;
     ///     }
     /// }
     ///
-    /// fn main() {
-    ///     let mut builder = shaku::ContainerBuilder::new();
-    ///     builder
-    ///         .register_type::<FooImpl>()
-    ///         .with_named_parameter("value", 17 as usize);
+    /// let mut builder = shaku::ContainerBuilder::new();
+    /// builder
+    ///     .register_type::<FooImpl>()
+    ///     .with_named_parameter("value", 17 as usize);
     ///
-    ///     let mut container = builder.build().unwrap();
+    /// let mut container = builder.build().unwrap();
     ///
-    ///     {
-    ///         let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
-    ///         assert_eq!(foo.get_value(), 17);
-    ///     }
+    /// {
+    ///     let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
+    ///     assert_eq!(foo.get_value(), 17);
+    /// }
     ///
-    ///     {
-    ///         let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
-    ///         assert_eq!(foo.get_value(), 17);
-    ///         foo.set_value(99);
-    ///     }
+    /// {
+    ///     let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
+    ///     assert_eq!(foo.get_value(), 17);
+    ///     foo.set_value(99);
+    /// }
     ///
-    ///     {
-    ///         let foo : Box<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
-    ///         assert_eq!(foo.get_value(), 99);
-    ///     }
+    /// {
+    ///     let foo : Box<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap(); // consume registration data, `FooValue` won't be able to be resolved from this container any longer
+    ///     assert_eq!(foo.get_value(), 99);
+    /// }
     ///
-    ///     {
-    ///         let foo = container.resolve_ref::<dyn FooValue>();
-    ///         assert!(foo.is_err());
-    ///     }
+    /// {
+    ///     let foo = container.resolve_ref::<dyn FooValue>();
+    ///     assert!(foo.is_err());
+    /// }
     ///
-    ///     {
-    ///         let foo = container.resolve_mut::<dyn FooValue>();
-    ///         assert!(foo.is_err());
-    ///     }
+    /// {
+    ///     let foo = container.resolve_mut::<dyn FooValue>();
+    ///     assert!(foo.is_err());
     /// }
     /// ```
     /// See also [module documentation](index.html) for more details.
@@ -166,8 +164,7 @@ impl Container {
                 &mut registered_type.parameters,
             )?; // AnyMap
 
-            #[allow(clippy::or_fun_call)]
-            result_map.remove::<Box<T>>().ok_or(DIError::ResolveError(
+            result_map.remove::<Box<T>>().ok_or_else(|| DIError::ResolveError(
                 format!("Unable to create a new instance of {}",
                     ::std::any::type_name::<T>()
                 ),
@@ -197,14 +194,11 @@ impl Container {
         }
 
         // Note: the following works because Box<T> coerces into &T
-        #[allow(clippy::or_fun_call)]
         let coerced_result: &T = self.resolved_component_map.get::<Box<T>>()
-            .ok_or(
-                DIError::ResolveError(format!(
-                    "Unable to create a reference of component {}",
-                    ::std::any::type_name::<T>()
-                )),
-            )?;
+            .ok_or_else(|| DIError::ResolveError(format!(
+                "Unable to create a reference of component {}",
+                ::std::any::type_name::<T>()
+            )))?;
         Ok(coerced_result)
     }
 
@@ -229,13 +223,11 @@ impl Container {
             self.resolved_component_map.insert(component);
         }
 
-        #[allow(clippy::or_fun_call)]
-        let coerced_result: &mut T = self.resolved_component_map.get_mut::<Box<T>>().ok_or(
-            DIError::ResolveError(format!(
+        let coerced_result: &mut T = self.resolved_component_map.get_mut::<Box<T>>()
+            .ok_or_else(|| DIError::ResolveError(format!(
                 "Unable to get a mutable reference of component {}",
                 ::std::any::type_name::<T>()
-            )),
-        )?;
+            )))?;
         Ok(coerced_result)
     }
 
@@ -266,12 +258,13 @@ impl Container {
             let registered_type = self.component_map.get_mut(
                 &ComponentIndex::Id(TypeId::of::<T>()),
             );
-            if registered_type.is_none() {
-                warn!("no component {} registered in this container",
-                    ::std::any::type_name::<T>()
-                );
+
+            if let Some(registered_type) = registered_type {
+                registered_type.with_named_parameter(name, value);
             } else {
-                let _ = registered_type.unwrap().with_named_parameter(name, value);
+                warn!("no component {} registered in this container",
+                      ::std::any::type_name::<T>()
+                );
             }
         } // release mutable borrow
         self
@@ -300,12 +293,13 @@ impl Container {
             let registered_type = self.component_map.get_mut(
                 &ComponentIndex::Id(TypeId::of::<T>()),
             );
-            if registered_type.is_none() {
-                warn!("no component {} registered in this container",
-                    ::std::any::type_name::<T>()
-                );
+
+            if let Some(registered_type) = registered_type {
+                registered_type.with_typed_parameter(value);
             } else {
-                let _ = registered_type.unwrap().with_typed_parameter(value);
+                warn!("no component {} registered in this container",
+                      ::std::any::type_name::<T>()
+                );
             }
         } // release mutable borrow
         self
