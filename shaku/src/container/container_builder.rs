@@ -3,7 +3,7 @@
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
-use crate::component::{Component, ComponentBuilderImpl, ComponentIndex};
+use crate::component::{Component, ComponentBuilderImpl};
 use crate::container::{Container, RegisteredType};
 use crate::result::Result as DIResult;
 
@@ -16,7 +16,7 @@ use crate::result::Result as DIResult;
 ///
 /// See [module documentation](index.html) or [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
-    map: HashMap<ComponentIndex, RegisteredType>,
+    map: HashMap<TypeId, RegisteredType>,
 }
 
 impl Default for ContainerBuilder {
@@ -45,7 +45,6 @@ impl ContainerBuilder {
         let component_type_info = (TypeId::of::<C>(), type_name::<C>().to_string());
         let interface_type_id = TypeId::of::<C::Interface>();
         let interface_type_name = type_name::<C::Interface>();
-        let index = ComponentIndex::Id(interface_type_id);
 
         let registered_type = RegisteredType::new(
             component_type_info,
@@ -53,7 +52,7 @@ impl ContainerBuilder {
             Box::new(C::Builder::new()),
         );
 
-        let old_value = self.map.insert(index.clone(), registered_type);
+        let old_value = self.map.insert(interface_type_id.clone(), registered_type);
         if let Some(old_value) = old_value {
             warn!(
                 "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
@@ -62,7 +61,7 @@ impl ContainerBuilder {
             );
         }
 
-        self.map.get_mut(&index).unwrap()
+        self.map.get_mut(&interface_type_id).unwrap()
     }
 
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.

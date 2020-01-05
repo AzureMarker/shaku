@@ -12,12 +12,6 @@ pub trait Component: Any {
     type Interface: ?Sized;
 }
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum ComponentIndex {
-    String(String),
-    Id(::std::any::TypeId),
-}
-
 // Adapted from https://stackoverflow.com/a/30293051/3267834
 // FIXME: Use real trait aliases when they are stabilized:
 //        https://github.com/rust-lang/rust/issues/41517

@@ -9,7 +9,6 @@ use anymap::Map as GenericAnyMap;
 
 use shaku_internals::error::Error as DIError;
 
-use crate::component::ComponentIndex;
 use crate::container::RegisteredType;
 use crate::result::Result as DIResult;
 
@@ -88,13 +87,13 @@ type Map = GenericAnyMap<dyn AnyMapAny + Send>;
 /// See also [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container {
-    component_map: HashMap<ComponentIndex, RegisteredType>,
+    component_map: HashMap<TypeId, RegisteredType>,
     resolved_component_map: Map,
 }
 
 impl Container {
     /// Create a new Container from a ContainerBuilder's init_map
-    pub(crate) fn new(init_map: HashMap<ComponentIndex, RegisteredType>) -> Self {
+    pub(crate) fn new(init_map: HashMap<TypeId, RegisteredType>) -> Self {
         Container {
             component_map: init_map,
             resolved_component_map: Map::new(),
@@ -136,7 +135,7 @@ impl Container {
             // TODO work around this
             let mut registered_type = self
                 .component_map
-                .remove(&ComponentIndex::Id(TypeId::of::<T>()))
+                .remove(&TypeId::of::<T>())
                 .ok_or_else(|| {
                     DIError::ResolveError(format!(
                         "no component {} registered in this container",
@@ -250,7 +249,7 @@ impl Container {
         {
             let registered_type = self
                 .component_map
-                .get_mut(&ComponentIndex::Id(TypeId::of::<T>()));
+                .get_mut(&TypeId::of::<T>());
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_named_parameter(name, value);
@@ -289,7 +288,7 @@ impl Container {
         {
             let registered_type = self
                 .component_map
-                .get_mut(&ComponentIndex::Id(TypeId::of::<T>()));
+                .get_mut(&TypeId::of::<T>());
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_typed_parameter(value);
