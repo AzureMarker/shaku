@@ -32,12 +32,6 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         .map_err(|error_message| panic!(error_message))
         .unwrap();
 
-    if container.metadata.interface.is_none() {
-        // If no interface was found, nothing has to be generated
-        // FIXME: Throw error instead?
-        return TokenStream::new();
-    }
-
     // Generate the actual code
     let component_name = container.identifier.get_name();
     let interface = container.metadata.interface.unwrap();
@@ -197,7 +191,7 @@ fn precondition(ctxt: &ParsingContext, cont: &ComponentContainer) {
 
     // Ensure we have one interface defined
     if cont.metadata.interface.is_none() {
-        ctxt.warn(format!(
+        ctxt.error(format!(
             "No interface/trait defined for Component's candidate {:?}",
             cont.identifier.get_name()
         ));

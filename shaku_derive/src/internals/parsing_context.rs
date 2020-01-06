@@ -27,6 +27,7 @@ impl ParsingContext {
     }
 
     /// Add a new warning message for this parsing context
+    #[allow(dead_code)]
     pub fn warn<T: Display>(&self, msg: T) {
         self.warnings
             .borrow_mut()
