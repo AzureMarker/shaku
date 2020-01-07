@@ -1,12 +1,14 @@
 #![allow(dead_code)]
 
+use std::sync::Arc;
+
 use shaku_derive::Component;
 
 #[derive(Component)]
 #[interface(Foo)]
 struct TestComponent1 {
     #[inject]
-    var: Box<dyn Bar>,
+    var: Arc<dyn Bar>,
 }
 
 #[derive(Component)]
@@ -14,18 +16,18 @@ struct TestComponent1 {
 struct TestComponent2 {
     var1: usize,
     #[inject]
-    var2: Box<dyn Bar>,
+    var2: Arc<dyn Bar>,
 }
 
 struct BarImpl {
     val: usize,
 }
 
-trait Foo: Send {
+trait Foo: Send + Sync {
     fn foo(&self);
 }
 
-trait Bar: Send {
+trait Bar: Send + Sync {
     fn bar(&self);
 }
 

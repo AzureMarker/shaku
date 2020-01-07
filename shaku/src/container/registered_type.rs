@@ -1,38 +1,31 @@
 //! Implementation of a `RegisteredType`
 
-use std::any::{Any, TypeId};
+use std::any::{Any, type_name};
 
-use crate::component::ComponentBuilder;
+use crate::component::ComponentBuildFn;
 use crate::parameter::*;
 
-/// DI Container entry associated with a unique Component (i.e. struct).
+/// DI Container entry associated with a unique interface and implementation.
 ///
 /// When running the following command
-/// `container_builder.register_type::<MyImplOfTrait>().as_type::<Trait>();`
+/// `container_builder.register_type::<MyImplOfTrait>();`
 /// - `MyImplOfTrait` -> `component`
-/// - `Trait` -> `as_trait`
-pub struct RegisteredType {
+/// - `MyImplOfTrait::Interface` -> `interface`
+pub struct RegisteredType<I: ?Sized> {
     #[doc(hidden)]
-    pub(crate) component: (TypeId, String),
+    pub(crate) component: String,
     #[doc(hidden)]
-    pub(crate) as_trait: (TypeId, String),
-    #[doc(hidden)]
-    pub(crate) builder: Box<dyn ComponentBuilder>,
+    pub(crate) builder: ComponentBuildFn<I>,
     #[doc(hidden)]
     pub(crate) parameters: ParameterMap,
 }
 
-impl RegisteredType {
+impl<'c, I: ?Sized> RegisteredType<I> {
     /// Create a new RegisteredType.
     #[doc(hidden)]
-    pub(crate) fn new(
-        comp: (TypeId, String),
-        interface: (TypeId, String),
-        build: Box<dyn ComponentBuilder>,
-    ) -> RegisteredType {
+    pub(crate) fn new(component: String, build: ComponentBuildFn<I>) -> RegisteredType<I> {
         RegisteredType {
-            component: comp,
-            as_trait: interface,
+            component,
             builder: build,
             parameters: ParameterMap::new(),
         }
@@ -49,7 +42,7 @@ impl RegisteredType {
         &mut self,
         name: S,
         value: V,
-    ) -> &mut RegisteredType {
+    ) -> &mut RegisteredType<I> {
         if self
             .parameters
             .insert_with_name(name.clone(), value)
@@ -72,7 +65,7 @@ impl RegisteredType {
     >(
         &mut self,
         value: V,
-    ) -> &mut RegisteredType {
+    ) -> &mut RegisteredType<I> {
         if self.parameters.insert_with_type(value).is_some() {
             warn!(
                 "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
@@ -83,12 +76,14 @@ impl RegisteredType {
     }
 }
 
-impl ::std::fmt::Debug for RegisteredType {
+impl<'c, I> ::std::fmt::Debug for RegisteredType<I> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
         write!(
             f,
-            "RegisteredType {{component: {:?}, as_trait: {:?}, parameters: {:?} }}",
-            &self.component, &self.as_trait, &self.parameters
+            "RegisteredType<{}> {{ component: {:?}, parameters: {:?} }}",
+            type_name::<I>(),
+            &self.component,
+            &self.parameters
         )
     }
 }
@@ -97,11 +92,7 @@ impl ::std::fmt::Debug for RegisteredType {
 mod tests {
     #![allow(non_snake_case)]
 
-    use std::any::TypeId;
-
-    use anymap::AnyMap;
-
-    use crate::component::{Component, ComponentBuilderImpl};
+    use crate::component::Component;
     use crate::container::Container;
     use crate::parameter::*;
     use crate::result::Result;
@@ -118,29 +109,16 @@ mod tests {
     }
 
     impl Component for FooImpl {
-        type Builder = FooImplBuilder;
         type Interface = dyn Foo;
-    }
 
-    struct FooImplBuilder;
-    impl ComponentBuilderImpl for FooImplBuilder {
-        fn new() -> Self {
-            FooImplBuilder {}
-        }
-
-        fn build(&self, _: &mut Container, _: &mut ParameterMap) -> Result<AnyMap> {
+        fn build(_: &mut Container, _: &mut ParameterMap) -> Result<Box<dyn Foo>> {
             unimplemented!() // test doesn't require this fn
         }
     }
 
     #[test]
     fn RegisteredType_test_overwrite() {
-        let foo_builder = Box::new(FooImplBuilder {});
-        let mut x = RegisteredType::new(
-            (TypeId::of::<FooImpl>(), "FooImpl".to_string()),
-            (TypeId::of::<dyn Foo>(), "Foo".to_string()),
-            foo_builder,
-        );
+        let mut x = RegisteredType::new("FooImpl".to_string(), FooImpl::build);
 
         x.with_named_parameter("test", "value 1".to_string());
         x.with_named_parameter("test", "value 2".to_string());

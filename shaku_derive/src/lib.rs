@@ -16,22 +16,24 @@
 //!
 //! - Add shaku = "0.2" as a dependency in Cargo.toml.
 //! - Add shaku_derive = "0.2" as a dependency in Cargo.toml.
-//! - If you have a main.rs, add `#[macro_use] extern crate shaku_derive` there, or import `shaku_derive::Component` as needed if using Rust 2018.
-//! - If you have a lib.rs, add `#[macro_use] extern crate shaku_derive` there, or import `shaku_derive::Component` as needed if using Rust 2018.
-//! - Use `#[derive(Component)]` on structs that you want to flag as Component which you want to inject or be injected.
+//! - If you have a main.rs, add `#[macro_use] extern crate shaku_derive` there,
+//!   or import `shaku_derive::Component` as needed if using Rust 2018.
+//! - If you have a lib.rs, add `#[macro_use] extern crate shaku_derive` there,
+//!   or import `shaku_derive::Component` as needed if using Rust 2018.
+//! - Use `#[derive(Component)]` on structs that you want to flag as Component which you want to
+//!   inject or be injected.
 //! - Specify the interface this Component is implementing through `#[interface(MyTrait)]`
 //!
 //! # #[derive(Component)] macro
 //!
 //! Supported attributes
 //! - interface: for a struct, name of the Trait that this Component will implement
-//! - inject: for a struct's property, tag a property as being a dependency to another Component (currently only supports `Box<Interface>`/`Box<dyn Interface>` syntax)
+//! - inject: for a struct's property, tag a property as being a dependency to another Component
+//!   (currently only supports `Arc<Interface>`/`Arc<dyn Interface>` syntax)
 
 // The `quote!` macro requires deep recursion.
 #![recursion_limit = "128"]
 
-#[macro_use]
-extern crate log;
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;

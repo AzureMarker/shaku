@@ -1,9 +1,11 @@
 #![allow(non_snake_case)]
 
+use std::sync::Arc;
+
 use shaku::ContainerBuilder;
 use shaku_derive::Component;
 
-trait Foo: Send {
+trait Foo: Send + Sync {
     fn get_value(&self) -> usize;
     fn set_value(&mut self, _: usize);
 }
@@ -74,7 +76,7 @@ fn resolving_ref_then_value() {
     }
 
     {
-        let foo: Box<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
+        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
         assert_eq!(foo.get_value(), 17);
     }
 }
@@ -100,13 +102,13 @@ fn resolving_ref_then_mut_then_value() {
     }
 
     {
-        let foo: Box<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
+        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
         assert_eq!(foo.get_value(), 99);
     }
 }
 
 #[test]
-fn resolving_value_then_ref_should_err() {
+fn resolving_value_then_ref() {
     let mut builder = ContainerBuilder::new();
     builder
         .register_type::<FooImpl>()
@@ -114,18 +116,18 @@ fn resolving_value_then_ref_should_err() {
 
     let mut container = builder.build().unwrap();
     {
-        let foo: Box<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
+        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
         assert_eq!(foo.get_value(), 17);
     }
 
     {
-        let foo = container.resolve_ref::<dyn Foo>();
-        assert!(foo.is_err());
+        let foo = container.resolve_ref::<dyn Foo>().unwrap();
+        assert_eq!(foo.get_value(), 17);
     }
 
     {
-        let foo = container.resolve_mut::<dyn Foo>();
-        assert!(foo.is_err());
+        let foo = container.resolve_mut::<dyn Foo>().unwrap();
+        assert_eq!(foo.get_value(), 17);
     }
 }
 
@@ -150,17 +152,17 @@ fn resolving_ref_doc_example() {
     }
 
     {
-        let foo: Box<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
+        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
         assert_eq!(foo.get_value(), 99);
     }
 
     {
         let foo = container.resolve_ref::<dyn Foo>();
-        assert!(foo.is_err());
+        assert!(foo.is_ok());
     }
 
     {
         let foo = container.resolve_mut::<dyn Foo>();
-        assert!(foo.is_err());
+        assert!(foo.is_ok());
     }
 }

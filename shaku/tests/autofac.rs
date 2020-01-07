@@ -1,11 +1,13 @@
 //! Examples based on AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
+use std::sync::Arc;
+
 use shaku_derive::Component;
 
 // IOutput & ConsoleOutput implementation
 // ---------------------------------------------------------------------
-trait IOutput: Send {
+trait IOutput: Send + Sync {
     fn write(&self, content: String);
     fn get_date(&self, content: String) -> String;
 }
@@ -32,7 +34,7 @@ impl IOutput for ConsoleOutput {
 
 // IDateWriter & TodayWriter implementation
 // ---------------------------------------------------------------------
-trait IDateWriter: Send {
+trait IDateWriter: Send + Sync {
     fn write_date(&self);
     fn get_date(&self) -> String;
 }
@@ -41,7 +43,7 @@ trait IDateWriter: Send {
 #[interface(IDateWriter)]
 struct TodayWriter {
     #[inject]
-    output: Box<dyn IOutput>,
+    output: Arc<dyn IOutput>,
     today: String,
 }
 

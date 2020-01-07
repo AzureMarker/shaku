@@ -9,7 +9,7 @@ use rand::Rng;
 use shaku::ContainerBuilder;
 use shaku_derive::Component;
 
-trait Foo: Send {
+trait Foo: Send + Sync {
     fn get_value(&self) -> usize;
     fn set_value(&mut self, _: usize);
 }
@@ -169,7 +169,6 @@ fn simple_multithreaded_resolve_n_own() {
     let container = builder.build().unwrap();
     let shared_container = Arc::new(Mutex::new(container));
     let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(first_value));
-    let was_owned = Arc::new(Mutex::new(false));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
@@ -177,11 +176,7 @@ fn simple_multithreaded_resolve_n_own() {
     println!("Owner is {}", owner);
 
     for i in 0..NB_THREADS {
-        let (shared_container, latest_data, was_owned) = (
-            shared_container.clone(),
-            latest_data.clone(),
-            was_owned.clone(),
-        ); // local clones to be moved into the thread
+        let (shared_container, latest_data) = (shared_container.clone(), latest_data.clone()); // local clones to be moved into the thread
 
         handles.push(
             thread::Builder::new()
@@ -204,46 +199,35 @@ fn simple_multithreaded_resolve_n_own() {
                             *data
                         );
                         assert_eq!(foo.get_value(), *data);
-
-                        *was_owned.lock().unwrap() = true;
                     } else if i != owner {
                         let use_mut = rand::thread_rng().gen_range(0, 10) < 5;
                         {
                             let mut container = shared_container.lock().unwrap();
 
-                            if *was_owned.lock().unwrap() {
-                                let err = container.resolve_ref::<dyn Foo>();
-                                assert!(err.is_err());
+                            if use_mut {
+                                let foo = container.resolve_mut::<dyn Foo>().unwrap();
+                                let new_value: usize = rand::thread_rng().gen_range(0, 256);
+                                foo.set_value(new_value);
+                                assert_eq!(foo.get_value(), new_value);
+
+                                let mut data = latest_data.lock().unwrap();
+                                *data = new_value;
+
                                 println!(
-                                    "In thread {:?} > resolve ok > was owned",
-                                    &handle.name().unwrap()
+                                    "In thread {:?} > resolve ok > value changed to {}",
+                                    &handle.name().unwrap(),
+                                    foo.get_value()
                                 );
                             } else {
-                                if use_mut {
-                                    let foo = container.resolve_mut::<dyn Foo>().unwrap();
-                                    let new_value: usize = rand::thread_rng().gen_range(0, 256);
-                                    foo.set_value(new_value);
-                                    assert_eq!(foo.get_value(), new_value);
+                                let foo = container.resolve_ref::<dyn Foo>().unwrap();
+                                let data = latest_data.lock().unwrap();
 
-                                    let mut data = latest_data.lock().unwrap();
-                                    *data = new_value;
-
-                                    println!(
-                                        "In thread {:?} > resolve ok > value changed to {}",
-                                        &handle.name().unwrap(),
-                                        foo.get_value()
-                                    );
-                                } else {
-                                    let foo = container.resolve_ref::<dyn Foo>().unwrap();
-                                    let data = latest_data.lock().unwrap();
-
-                                    println!(
-                                        "In thread {:?} > resolve ok > value should be {}",
-                                        &handle.name().unwrap(),
-                                        *data
-                                    );
-                                    assert_eq!(foo.get_value(), *data);
-                                }
+                                println!(
+                                    "In thread {:?} > resolve ok > value should be {}",
+                                    &handle.name().unwrap(),
+                                    *data
+                                );
+                                assert_eq!(foo.get_value(), *data);
                             }
                         } // release the lock
                     }

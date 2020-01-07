@@ -17,7 +17,6 @@ proc-macro = true
 [dependencies]
 shaku_internals = "~0.2.1"
 anymap = "0.12.1"
-log = "0.3"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"]}
 proc-macro2 = "1.0"

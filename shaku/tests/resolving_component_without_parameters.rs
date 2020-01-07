@@ -1,12 +1,13 @@
 #![allow(non_snake_case)]
 
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use shaku::ContainerBuilder;
 use shaku::Error as DIError;
 use shaku_derive::Component;
 
-trait Foo: Debug + Send {
+trait Foo: Debug + Send + Sync {
     fn foo(&self) -> String;
 }
 
@@ -15,7 +16,7 @@ trait Foo: Debug + Send {
 struct FooImpl {
     value: String,
     #[inject]
-    bar: Box<dyn Bar>,
+    bar: Arc<dyn Bar>,
 }
 
 impl Foo for FooImpl {
@@ -28,7 +29,7 @@ impl Foo for FooImpl {
     }
 }
 
-trait Bar: Debug + Send {
+trait Bar: Debug + Send + Sync {
     fn bar(&self) -> String;
 }
 
@@ -77,7 +78,10 @@ fn resolving_component_dependency_without_parameters_should_err() {
 
     assert!(foo.is_err());
     if let Err(DIError::ResolveError(err)) = foo {
-        assert_eq!(err, "unable to resolve component for dependency bar");
+        assert_eq!(
+            err,
+            "unable to find parameter with name or type for property bar_value"
+        );
     } else {
         panic!("unexpected state > foo should be Err");
     }

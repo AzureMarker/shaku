@@ -1,10 +1,9 @@
-//! Implementation of a `ContainerBuilder` based on a `HashMap`
+//! Implementation of a `ContainerBuilder`
 
-use std::any::{type_name, TypeId};
-use std::collections::HashMap;
+use std::any::type_name;
 
-use crate::component::{Component, ComponentBuilderImpl};
-use crate::container::{Container, RegisteredType};
+use crate::component::Component;
+use crate::container::{Container, Map, RegisteredType};
 use crate::result::Result as DIResult;
 
 /// Build a [Container](struct.Container.html) registering components
@@ -14,16 +13,15 @@ use crate::result::Result as DIResult;
 /// to build the associated `Container`. This method can Err if you tried to register
 /// invalid values.
 ///
-/// See [module documentation](index.html) or [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
+/// See [module documentation](index.html) or
+/// [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
-    map: HashMap<TypeId, RegisteredType>,
+    map: Map,
 }
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
-        ContainerBuilder {
-            map: HashMap::new(),
-        }
+        ContainerBuilder { map: Map::new() }
     }
 }
 
@@ -34,34 +32,32 @@ impl ContainerBuilder {
     }
 
     /// Register a new component with this builder.
-    /// If that component was already registered, the old Component is replaced (same as `HashMap.insert()` except we don't return the old Component).
+    /// If that component was already registered, the old Component is replaced.
     ///
     /// This method returns a mutable [RegisteredType](struct.RegisteredType.html)
-    /// allowing to chain calls to [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter)
+    /// allowing to chain calls to
+    /// [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter)
     /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
     /// to add parameters to be used to instantiate this Component.
-    pub fn register_type<C: Component + ?Sized + 'static>(&mut self) -> &mut RegisteredType {
+    pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType<C::Interface> {
         // Get the type name from the turbo-fish input
-        let component_type_info = (TypeId::of::<C>(), type_name::<C>().to_string());
-        let interface_type_id = TypeId::of::<C::Interface>();
+        let component_type_name = type_name::<C>().to_string();
         let interface_type_name = type_name::<C::Interface>();
 
-        let registered_type = RegisteredType::new(
-            component_type_info,
-            (interface_type_id, interface_type_name.to_owned()),
-            Box::new(C::Builder::new()),
-        );
+        let registered_type = RegisteredType::new(component_type_name, C::build);
 
-        let old_value = self.map.insert(interface_type_id.clone(), registered_type);
+        let old_value = self
+            .map
+            .insert::<RegisteredType<C::Interface>>(registered_type);
         if let Some(old_value) = old_value {
             warn!(
                 "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
                 interface_type_name,
-                &old_value.component.1
+                &old_value.component
             );
         }
 
-        self.map.get_mut(&interface_type_id).unwrap()
+        self.map.get_mut::<RegisteredType<C::Interface>>().unwrap()
     }
 
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.
@@ -79,8 +75,8 @@ impl ContainerBuilder {
     ///
     /// use shaku::Error as DIError;
     ///
-    /// trait Foo : Send { fn foo(&self); }
-    /// trait FooDuplicate : Send { fn foo(&self) -> String; }
+    /// trait Foo : Send + Sync { fn foo(&self); }
+    /// trait FooDuplicate : Send + Sync { fn foo(&self) -> String; }
     ///
     /// #[derive(Component)]
     /// #[interface(Foo)]

@@ -6,7 +6,7 @@ use shaku::ContainerBuilder;
 use shaku::Error as DIError;
 use shaku_derive::Component;
 
-trait Foo: Debug + Send {
+trait Foo: Debug + Send + Sync {
     fn foo(&self);
 }
 

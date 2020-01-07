@@ -35,36 +35,6 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     // Generate the actual code
     let component_name = container.identifier.get_name();
     let interface = container.metadata.interface.unwrap();
-    let component_builder_name = Ident::new(
-        &format!("{}__DI_Builder", container.identifier.get_name()),
-        Span::call_site(),
-    );
-    let builder_vis = container.visibility;
-
-    // Block building the component map (in `fn build()`)
-    // Try to resolve each candidate component, if resolve fails, don't insert into component map
-    let mut component_map_inserts = TokenStream::new();
-    component_map_inserts.append_all(container.properties.iter().filter_map(|ref property| {
-        if property.is_component() {
-            let mut property_type = TokenStream::new();
-            property.type_to_tokens(&mut property_type);
-
-            Some(quote! {
-                let tmp = container.resolve::<#property_type>();
-
-                if tmp.is_ok() {
-                    component_map.insert::<Box<#property_type>>(tmp.unwrap());
-                }
-            })
-        } else {
-            None
-        }
-    }));
-
-    let component_map_block = quote! {
-        let mut component_map = ::shaku::anymap::AnyMap::new();
-        #component_map_inserts
-    };
 
     // Temp variable block (in `fn block()`)
     const PREFIX: &str = "__di_";
@@ -74,8 +44,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
             .map(|property| {
                 /*
                 Building the following output >
-                let __di_output = component_map.remove::<Box<IOutput>>()
-                    .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
+                let __di_output = container.resolve::<IOutput>()?;
 
                 or
 
@@ -90,22 +59,21 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                     let #prefixed_property_name =
                 });
 
-                let mut property_type = TokenStream::new();
-                if property.is_boxed { property_type.append_all(quote! { Box< }) }
-                property.type_to_tokens(&mut property_type);
-                if property.is_boxed { property_type.append_all(quote! { > }) }
-
                 if property.is_component() {
-                    // Injected components => look into the component map
-                    let error_msg = format!("unable to resolve component for dependency {}", &property.get_name());
+                    // Injected components => resolve
+                    let mut property_type = TokenStream::new();
+                    property.type_to_tokens(&mut property_type);
 
                     tokens.append_all(quote! {
-                        component_map
-                            .remove::<#property_type>()
-                            .ok_or(::shaku::Error::ResolveError(#error_msg.to_owned()))?;
+                        container.resolve::<#property_type>()?;
                     });
                 } else {
                     // Other properties => lookup in the parameters with name and type
+                    let mut property_type = TokenStream::new();
+                    if property.is_arc { property_type.append_all(quote! { Arc< }) }
+                    property.type_to_tokens(&mut property_type);
+                    if property.is_arc { property_type.append_all(quote! { > }) }
+
                     let property_name = property.get_name();
                     let error_msg = format!("unable to find parameter with name or type for property {}", &property.get_name());
 
@@ -146,31 +114,20 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     // Main implementation block
     let impl_block = quote! {
         impl ::shaku::Component for #component_name {
-            type Builder = #component_builder_name;
             type Interface = dyn #interface;
-        }
-
-        #[allow(non_camel_case_types)]
-        #builder_vis struct #component_builder_name;
-        impl ::shaku::ComponentBuilderImpl for #component_builder_name {
-            fn new() -> Self {
-                #component_builder_name {}
-            }
 
             #[allow(unused_variables, unused_mut)]
-            fn build(&self, container: &mut ::shaku::Container, params: &mut ::shaku::parameter::ParameterMap) -> ::shaku::Result<::shaku::anymap::AnyMap> {
-                // Build the parameter map to be injected into the constructor
-                #component_map_block
-
+            fn build(
+                container: &mut ::shaku::Container,
+                params: &mut ::shaku::parameter::ParameterMap,
+            ) -> ::shaku::Result<Box<Self::Interface>> {
                 // Create the parameters
                 #parameters_block
 
                 // Build the output
-                let mut result = ::shaku::anymap::AnyMap::new();
-                result.insert::<Box<dyn #interface>>(Box::new(#component_name {
+                Ok(Box::new(#component_name {
                     #properties_block
-                }));
-                Ok(result)
+                }))
             }
         }
     };

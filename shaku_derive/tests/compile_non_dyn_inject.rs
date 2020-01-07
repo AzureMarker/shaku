@@ -20,11 +20,11 @@ struct BarImpl {
     val: usize,
 }
 
-trait Foo: Send {
+trait Foo: Send + Sync {
     fn foo(&self);
 }
 
-trait Bar: Send {
+trait Bar: Send + Sync {
     fn bar(&self);
 }
 

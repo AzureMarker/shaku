@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::sync::Arc;
+
 use shaku_derive::Component;
 
 #[derive(Component)]
@@ -7,9 +9,9 @@ use shaku_derive::Component;
 struct TestComponent {
     var1: String,
     var2: usize,
-    var3: Box<String>,
+    var3: Arc<String>,
     #[inject]
-    var5: Box<dyn Bar>,
+    var5: Arc<dyn Bar>,
 }
 
 #[derive(Component)]
@@ -18,11 +20,11 @@ struct BarImpl {
     val: usize,
 }
 
-trait Foo: Send {
+trait Foo: Send + Sync {
     fn foo(&self);
 }
 
-trait Bar: Send {
+trait Bar: Send + Sync {
     fn bar(&self);
 }
 

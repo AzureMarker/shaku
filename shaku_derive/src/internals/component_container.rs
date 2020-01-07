@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt;
 
 use proc_macro2::TokenStream;
-use quote::{TokenStreamExt, ToTokens};
+use quote::ToTokens;
 use syn::{self, DeriveInput, Field, Ident, Visibility};
 
 use shaku_internals::error::Error as DIError;
@@ -88,22 +88,18 @@ impl Identifier {
 }
 
 /// Struct to store property data for the type that DI can inject
-/// As per v1 direct injection works only on `Box<...>` properties
+/// As per v1 direct injection works only on `Arc<...>` properties
 /// so we don't need to parse the other properties
 ///
-/// Currently parsed types
-/// - Box<...> == syn::Type::Path(Option<QSelf>, Path),
-/// - Box<...> == syn::Type::TraitObject
-///
 /// Note:
-/// - Vec<Box<...>> => not sure how to inject such parameters => ignored for now
-/// - [Box<...>] => not sure how to inject such parameters => ignored for now
+/// - Vec<Arc<...>> => not sure how to inject such parameters => ignored for now
+/// - [Arc<...>] => not sure how to inject such parameters => ignored for now
 #[derive(Clone)]
 pub struct Property {
     pub property_name: Option<Ident>,
-    pub traits: Option<Vec<syn::Path>>,
+    pub ty: syn::Type,
     pub is_parsed: bool,
-    pub is_boxed: bool,
+    pub is_arc: bool,
     pub is_injected: bool,
     pub _field: Field,
 }
@@ -111,18 +107,22 @@ pub struct Property {
 /// Mask `_field` property
 impl fmt::Debug for Property {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(f, "Property {{ property_name: {:?}, traits: {:?}, is_parsed: {:?}, is_boxed: {:?}, is_injected: {:?} }}", self.property_name, self.traits, self.is_parsed, self.is_boxed, self.is_injected)
+        write!(
+            f,
+            "Property {{ property_name: {:?}, ty: {:?}, is_parsed: {:?}, is_arc: {:?}, is_injected: {:?} }}",
+            self.property_name,
+            self.ty,
+            self.is_parsed,
+            self.is_arc,
+            self.is_injected
+        )
     }
 }
 
 impl Property {
     /// Return true if the current `Property` is a potential candidate for injection
     pub fn is_component(&self) -> bool {
-        self.is_parsed
-            && self.is_injected
-            && self.property_name.is_some()
-            && self.traits.is_some()
-            && self.traits.as_ref().unwrap().len() == 1
+        self.is_parsed && self.is_injected && self.is_arc && self.property_name.is_some()
     }
 
     pub fn name_to_tokens(&self, tokens: &mut TokenStream) {
@@ -132,22 +132,7 @@ impl Property {
     }
 
     pub fn type_to_tokens(&self, tokens: &mut TokenStream) {
-        if self.is_parsed && self.traits.is_some() && !self.traits.as_ref().unwrap().is_empty() {
-            if self.traits.as_ref().unwrap().len() > 1 {
-                warn!("warning: {} traits entries for property {:?} while expecting only 1 > traits = {:?}", self.traits.as_ref().unwrap().len(), self.property_name, self.traits.as_ref().unwrap());
-            }
-
-            if self.is_injected {
-                // The "trait" should be an actual trait, so use dyn Trait syntax
-                let trait_ident = &self.traits.as_ref().unwrap()[0];
-                tokens.append_all(quote! { dyn #trait_ident });
-            } else {
-                // The "trait" could be a struct (ex. String), so don't do anything special
-                self.traits.as_ref().unwrap().get(0).to_tokens(tokens);
-            }
-        } else {
-            self._field.ty.to_tokens(tokens);
-        }
+        self.ty.to_tokens(tokens);
     }
 
     /// Return the property name as a String without the extra ""
