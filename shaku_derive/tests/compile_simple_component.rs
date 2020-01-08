@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 
+use shaku::Interface;
 use shaku_derive::Component;
 
 #[derive(Component)]
@@ -20,11 +21,11 @@ struct BarImpl {
     val: usize,
 }
 
-trait Foo: Send + Sync {
+trait Foo: Interface {
     fn foo(&self);
 }
 
-trait Bar: Send + Sync {
+trait Bar: Interface {
     fn bar(&self);
 }
 

@@ -5,9 +5,10 @@ use std::sync::Arc;
 
 use shaku::ContainerBuilder;
 use shaku::Error as DIError;
+use shaku::Interface;
 use shaku_derive::Component;
 
-trait Foo: Debug + Send + Sync {
+trait Foo: Interface + Debug {
     fn foo(&self) -> String;
 }
 
@@ -29,7 +30,7 @@ impl Foo for FooImpl {
     }
 }
 
-trait Bar: Debug + Send + Sync {
+trait Bar: Interface + Debug {
     fn bar(&self) -> String;
 }
 

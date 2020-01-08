@@ -4,9 +4,10 @@ use std::fmt::Debug;
 
 use shaku::ContainerBuilder;
 use shaku::Error as DIError;
+use shaku::Interface;
 use shaku_derive::Component;
 
-trait Foo: Debug + Send + Sync {
+trait Foo: Interface + Debug {
     fn foo(&self);
 }
 

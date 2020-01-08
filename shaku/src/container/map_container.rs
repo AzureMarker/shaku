@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use shaku_internals::error::Error as DIError;
 
+use crate::component::Interface;
 use crate::container::{Map, RegisteredType};
 use crate::result::Result as DIResult;
 
@@ -21,10 +22,12 @@ use crate::result::Result as DIResult;
 /// # Examples
 ///
 /// ```rust
-/// use shaku_derive::Component;
 /// use std::sync::Arc;
 ///
-/// trait FooValue : Send + Sync {
+/// use shaku::Interface;
+/// use shaku_derive::Component;
+///
+/// trait FooValue: Interface {
 ///     fn get_value(&self) -> usize;
 ///     fn set_value(&mut self, _: usize);
 /// }
@@ -106,30 +109,25 @@ impl Container {
     /// ```rust,ignore
     /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>()?;
     /// ```
-    pub fn resolve<
-        #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
-        #[cfg(feature = "thread_safe")] T: ?Sized + Send + Sync + 'static,
-    >(
-        &mut self,
-    ) -> DIResult<Arc<T>> {
-        if self.resolved_component_map.contains::<Arc<T>>() {
+    pub fn resolve<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
+        if self.resolved_component_map.contains::<Arc<I>>() {
             self.resolved_component_map
-                .get::<Arc<T>>()
+                .get::<Arc<I>>()
                 .map(Arc::clone)
                 .ok_or_else(|| {
                     panic!(
                         "invalid state: unable to remove existing component {}",
-                        ::std::any::type_name::<T>()
+                        ::std::any::type_name::<I>()
                     )
                 }) // ok to panic, this would be a bug
         } else {
             let mut registered_type = self
                 .component_map
-                .remove::<RegisteredType<T>>()
+                .remove::<RegisteredType<I>>()
                 .ok_or_else(|| {
                     DIError::ResolveError(format!(
                         "no component {} registered in this container",
-                        ::std::any::type_name::<T>()
+                        ::std::any::type_name::<I>()
                     ))
                 })?;
 
@@ -153,18 +151,13 @@ impl Container {
     /// ```rust,ignore
     /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>()?;
     /// ```
-    pub fn resolve_ref<
-        #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
-        #[cfg(feature = "thread_safe")] T: ?Sized + Send + Sync + 'static,
-    >(
-        &mut self,
-    ) -> DIResult<&T> {
-        if !self.resolved_component_map.contains::<Arc<T>>() {
-            self.resolve::<T>()?;
+    pub fn resolve_ref<I: Interface + ?Sized>(&mut self) -> DIResult<&I> {
+        if !self.resolved_component_map.contains::<Arc<I>>() {
+            self.resolve::<I>()?;
         };
 
         // We already handled the case where the value does not exist above
-        let component = self.resolved_component_map.get::<Arc<T>>().unwrap();
+        let component = self.resolved_component_map.get::<Arc<I>>().unwrap();
 
         Ok(Arc::as_ref(component))
     }
@@ -185,23 +178,18 @@ impl Container {
     /// ```rust,ignore
     /// let foo: &dyn mut Foo = container.resolve_mut::<dyn Foo>()?;
     /// ```
-    pub fn resolve_mut<
-        #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
-        #[cfg(feature = "thread_safe")] T: ?Sized + Send + Sync + 'static,
-    >(
-        &mut self,
-    ) -> DIResult<&mut T> {
-        if !self.resolved_component_map.contains::<Arc<T>>() {
-            self.resolve::<T>()?;
+    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> DIResult<&mut I> {
+        if !self.resolved_component_map.contains::<Arc<I>>() {
+            self.resolve::<I>()?;
         }
 
         // We already handled the case where the value does not exist above
-        let component = self.resolved_component_map.get_mut::<Arc<T>>().unwrap();
+        let component = self.resolved_component_map.get_mut::<Arc<I>>().unwrap();
 
         Arc::get_mut(component).ok_or_else(|| {
             DIError::ResolveError(format!(
                 "Unable to get a mutable reference of component {}, there are existing Arc references",
-                ::std::any::type_name::<T>()
+                ::std::any::type_name::<I>()
             ))
         })
     }
@@ -215,14 +203,13 @@ impl Container {
     ///
     /// ```rust,ignore
     /// let foo = some_container
-    ///     .with_named_parameter::<Foo, String>("param_1", "value 1".to_string())
+    ///     .with_named_parameter::<dyn Foo, String>("param_1", "value 1".to_string())
     ///     // ...
-    ///     .with_named_parameter::<Foo, String>("param_N", "value N".to_string())
+    ///     .with_named_parameter::<dyn Foo, String>("param_N", "value N".to_string())
     ///     .resolve::<Foo>();
     /// ```
     pub fn with_named_parameter<
-        #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
-        #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
+        I: Interface + ?Sized,
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
     >(
@@ -231,14 +218,14 @@ impl Container {
         value: V,
     ) -> &mut Self {
         {
-            let registered_type = self.component_map.get_mut::<RegisteredType<T>>();
+            let registered_type = self.component_map.get_mut::<RegisteredType<I>>();
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_named_parameter(name, value);
             } else {
                 warn!(
                     "no component {} registered in this container",
-                    ::std::any::type_name::<T>()
+                    ::std::any::type_name::<I>()
                 );
             }
         } // release mutable borrow
@@ -260,8 +247,7 @@ impl Container {
     ///     .resolve::<Foo>();
     /// ```
     pub fn with_typed_parameter<
-        #[cfg(not(feature = "thread_safe"))] T: ?Sized + 'static,
-        #[cfg(feature = "thread_safe")] T: ?Sized + 'static + Send,
+        I: Interface + ?Sized,
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
     >(
@@ -269,14 +255,14 @@ impl Container {
         value: V,
     ) -> &mut Self {
         {
-            let registered_type = self.component_map.get_mut::<RegisteredType<T>>();
+            let registered_type = self.component_map.get_mut::<RegisteredType<I>>();
 
             if let Some(registered_type) = registered_type {
                 registered_type.with_typed_parameter(value);
             } else {
                 warn!(
                     "no component {} registered in this container",
-                    ::std::any::type_name::<T>()
+                    ::std::any::type_name::<I>()
                 );
             }
         } // release mutable borrow

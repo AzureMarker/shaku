@@ -74,9 +74,10 @@ impl ContainerBuilder {
     /// use shaku_derive::Component;
     ///
     /// use shaku::Error as DIError;
+    /// use shaku::component::Interface;
     ///
-    /// trait Foo : Send + Sync { fn foo(&self); }
-    /// trait FooDuplicate : Send + Sync { fn foo(&self) -> String; }
+    /// trait Foo: Interface { fn foo(&self); }
+    /// trait FooDuplicate: Interface { fn foo(&self) -> String; }
     ///
     /// #[derive(Component)]
     /// #[interface(Foo)]

@@ -22,7 +22,7 @@ Code excerpts are used below to illustrate this little guide, the complete examp
 ```rust
 use std::sync::Arc;
 
-trait IOutput : Send + Sync {
+trait IOutput {
     fn write(&self, content: String);
 }
 
@@ -37,7 +37,7 @@ impl IOutput for ConsoleOutput {
     }
 }
 
-trait IDateWriter : Send + Sync {
+trait IDateWriter {
     fn write_date(&self);
 }
 
@@ -55,6 +55,24 @@ impl IDateWriter for TodayWriter {
        content.push_str(self.year.to_string().as_str());
        self.output.write(content);
     }
+}
+```
+
+## Inherit "Interface" for the interface traits
+
+Interface traits require certain bounds, such as `'static` and optionally `Send + Sync` if using
+the `thread_safe` feature. The `Interface` trait acts as a trait alias for these bounds, and is
+automatically implemented on types which implement the bounds.
+
+In our example, the two interface traits would be changed like so:
+
+```rust
+trait IOutput: Interface {
+    fn write(&self, content: String);
+}
+
+trait IDateWriter: Interface {
+    fn write_date(&self);
 }
 ```
 

@@ -7,9 +7,10 @@ use std::time::Duration;
 use rand::Rng;
 
 use shaku::ContainerBuilder;
+use shaku::Interface;
 use shaku_derive::Component;
 
-trait Foo: Send + Sync {
+trait Foo: Interface {
     fn get_value(&self) -> usize;
     fn set_value(&mut self, _: usize);
 }

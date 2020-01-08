@@ -92,14 +92,14 @@ impl<'c, I> ::std::fmt::Debug for RegisteredType<I> {
 mod tests {
     #![allow(non_snake_case)]
 
-    use crate::component::Component;
+    use crate::component::{Component, Interface};
     use crate::container::Container;
     use crate::parameter::*;
     use crate::result::Result;
 
     use super::RegisteredType;
 
-    trait Foo {
+    trait Foo: Interface {
         fn foo(&self);
     }
 

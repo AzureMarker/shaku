@@ -3,11 +3,12 @@
 
 use std::sync::Arc;
 
+use shaku::Interface;
 use shaku_derive::Component;
 
 // IOutput & ConsoleOutput implementation
 // ---------------------------------------------------------------------
-trait IOutput: Send + Sync {
+trait IOutput: Interface {
     fn write(&self, content: String);
     fn get_date(&self, content: String) -> String;
 }
@@ -34,7 +35,7 @@ impl IOutput for ConsoleOutput {
 
 // IDateWriter & TodayWriter implementation
 // ---------------------------------------------------------------------
-trait IDateWriter: Send + Sync {
+trait IDateWriter: Interface {
     fn write_date(&self);
     fn get_date(&self) -> String;
 }
