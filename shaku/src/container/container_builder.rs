@@ -167,13 +167,15 @@ impl ContainerBuilder {
     ) -> DIResult<()> {
         visited.insert(registration.interface_id);
 
-        for dependency_id in &registration.dependencies {
-            if !visited.contains(dependency_id) {
-                let dependency_registration =
-                    self.registration_map.remove(dependency_id).ok_or_else(|| {
+        for dependency in &registration.dependencies {
+            if !visited.contains(&dependency.type_id) {
+                let dependency_registration = self
+                    .registration_map
+                    .remove(&dependency.type_id)
+                    .ok_or_else(|| {
                         DIError::ResolveError(format!(
-                            "Unable to resolve dependency of component '{}'",
-                            registration.component
+                            "Unable to resolve dependency '{}: {}' of component '{}'",
+                            dependency.name, dependency.type_name, registration.component
                         ))
                     })?;
 

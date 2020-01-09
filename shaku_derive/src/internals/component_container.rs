@@ -3,8 +3,6 @@
 use std::error::Error;
 use std::fmt;
 
-use proc_macro2::TokenStream;
-use quote::ToTokens;
 use syn::{self, DeriveInput, Field, Ident, Visibility};
 
 use shaku_internals::error::Error as DIError;
@@ -96,7 +94,7 @@ impl Identifier {
 /// - [Arc<...>] => not sure how to inject such parameters => ignored for now
 #[derive(Clone)]
 pub struct Property {
-    pub property_name: Option<Ident>,
+    pub property_name: Ident,
     pub ty: syn::Type,
     pub is_parsed: bool,
     pub is_arc: bool,
@@ -122,17 +120,7 @@ impl fmt::Debug for Property {
 impl Property {
     /// Return true if the current `Property` is a potential candidate for injection
     pub fn is_component(&self) -> bool {
-        self.is_parsed && self.is_injected && self.is_arc && self.property_name.is_some()
-    }
-
-    pub fn name_to_tokens(&self, tokens: &mut TokenStream) {
-        if self.property_name.is_some() {
-            self.property_name.as_ref().unwrap().to_tokens(tokens)
-        }
-    }
-
-    pub fn type_to_tokens(&self, tokens: &mut TokenStream) {
-        self.ty.to_tokens(tokens);
+        self.is_parsed && self.is_injected && self.is_arc
     }
 
     /// Return the property name as a String without the extra ""
@@ -142,9 +130,6 @@ impl Property {
 
     /// Return the property name as a String (with quotes)
     pub fn get_name(&self) -> String {
-        self.property_name
-            .as_ref()
-            .map(|ident| ident.to_string())
-            .unwrap_or_else(|| "".to_string())
+        self.property_name.to_string()
     }
 }

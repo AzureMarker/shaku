@@ -3,7 +3,7 @@
 use std::env;
 
 use proc_macro2::{Span, TokenStream};
-use quote::TokenStreamExt;
+use quote::{ToTokens, TokenStreamExt};
 use syn::{DeriveInput, Ident};
 
 use crate::consts;
@@ -61,18 +61,20 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
                 if property.is_component() {
                     // Injected components => resolve
-                    let mut property_type = TokenStream::new();
-                    property.type_to_tokens(&mut property_type);
+                    let property_type = &property.ty;
 
                     tokens.append_all(quote! {
                         container.resolve_component::<#property_type>()?;
                     });
                 } else {
                     // Other properties => lookup in the parameters with name and type
-                    let mut property_type = TokenStream::new();
-                    if property.is_arc { property_type.append_all(quote! { Arc< }) }
-                    property.type_to_tokens(&mut property_type);
-                    if property.is_arc { property_type.append_all(quote! { > }) }
+                    let property_type = if property.is_arc {
+                        let property_type = &property.ty;
+
+                        quote! { Arc<#property_type> }
+                    } else {
+                        property.ty.to_token_stream()
+                    };
 
                     let property_name = property.get_name();
                     let error_msg = format!("unable to find parameter with name or type for property {}", &property.get_name());
@@ -93,20 +95,12 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     let mut properties_block = TokenStream::new();
     properties_block.append_terminated(
         container.properties.iter().map(|ref property| {
-            if property.property_name.is_some() {
-                let mut tokens = TokenStream::new();
-                property.name_to_tokens(&mut tokens); // property name
+            let property_name = &property.property_name;
+            let value_ident = format_ident!("{}{}", &PREFIX, property.get_name_without_quotes());
 
-                let property_ident = Ident::new(
-                    &format!("{}{}", &PREFIX, property.get_name_without_quotes()),
-                    Span::call_site(),
-                );
-                tokens.append_all(quote! { : #property_ident });
-
-                Some(tokens)
-            } else {
-                panic!("struct has unnamed fields");
-            }
+            Some(quote! {
+                #property_name: #value_ident
+            })
         }),
         quote! { , },
     );
@@ -117,9 +111,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         .filter(|property| property.is_component())
         .map(|property| {
             let property_type = &property.ty;
+            let property_name = property.get_name();
 
             quote! {
-                ::std::any::TypeId::of::<#property_type>()
+                ::shaku::Dependency::new::<#property_type>(String::from(#property_name))
             }
         })
         .collect();
@@ -129,7 +124,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         impl ::shaku::Component for #component_name {
             type Interface = dyn #interface;
 
-            fn dependencies() -> Vec<::std::any::TypeId> {
+            fn dependencies() -> Vec<::shaku::Dependency> {
                 vec![
                     #(#dependencies),*
                 ]

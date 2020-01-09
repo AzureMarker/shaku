@@ -12,12 +12,14 @@ use crate::parser::{Extractor, Parser};
 /// - Other => just clone `self` into Property::_field
 impl Parser<Property> for syn::Field {
     fn parse_into(&self) -> Result<Property, DIError> {
-        // println!("Property::from_field > parsing field = {:#?}", &field);
         // TODO: return error if an injected property is not correctly formed (not Arc<dyn Trait>)
         let is_injected = self
             .attrs
             .iter()
             .any(|a| a.path.is_ident(consts::INJECT_ATTR_NAME));
+        let property_name = self.ident.clone().expect("struct properties must be named");
+        let field = (*self).clone();
+
         match &self.ty {
             // Arc object => continue parsing to recover `Property::traits` information
             Type::Path(path) => {
@@ -62,34 +64,34 @@ impl Parser<Property> for syn::Field {
                         Err(DIError::ParseError(format!("unsupported AngleBracketedParameterData > {} elements found while expecting 1 > {:?}", traits.len(), &abpd)))
                     } else {
                         Ok(Property {
-                            property_name: self.ident.clone(),
+                            property_name,
                             ty: traits.remove(0),
                             is_parsed: true,
                             is_arc: true,
                             is_injected,
-                            _field: self.clone(),
+                            _field: field,
                         })
                     }
                 } else {
                     Ok(Property {
-                        property_name: self.ident.clone(),
+                        property_name,
                         ty: self.ty.clone(),
                         is_parsed: false,
                         is_arc: false,
                         is_injected: false,
-                        _field: self.clone(),
+                        _field: field,
                     })
                 }
             }
 
             // Other => return as is
             _ => Ok(Property {
-                property_name: self.ident.clone(),
+                property_name,
                 ty: self.ty.clone(),
                 is_parsed: false,
                 is_arc: false,
                 is_injected: false,
-                _field: self.clone(),
+                _field: field,
             }),
         }
     }

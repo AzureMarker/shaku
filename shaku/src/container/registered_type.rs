@@ -5,6 +5,7 @@ use std::any::{Any, TypeId};
 use shaku_internals::error::Error;
 
 use crate::component::ComponentBuildFn;
+use crate::container::Dependency;
 use crate::parameter::*;
 use crate::ContainerBuilder;
 
@@ -22,7 +23,7 @@ pub struct RegisteredType {
     #[doc(hidden)]
     pub(crate) builder: ComponentBuildFn,
     #[doc(hidden)]
-    pub(crate) dependencies: Vec<TypeId>,
+    pub(crate) dependencies: Vec<Dependency>,
     #[doc(hidden)]
     pub(crate) parameters: ParameterMap,
 }
@@ -34,7 +35,7 @@ impl RegisteredType {
         component: String,
         interface_id: TypeId,
         builder: ComponentBuildFn,
-        dependencies: Vec<TypeId>,
+        dependencies: Vec<Dependency>,
     ) -> Self {
         RegisteredType {
             component,
@@ -98,8 +99,8 @@ impl ::std::fmt::Debug for RegisteredType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
         write!(
             f,
-            "RegisteredType {{ component: {:?}, parameters: {:?} }}",
-            &self.component, &self.parameters
+            "RegisteredType {{ component: {:?}, parameters: {:?}, dependencies: {:?} }}",
+            self.component, self.parameters, self.dependencies
         )
     }
 }
@@ -113,7 +114,7 @@ mod tests {
     use crate::component::{Component, Interface};
     use crate::parameter::*;
     use crate::result::Result;
-    use crate::ContainerBuilder;
+    use crate::{ContainerBuilder, Dependency};
 
     use super::RegisteredType;
 
@@ -129,7 +130,7 @@ mod tests {
     impl Component for FooImpl {
         type Interface = dyn Foo;
 
-        fn dependencies() -> Vec<TypeId> {
+        fn dependencies() -> Vec<Dependency> {
             Vec::new()
         }
 

@@ -1,14 +1,14 @@
 //! Traits and types used by the #derive macro to build Component objects
 
-use std::any::{Any, TypeId};
+use std::any::Any;
 
 use crate::parameter::ParameterMap;
-use crate::ContainerBuilder;
+use crate::{ContainerBuilder, Dependency};
 
 pub trait Component {
     type Interface: Interface + ?Sized;
 
-    fn dependencies() -> Vec<TypeId>;
+    fn dependencies() -> Vec<Dependency>;
 
     fn build(_: &mut ContainerBuilder, _: &mut ParameterMap) -> super::Result<()>;
 }
