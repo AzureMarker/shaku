@@ -45,11 +45,13 @@
 //! //  .with_type_parameter::<String>("fooooo".to_string()); // alternative
 //! ```
 
+pub use self::container_build_context::ContainerBuildContext;
 pub use self::container_builder::*;
 pub use self::dependency::Dependency;
 pub use self::map_container::Container;
 pub use self::registered_type::RegisteredType;
 
+mod container_build_context;
 mod container_builder;
 mod dependency;
 mod map_container;

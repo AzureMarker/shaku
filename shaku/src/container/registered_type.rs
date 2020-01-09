@@ -5,9 +5,8 @@ use std::any::{Any, TypeId};
 use shaku_internals::error::Error;
 
 use crate::component::ComponentBuildFn;
-use crate::container::Dependency;
+use crate::container::{ContainerBuildContext, Dependency};
 use crate::parameter::*;
-use crate::ContainerBuilder;
 
 /// DI Container entry associated with a unique interface and implementation.
 ///
@@ -90,8 +89,8 @@ impl RegisteredType {
         self
     }
 
-    pub(crate) fn build(&mut self, container_builder: &mut ContainerBuilder) -> Result<(), Error> {
-        (self.builder)(container_builder, &mut self.parameters)
+    pub(crate) fn build(&mut self, build_context: &mut ContainerBuildContext) -> Result<(), Error> {
+        (self.builder)(build_context, &mut self.parameters)
     }
 }
 
@@ -114,7 +113,8 @@ mod tests {
     use crate::component::{Component, Interface};
     use crate::parameter::*;
     use crate::result::Result;
-    use crate::{ContainerBuilder, Dependency};
+    use crate::ContainerBuildContext;
+    use crate::Dependency;
 
     use super::RegisteredType;
 
@@ -134,7 +134,7 @@ mod tests {
             Vec::new()
         }
 
-        fn build(_: &mut ContainerBuilder, _: &mut ParameterMap) -> Result<()> {
+        fn build(_: &mut ContainerBuildContext, _: &mut ParameterMap) -> Result<()> {
             unimplemented!() // test doesn't require this fn
         }
     }

@@ -1,13 +1,10 @@
 //! Implementation of a `ContainerBuilder`
 
 use std::any::{type_name, TypeId};
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::HashMap;
 
-use shaku_internals::error::Error as DIError;
-
-use crate::component::{Component, Interface};
-use crate::container::{Container, Map, RegisteredType};
+use crate::component::Component;
+use crate::container::{Container, ContainerBuildContext, RegisteredType};
 use crate::result::Result as DIResult;
 
 /// Build a [Container](struct.Container.html) registering components
@@ -21,14 +18,12 @@ use crate::result::Result as DIResult;
 /// [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
     registration_map: HashMap<TypeId, RegisteredType>,
-    resolved_map: Map,
 }
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
         ContainerBuilder {
             registration_map: HashMap::new(),
-            resolved_map: Map::new(),
         }
     }
 }
@@ -75,8 +70,12 @@ impl ContainerBuilder {
     }
 
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.
-    /// If so, consume this `ContainerBuilder` to build a [Container](struct.Container.html).
+    /// If so, consume this `ContainerBuilder` to build a [Container]. The
+    /// [ContainerBuildContext] struct will be used to build the [Container].
     /// The components are built at this time.
+    ///
+    /// [Container]: struct.Container.html
+    /// [ContainerBuildContext]: struct.ContainerBuildContext.html
     ///
     /// # Errors
     /// The components are built at this time, so any dependency or parameter errors will be
@@ -131,78 +130,7 @@ impl ContainerBuilder {
     /// assert!(foo.is_ok());
     /// assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
     /// ```
-    ///
-    pub fn build(mut self) -> DIResult<Container> {
-        // Order the registrations so dependencies are resolved first (topological sort)
-        let sorted_registrations = self.sort_registrations_by_dependencies()?;
-
-        for mut registration in sorted_registrations {
-            // Each component will add itself into resolved_map via insert_resolved_component
-            registration.build(&mut self)?;
-        }
-
-        Ok(Container::new(self.resolved_map))
-    }
-
-    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<RegisteredType>> {
-        let mut visited = HashSet::new();
-        let mut sorted = Vec::new();
-
-        while let Some(interface_id) = self.registration_map.keys().next().copied() {
-            let registration = self.registration_map.remove(&interface_id).unwrap();
-
-            if !visited.contains(&interface_id) {
-                self.registration_sort_visit(registration, &mut visited, &mut sorted)?;
-            }
-        }
-
-        Ok(sorted)
-    }
-
-    fn registration_sort_visit(
-        &mut self,
-        registration: RegisteredType,
-        visited: &mut HashSet<TypeId>,
-        sorted: &mut Vec<RegisteredType>,
-    ) -> DIResult<()> {
-        visited.insert(registration.interface_id);
-
-        for dependency in &registration.dependencies {
-            if !visited.contains(&dependency.type_id) {
-                let dependency_registration = self
-                    .registration_map
-                    .remove(&dependency.type_id)
-                    .ok_or_else(|| {
-                        DIError::ResolveError(format!(
-                            "Unable to resolve dependency '{}: {}' of component '{}'",
-                            dependency.name, dependency.type_name, registration.component
-                        ))
-                    })?;
-
-                self.registration_sort_visit(dependency_registration, visited, sorted)?;
-            }
-        }
-
-        sorted.push(registration);
-        Ok(())
-    }
-
-    // TODO: Move build code and these hidden methods to an intermediate struct?
-    #[doc(hidden)]
-    pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
-        self.resolved_map
-            .get::<Arc<I>>()
-            .map(Arc::clone)
-            .ok_or_else(|| {
-                DIError::ResolveError(format!(
-                    "Component {} has not yet been resolved, or is not registered. Check your dependencies.",
-                    ::std::any::type_name::<I>()
-                ))
-            })
-    }
-
-    #[doc(hidden)]
-    pub fn insert_resolved_component<I: Interface + ?Sized>(&mut self, component: Box<I>) {
-        self.resolved_map.insert::<Arc<I>>(Arc::from(component));
+    pub fn build(self) -> DIResult<Container> {
+        ContainerBuildContext::new(self.registration_map).build()
     }
 }

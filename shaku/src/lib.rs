@@ -227,6 +227,7 @@ pub use shaku_internals::error::Error;
 pub use crate::component::Component;
 pub use crate::component::Interface;
 pub use crate::container::Container;
+pub use crate::container::ContainerBuildContext;
 pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
 pub use crate::result::Result;

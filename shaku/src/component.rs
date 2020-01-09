@@ -3,18 +3,22 @@
 use std::any::Any;
 
 use crate::parameter::ParameterMap;
-use crate::{ContainerBuilder, Dependency};
+use crate::ContainerBuildContext;
+use crate::Dependency;
 
 pub trait Component {
     type Interface: Interface + ?Sized;
 
     fn dependencies() -> Vec<Dependency>;
 
-    fn build(_: &mut ContainerBuilder, _: &mut ParameterMap) -> super::Result<()>;
+    fn build(
+        build_context: &mut ContainerBuildContext,
+        params: &mut ParameterMap,
+    ) -> super::Result<()>;
 }
 
 pub(crate) type ComponentBuildFn =
-    fn(&mut ContainerBuilder, &mut ParameterMap) -> super::Result<()>;
+    fn(&mut ContainerBuildContext, &mut ParameterMap) -> super::Result<()>;
 
 // Adapted from https://stackoverflow.com/a/30293051/3267834
 // FIXME: Use real trait aliases when they are stabilized:

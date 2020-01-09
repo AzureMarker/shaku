@@ -44,7 +44,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
             .map(|property| {
                 /*
                 Building the following output >
-                let __di_output = container.resolve_component::<IOutput>()?;
+                let __di_output = build_context.resolve_component::<IOutput>()?;
 
                 or
 
@@ -64,7 +64,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                     let property_type = &property.ty;
 
                     tokens.append_all(quote! {
-                        container.resolve_component::<#property_type>()?;
+                        build_context.resolve_component::<#property_type>()?;
                     });
                 } else {
                     // Other properties => lookup in the parameters with name and type
@@ -131,17 +131,17 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
             }
 
             fn build(
-                container: &mut ::shaku::ContainerBuilder,
+                build_context: &mut ::shaku::ContainerBuildContext,
                 params: &mut ::shaku::parameter::ParameterMap,
             ) -> ::shaku::Result<()> {
                 // Create the parameters
                 #parameters_block
 
-                // Insert the resolved component into the container
+                // Insert the resolved component
                 let component = Box::new(#component_name {
                     #properties_block
                 });
-                container.insert_resolved_component::<Self::Interface>(component);
+                build_context.insert_resolved_component::<Self::Interface>(component);
 
                 Ok(())
             }
