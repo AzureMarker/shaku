@@ -1,8 +1,6 @@
 //! Implementation of a `RegisteredType`
 
-use std::any::{type_name, Any, TypeId};
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use std::any::{Any, TypeId};
 
 use shaku_internals::error::Error;
 
@@ -10,21 +8,13 @@ use crate::component::ComponentBuildFn;
 use crate::parameter::*;
 use crate::ContainerBuilder;
 
-pub(crate) trait Registration: Debug {
-    fn component(&self) -> &str;
-    fn interface_id(&self) -> TypeId;
-    fn dependencies(&self) -> Vec<TypeId>;
-    fn build(&mut self, container_builder: &mut ContainerBuilder) -> crate::Result<()>;
-    fn as_mut_any(&mut self) -> &mut dyn Any;
-}
-
 /// DI Container entry associated with a unique interface and implementation.
 ///
 /// When running the following command
 /// `container_builder.register_type::<MyImplOfTrait>();`
 /// - `MyImplOfTrait` -> `component`
 /// - `MyImplOfTrait::Interface` -> `interface`
-pub struct RegisteredType<I: ?Sized> {
+pub struct RegisteredType {
     #[doc(hidden)]
     pub(crate) component: String,
     #[doc(hidden)]
@@ -35,11 +25,9 @@ pub struct RegisteredType<I: ?Sized> {
     pub(crate) dependencies: Vec<TypeId>,
     #[doc(hidden)]
     pub(crate) parameters: ParameterMap,
-    #[doc(hidden)]
-    pub(crate) _phantom: PhantomData<I>,
 }
 
-impl<I: ?Sized> RegisteredType<I> {
+impl RegisteredType {
     /// Create a new RegisteredType.
     #[doc(hidden)]
     pub(crate) fn new(
@@ -47,14 +35,13 @@ impl<I: ?Sized> RegisteredType<I> {
         interface_id: TypeId,
         builder: ComponentBuildFn,
         dependencies: Vec<TypeId>,
-    ) -> RegisteredType<I> {
+    ) -> Self {
         RegisteredType {
             component,
             interface_id,
             builder,
             dependencies,
             parameters: ParameterMap::new(),
-            _phantom: PhantomData,
         }
     }
 
@@ -69,7 +56,7 @@ impl<I: ?Sized> RegisteredType<I> {
         &mut self,
         name: S,
         value: V,
-    ) -> &mut RegisteredType<I> {
+    ) -> &mut Self {
         if self
             .parameters
             .insert_with_name(name.clone(), value)
@@ -92,7 +79,7 @@ impl<I: ?Sized> RegisteredType<I> {
     >(
         &mut self,
         value: V,
-    ) -> &mut RegisteredType<I> {
+    ) -> &mut Self {
         if self.parameters.insert_with_type(value).is_some() {
             warn!(
                 "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
@@ -101,38 +88,18 @@ impl<I: ?Sized> RegisteredType<I> {
         }
         self
     }
-}
 
-impl<I: ?Sized + 'static> Registration for RegisteredType<I> {
-    fn component(&self) -> &str {
-        &self.component
-    }
-
-    fn interface_id(&self) -> TypeId {
-        self.interface_id
-    }
-
-    fn dependencies(&self) -> Vec<TypeId> {
-        self.dependencies.clone()
-    }
-
-    fn build(&mut self, container_builder: &mut ContainerBuilder) -> Result<(), Error> {
+    pub(crate) fn build(&mut self, container_builder: &mut ContainerBuilder) -> Result<(), Error> {
         (self.builder)(container_builder, &mut self.parameters)
     }
-
-    fn as_mut_any(&mut self) -> &mut dyn Any {
-        self
-    }
 }
 
-impl<I: ?Sized> ::std::fmt::Debug for RegisteredType<I> {
+impl ::std::fmt::Debug for RegisteredType {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
         write!(
             f,
-            "RegisteredType<{}> {{ component: {:?}, parameters: {:?} }}",
-            type_name::<I>(),
-            &self.component,
-            &self.parameters
+            "RegisteredType {{ component: {:?}, parameters: {:?} }}",
+            &self.component, &self.parameters
         )
     }
 }
@@ -173,7 +140,7 @@ mod tests {
 
     #[test]
     fn RegisteredType_test_overwrite() {
-        let mut x = RegisteredType::<dyn Foo>::new(
+        let mut x = RegisteredType::new(
             "FooImpl".to_string(),
             TypeId::of::<dyn Foo>(),
             FooImpl::build,

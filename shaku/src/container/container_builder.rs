@@ -1,13 +1,12 @@
 //! Implementation of a `ContainerBuilder`
 
-use std::any::{type_name, Any, TypeId};
+use std::any::{type_name, TypeId};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use shaku_internals::error::Error as DIError;
 
 use crate::component::{Component, Interface};
-use crate::container::registered_type::Registration;
 use crate::container::{Container, Map, RegisteredType};
 use crate::result::Result as DIResult;
 
@@ -21,7 +20,7 @@ use crate::result::Result as DIResult;
 /// See [module documentation](index.html) or
 /// [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
-    registration_map: HashMap<TypeId, Box<dyn Registration>>,
+    registration_map: HashMap<TypeId, RegisteredType>,
     resolved_map: Map,
 }
 
@@ -48,12 +47,12 @@ impl ContainerBuilder {
     /// [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter)
     /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
     /// to add parameters to be used to instantiate this Component.
-    pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType<C::Interface> {
+    pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType {
         let component_type_name = type_name::<C>().to_string();
         let interface_type_name = type_name::<C::Interface>();
         let interface_type_id = TypeId::of::<C::Interface>();
 
-        let registered_type = RegisteredType::<C::Interface>::new(
+        let registered_type = RegisteredType::new(
             component_type_name,
             interface_type_id,
             C::build,
@@ -62,23 +61,17 @@ impl ContainerBuilder {
 
         let old_value = self
             .registration_map
-            .insert(interface_type_id, Box::new(registered_type));
+            .insert(interface_type_id, registered_type);
         if let Some(old_value) = old_value {
             warn!(
                 "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
                 interface_type_name,
-                old_value.component()
+                old_value.component
             );
         }
 
         // Return the registration for further configuration
-        let registration: &mut dyn Any = self
-            .registration_map
-            .get_mut(&interface_type_id)
-            .unwrap()
-            .as_mut_any();
-
-        registration.downcast_mut().unwrap()
+        self.registration_map.get_mut(&interface_type_id).unwrap()
     }
 
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.
@@ -151,7 +144,7 @@ impl ContainerBuilder {
         Ok(Container::new(self.resolved_map))
     }
 
-    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<Box<dyn Registration>>> {
+    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<RegisteredType>> {
         let mut visited = HashSet::new();
         let mut sorted = Vec::new();
 
@@ -168,21 +161,19 @@ impl ContainerBuilder {
 
     fn registration_sort_visit(
         &mut self,
-        registration: Box<dyn Registration>,
+        registration: RegisteredType,
         visited: &mut HashSet<TypeId>,
-        sorted: &mut Vec<Box<dyn Registration>>,
+        sorted: &mut Vec<RegisteredType>,
     ) -> DIResult<()> {
-        visited.insert(registration.interface_id());
+        visited.insert(registration.interface_id);
 
-        for dependency_id in registration.dependencies() {
-            if !visited.contains(&dependency_id) {
-                let dependency_registration = self
-                    .registration_map
-                    .remove(&dependency_id)
-                    .ok_or_else(|| {
+        for dependency_id in &registration.dependencies {
+            if !visited.contains(dependency_id) {
+                let dependency_registration =
+                    self.registration_map.remove(dependency_id).ok_or_else(|| {
                         DIError::ResolveError(format!(
                             "Unable to resolve dependency of component '{}'",
-                            registration.component()
+                            registration.component
                         ))
                     })?;
 
