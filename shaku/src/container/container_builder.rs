@@ -1,14 +1,14 @@
 //! Implementation of a `ContainerBuilder`
 
-use std::any::{Any, type_name, TypeId};
+use std::any::{type_name, Any, TypeId};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use shaku_internals::error::Error as DIError;
 
 use crate::component::{Component, Interface};
-use crate::container::{Container, Map, RegisteredType};
 use crate::container::registered_type::Registration;
+use crate::container::{Container, Map, RegisteredType};
 use crate::result::Result as DIResult;
 
 /// Build a [Container](struct.Container.html) registering components
@@ -197,39 +197,15 @@ impl ContainerBuilder {
     // TODO: Move build code and these hidden methods to an intermediate struct?
     #[doc(hidden)]
     pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
-        if self.resolved_map.contains::<Arc<I>>() {
-            self.resolved_map
-                .get::<Arc<I>>()
-                .map(Arc::clone)
-                .ok_or_else(|| {
-                    panic!(
-                        "invalid state: unable to remove existing component {}",
-                        ::std::any::type_name::<I>()
-                    )
-                }) // ok to panic, this would be a bug
-        } else {
-            let mut registered_type = self
-                .registration_map
-                .remove(&TypeId::of::<I>())
-                .ok_or_else(|| {
-                    DIError::ResolveError(format!(
-                        "no component {} registered in this container",
-                        ::std::any::type_name::<I>()
-                    ))
-                })?;
-
-            registered_type.build(self)?;
-
-            self.resolved_map
-                .get::<Arc<I>>()
-                .map(Arc::clone)
-                .ok_or_else(|| {
-                    DIError::ResolveError(format!(
-                        "Unable to create a new instance of {}",
-                        ::std::any::type_name::<I>()
-                    ))
-                })
-        }
+        self.resolved_map
+            .get::<Arc<I>>()
+            .map(Arc::clone)
+            .ok_or_else(|| {
+                DIError::ResolveError(format!(
+                    "Component {} has not yet been resolved, or is not registered. Check your dependencies.",
+                    ::std::any::type_name::<I>()
+                ))
+            })
     }
 
     #[doc(hidden)]

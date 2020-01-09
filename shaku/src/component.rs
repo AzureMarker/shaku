@@ -2,8 +2,8 @@
 
 use std::any::{Any, TypeId};
 
-use crate::ContainerBuilder;
 use crate::parameter::ParameterMap;
+use crate::ContainerBuilder;
 
 pub trait Component {
     type Interface: Interface + ?Sized;

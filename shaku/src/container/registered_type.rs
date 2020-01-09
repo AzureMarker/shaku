@@ -1,14 +1,14 @@
 //! Implementation of a `RegisteredType`
 
-use std::any::{Any, type_name, TypeId};
+use std::any::{type_name, Any, TypeId};
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
 use shaku_internals::error::Error;
 
 use crate::component::ComponentBuildFn;
-use crate::ContainerBuilder;
 use crate::parameter::*;
+use crate::ContainerBuilder;
 
 pub(crate) trait Registration: Debug {
     fn component(&self) -> &str;
@@ -144,9 +144,9 @@ mod tests {
     use std::any::TypeId;
 
     use crate::component::{Component, Interface};
-    use crate::ContainerBuilder;
     use crate::parameter::*;
     use crate::result::Result;
+    use crate::ContainerBuilder;
 
     use super::RegisteredType;
 
