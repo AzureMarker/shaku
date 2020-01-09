@@ -1,18 +1,20 @@
 //! Traits and types used by the #derive macro to build Component objects
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 
-use crate::container::Container;
+use crate::ContainerBuilder;
 use crate::parameter::ParameterMap;
 
 pub trait Component {
     type Interface: Interface + ?Sized;
 
-    fn build(_: &mut Container, _: &mut ParameterMap) -> super::Result<Box<Self::Interface>>;
+    fn dependencies() -> Vec<TypeId>;
+
+    fn build(_: &mut ContainerBuilder, _: &mut ParameterMap) -> super::Result<()>;
 }
 
-pub(crate) type ComponentBuildFn<I> =
-    fn(&mut Container, &mut ParameterMap) -> super::Result<Box<I>>;
+pub(crate) type ComponentBuildFn =
+    fn(&mut ContainerBuilder, &mut ParameterMap) -> super::Result<()>;
 
 // Adapted from https://stackoverflow.com/a/30293051/3267834
 // FIXME: Use real trait aliases when they are stabilized:

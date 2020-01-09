@@ -50,18 +50,36 @@ impl Bar for BarImpl {
 fn resolving_component_without_parameters_should_err() {
     let mut builder = ContainerBuilder::new();
     builder.register_type::<FooImpl>();
-    let mut container = builder.build().unwrap();
+    builder
+        .register_type::<BarImpl>()
+        .with_named_parameter("bar_value", "world is bar".to_string());
+    let build_result = builder.build();
 
-    let foo = container.resolve::<dyn Foo>();
-
-    assert!(foo.is_err());
-    if let Err(DIError::ResolveError(err)) = foo {
+    assert!(build_result.is_err());
+    if let Err(DIError::ResolveError(err)) = build_result {
         assert_eq!(
             err,
             "unable to find parameter with name or type for property value"
         );
     } else {
-        panic!("unexpected state > foo should be Err");
+        panic!("unexpected state > result should be Err");
+    }
+}
+
+#[test]
+fn resolving_component_without_dependency_should_err() {
+    let mut builder = ContainerBuilder::new();
+    builder.register_type::<FooImpl>();
+    let build_result = builder.build();
+
+    assert!(build_result.is_err());
+    if let Err(DIError::ResolveError(err)) = build_result {
+        assert_eq!(
+            err,
+            "Unable to resolve dependency of component 'resolving_component_without_parameters::FooImpl'"
+        );
+    } else {
+        panic!("unexpected state > result should be Err");
     }
 }
 
@@ -73,18 +91,16 @@ fn resolving_component_dependency_without_parameters_should_err() {
         .with_named_parameter("value", "world is foo".to_string());
 
     builder.register_type::<BarImpl>();
-    let mut container = builder.build().unwrap();
+    let build_result = builder.build();
 
-    let foo = container.resolve::<dyn Foo>();
-
-    assert!(foo.is_err());
-    if let Err(DIError::ResolveError(err)) = foo {
+    assert!(build_result.is_err());
+    if let Err(DIError::ResolveError(err)) = build_result {
         assert_eq!(
             err,
             "unable to find parameter with name or type for property bar_value"
         );
     } else {
-        panic!("unexpected state > foo should be Err");
+        panic!("unexpected state > result should be Err");
     }
 }
 
@@ -94,13 +110,12 @@ fn resolving_component_dependency_with_parameters_dont_err() {
     builder
         .register_type::<FooImpl>()
         .with_named_parameter("value", "world is foo".to_string());
+    builder
+        .register_type::<BarImpl>()
+        .with_named_parameter("bar_value", "world is bar".to_string());
+    let container = builder.build().unwrap();
 
-    builder.register_type::<BarImpl>();
-    let mut container = builder.build().unwrap();
-
-    let foo = container
-        .with_named_parameter::<dyn Bar, String>("bar_value", "world is bar".to_string())
-        .resolve::<dyn Foo>();
+    let foo = container.resolve::<dyn Foo>();
     assert_eq!(
         foo.unwrap().foo(),
         "FooImpl > foo > value = world is foo ; bar = BarImpl > bar > bar_value = world is bar"

@@ -34,7 +34,7 @@ fn resolving_immutable_ref() {
         .register_type::<FooImpl>()
         .with_named_parameter("value", 17 as usize);
 
-    let mut container = builder.build().unwrap();
+    let container = builder.build().unwrap();
 
     let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
     assert_eq!(foo.get_value(), 17);
@@ -69,7 +69,7 @@ fn resolving_ref_then_value() {
         .register_type::<FooImpl>()
         .with_named_parameter("value", 17 as usize);
 
-    let mut container = builder.build().unwrap();
+    let container = builder.build().unwrap();
 
     {
         let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();

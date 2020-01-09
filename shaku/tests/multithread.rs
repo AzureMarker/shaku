@@ -62,7 +62,7 @@ fn simple_multithreaded_resolve_ref() {
 
                     // Get a handle on the container
                     {
-                        let mut container = shared_container.lock().unwrap();
+                        let container = shared_container.lock().unwrap();
                         let foo = container.resolve_ref::<dyn Foo>().unwrap();
                         assert_eq!(foo.get_value(), 17);
                         println!(
@@ -191,7 +191,7 @@ fn simple_multithreaded_resolve_n_own() {
 
                     // Resolve the container
                     if i == owner {
-                        let mut container = shared_container.lock().unwrap();
+                        let container = shared_container.lock().unwrap();
                         let foo = container.resolve::<dyn Foo>().unwrap();
                         let data = latest_data.lock().unwrap();
                         println!(

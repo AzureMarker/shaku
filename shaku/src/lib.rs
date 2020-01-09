@@ -41,7 +41,7 @@
 //! struct TodayWriter {
 //!     output: Arc<dyn IOutput>,
 //!     today: String,
-//!     year: String,
+//!     year: usize,
 //! }
 //!
 //! impl IDateWriter for TodayWriter {
@@ -61,7 +61,7 @@
 //! the `thread_safe` feature. The `Interface` trait acts as a trait alias for these bounds, and is
 //! automatically implemented on types which implement the bounds.
 //!
-//! In our example, the two interface traits would be changed like so:
+//! In our example, the two interface traits would become:
 //!
 //! ```rust,ignore
 //! trait IOutput: Interface {
@@ -94,9 +94,6 @@
 //!     other_param: usize,
 //! }
 //! ```
-//!
-//! In the current version, you also need to specify the type of your Component using the
-//! `#[interface()]` attribute.
 //!
 //! ## Express dependencies
 //! Some components can have dependencies to other components, which allows the DI logic to also
@@ -151,16 +148,14 @@
 //! this by resolving them from a `Container` with one of the 3 `resolve()` methods.
 //!
 //! ### Passing parameters
-//! In most cases you need to pass parameters to a Component. This can be done either when
-//! registering a Component into a [ContainerBuilder](struct.ContainerBuilder.html) or when
-//! resolving a Component from a [Container](struct.Container.html).
+//! In most cases you need to pass parameters to a Component. This can be done when
+//! registering a Component into a [ContainerBuilder](struct.ContainerBuilder.html).
 //!
 //! You can register parameters either using their property name or their property type. In the
 //! later case, you need to ensure that it is unique.
 //!
-//! #### When registering components
-//! Passing parameters at registration time is done using the `with_named_parameter()` or
-//! `with_typed_parameter()` chained methods like that:
+//! Passing parameters is done using the `with_named_parameter()` or
+//! `with_typed_parameter()` chained methods like so:
 //!
 //! ```rust,ignore
 //! builder
@@ -169,33 +164,40 @@
 //!     .with_typed_parameter::<usize>(117 as usize);
 //! ```
 //!
-//! #### When resolving components
-//! Passing parameters at resolve time uses the same `with_named_parameter()` or
-//! `with_typed_parameter()` methods from your [Container](struct.Container.html) instance.
-//!
-//! For our sample app, we created a `write_date()` method to resolve the writer from a Container
-//! and illustrate how to pass parameters with its name or type:
+//! ## Dependency Injection in Action
+//! For our sample app, we created a `write_date()` method to resolve the writer from a Container:
 //!
 //! ```rust,ignore
-//! fn write_date(container: &mut Container) {
+//! fn write_date(container: &Container) {
 //!     let writer = container
-//!         .with_typed_parameter::<dyn IDateWriter, String>("June 20".to_string())
-//!         .with_named_parameter::<dyn IDateWriter, usize>("year", 2017 as usize)
 //!         .resolve::<dyn IDateWriter>()
 //!         .unwrap();
 //!     writer.write_date();
 //! }
+//!
+//! let mut builder = ContainerBuilder::new();
+//! builder
+//!     .register_type::<ConsoleOutput>()
+//!     .with_named_parameter("prefix", "PREFIX >".to_string())
+//!     .with_typed_parameter::<usize>(117 as usize);
+//! builder
+//!     .register_type::<TodayWriter>()
+//!     .with_typed_parameter::<String>("June 20".to_string())
+//!     .with_typed_parameter::<usize>(2017 as usize);
+//!
+//! let container = builder.build().unwrap();
+//!
+//! write_date(&container);
 //! ```
 //!
 //! Now when you run your program...
 //!
-//! - The `write_date()` method asks shaku for an `IDateWriter`.
-//! - shaku sees that `IDateWriter` maps to `TodayWriter` so starts creating a `TodayWriter`.
-//! - shaku sees that the `TodayWriter` needs an `IOutput` in its constructor.
-//! - shaku sees that `IOutput` maps to `ConsoleOutput` so creates a new `ConsoleOutput` instance.
-//! - Since `ConsoleOutput` doesn't have any more dependency, it uses this instance to finish
-//!   constructing the `TodayWriter`.
-//! - shaku returns the fully-constructed `TodayWriter` for `write_date()` to use.
+//! - The components and their parameters will be registered in the `ContainerBuilder`.
+//! - `builder.build()` will create the registered components in order of dependency
+//!   (first `ConsoleOutput`, then `TodayWriter`). These components will be returned in the
+//!   `Container`.
+//! - The `write_date()` method asks the `Container` for an `IDateWriter`.
+//! - The `Container` sees that `IDateWriter` maps to `TodayWriter`, and it returns the component.
 //!
 //! Later, if we wanted our application to write a different date, we would just have to implement a
 //! different `IDateWriter` and then change the registration at app startup. We won’t have to change

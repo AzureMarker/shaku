@@ -71,17 +71,16 @@ fn main_test() {
         .register_type::<ConsoleOutput>()
         .with_named_parameter("prefix", "PREFIX > ".to_string())
         .with_typed_parameter::<usize>(117 as usize);
-    builder.register_type::<TodayWriter>();
-    let mut container = builder.build().unwrap();
+    builder
+        .register_type::<TodayWriter>()
+        .with_typed_parameter::<String>("June 19".to_string());
+    let container = builder.build().unwrap();
 
     // The WriteDate method is where we'll make use
     // of our dependency injection. We'll define that
     // in a bit.
 
-    let writer = container
-        .with_typed_parameter::<dyn IDateWriter, String>("June 19".to_string())
-        .resolve::<dyn IDateWriter>()
-        .unwrap();
+    let writer = container.resolve::<dyn IDateWriter>().unwrap();
     writer.write_date();
     let date = writer.get_date();
     assert_eq!(date, "PREFIX > #117 Today is June 19");

@@ -13,6 +13,7 @@ use crate::parser::{Extractor, Parser};
 impl Parser<Property> for syn::Field {
     fn parse_into(&self) -> Result<Property, DIError> {
         // println!("Property::from_field > parsing field = {:#?}", &field);
+        // TODO: return error if an injected property is not correctly formed (not Arc<dyn Trait>)
         let is_injected = self
             .attrs
             .iter()

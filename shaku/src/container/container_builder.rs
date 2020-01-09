@@ -1,9 +1,14 @@
 //! Implementation of a `ContainerBuilder`
 
-use std::any::type_name;
+use std::any::{Any, type_name, TypeId};
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
-use crate::component::Component;
+use shaku_internals::error::Error as DIError;
+
+use crate::component::{Component, Interface};
 use crate::container::{Container, Map, RegisteredType};
+use crate::container::registered_type::Registration;
 use crate::result::Result as DIResult;
 
 /// Build a [Container](struct.Container.html) registering components
@@ -16,12 +21,16 @@ use crate::result::Result as DIResult;
 /// See [module documentation](index.html) or
 /// [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
-    map: Map,
+    registration_map: HashMap<TypeId, Box<dyn Registration>>,
+    resolved_map: Map,
 }
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
-        ContainerBuilder { map: Map::new() }
+        ContainerBuilder {
+            registration_map: HashMap::new(),
+            resolved_map: Map::new(),
+        }
     }
 }
 
@@ -40,33 +49,45 @@ impl ContainerBuilder {
     /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
     /// to add parameters to be used to instantiate this Component.
     pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType<C::Interface> {
-        // Get the type name from the turbo-fish input
         let component_type_name = type_name::<C>().to_string();
         let interface_type_name = type_name::<C::Interface>();
+        let interface_type_id = TypeId::of::<C::Interface>();
 
-        let registered_type = RegisteredType::new(component_type_name, C::build);
+        let registered_type = RegisteredType::<C::Interface>::new(
+            component_type_name,
+            interface_type_id,
+            C::build,
+            C::dependencies(),
+        );
 
         let old_value = self
-            .map
-            .insert::<RegisteredType<C::Interface>>(registered_type);
+            .registration_map
+            .insert(interface_type_id, Box::new(registered_type));
         if let Some(old_value) = old_value {
             warn!(
                 "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
                 interface_type_name,
-                &old_value.component
+                old_value.component()
             );
         }
 
-        self.map.get_mut::<RegisteredType<C::Interface>>().unwrap()
+        // Return the registration for further configuration
+        let registration: &mut dyn Any = self
+            .registration_map
+            .get_mut(&interface_type_id)
+            .unwrap()
+            .as_mut_any();
+
+        registration.downcast_mut().unwrap()
     }
 
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.
     /// If so, consume this `ContainerBuilder` to build a [Container](struct.Container.html).
+    /// The components are built at this time.
     ///
     /// # Errors
-    /// None for the moment, since v0.3.0 we try to fail at compile time for all possible invalid registrations.
-    /// We still kept the signature to stabilize API in case we introduce some fancier validation of a ContainerBuilder
-    /// in a later stage.
+    /// The components are built at this time, so any dependency or parameter errors will be
+    /// returned here.
     ///
     /// # Examples
     ///
@@ -118,7 +139,101 @@ impl ContainerBuilder {
     /// assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
     /// ```
     ///
-    pub fn build(self) -> DIResult<Container> {
-        Ok(Container::new(self.map))
+    pub fn build(mut self) -> DIResult<Container> {
+        // Order the registrations so dependencies are resolved first (topological sort)
+        let sorted_registrations = self.sort_registrations_by_dependencies()?;
+
+        for mut registration in sorted_registrations {
+            // Each component will add itself into resolved_map via insert_resolved_component
+            registration.build(&mut self)?;
+        }
+
+        Ok(Container::new(self.resolved_map))
+    }
+
+    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<Box<dyn Registration>>> {
+        let mut visited = HashSet::new();
+        let mut sorted = Vec::new();
+
+        while let Some(interface_id) = self.registration_map.keys().next().copied() {
+            let registration = self.registration_map.remove(&interface_id).unwrap();
+
+            if !visited.contains(&interface_id) {
+                self.registration_sort_visit(registration, &mut visited, &mut sorted)?;
+            }
+        }
+
+        Ok(sorted)
+    }
+
+    fn registration_sort_visit(
+        &mut self,
+        registration: Box<dyn Registration>,
+        visited: &mut HashSet<TypeId>,
+        sorted: &mut Vec<Box<dyn Registration>>,
+    ) -> DIResult<()> {
+        visited.insert(registration.interface_id());
+
+        for dependency_id in registration.dependencies() {
+            if !visited.contains(&dependency_id) {
+                let dependency_registration = self
+                    .registration_map
+                    .remove(&dependency_id)
+                    .ok_or_else(|| {
+                        DIError::ResolveError(format!(
+                            "Unable to resolve dependency of component '{}'",
+                            registration.component()
+                        ))
+                    })?;
+
+                self.registration_sort_visit(dependency_registration, visited, sorted)?;
+            }
+        }
+
+        sorted.push(registration);
+        Ok(())
+    }
+
+    // TODO: Move build code and these hidden methods to an intermediate struct?
+    #[doc(hidden)]
+    pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
+        if self.resolved_map.contains::<Arc<I>>() {
+            self.resolved_map
+                .get::<Arc<I>>()
+                .map(Arc::clone)
+                .ok_or_else(|| {
+                    panic!(
+                        "invalid state: unable to remove existing component {}",
+                        ::std::any::type_name::<I>()
+                    )
+                }) // ok to panic, this would be a bug
+        } else {
+            let mut registered_type = self
+                .registration_map
+                .remove(&TypeId::of::<I>())
+                .ok_or_else(|| {
+                    DIError::ResolveError(format!(
+                        "no component {} registered in this container",
+                        ::std::any::type_name::<I>()
+                    ))
+                })?;
+
+            registered_type.build(self)?;
+
+            self.resolved_map
+                .get::<Arc<I>>()
+                .map(Arc::clone)
+                .ok_or_else(|| {
+                    DIError::ResolveError(format!(
+                        "Unable to create a new instance of {}",
+                        ::std::any::type_name::<I>()
+                    ))
+                })
+        }
+    }
+
+    #[doc(hidden)]
+    pub fn insert_resolved_component<I: Interface + ?Sized>(&mut self, component: Box<I>) {
+        self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
 }

@@ -18,7 +18,9 @@
 //! Once you are done registering all your components,
 //! use [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build)
 //! to create the [Container](struct.Container.html) instance that will allow you to
-//! resolve the components you registered from the Container instance.
+//! resolve the components you registered from the Container instance. The component instances
+//! themselves will be created during the container build step, so watch out for configuration
+//! errors during that step.
 //!
 //! # Application execution
 //! During application execution, you’ll need to make use of the components you registered.
@@ -33,33 +35,14 @@
 //!
 //! # Passing parameters
 //! Passing parameters can be done when registering (i.e. when calling
-//! [ContainerBuilder::register()](struct.ContainerBuilder.html#method.register_type)) or when
-//! resolving a Component (i.e. when calling
-//! [Container::resolve()](struct.Container.html#method.resolve),
-//! [Container::resolve_ref()](struct.Container.html#method.resolve_ref) or
-//! [Container::resolve_mut()](struct.Container.html#method.resolve_mut))
-//!
-//! In both case you just have to chain a `with_name_parameter()` or `with_type_parameter()` call.
-//!
-//! ## When registering a Component
+//! [ContainerBuilder::register()](struct.ContainerBuilder.html#method.register_type)), just chain
+//! a `with_name_parameter()` or `with_type_parameter()` call.
 //!
 //! ```rust,ignore
 //! builder
 //!     .register_type::<FooImpl>()
 //!     .with_named_parameter("name", "fooooo".to_string());
 //! //  .with_type_parameter::<String>("fooooo".to_string()); // alternative
-//! ```
-//!
-//! ## When resolving a Component
-//! Note: The component must not have been resolved beforehand, or the new
-//! parameters will be ignored.
-//!
-//! ```rust,ignore
-//! let foo = container
-//!     .with_named_parameter::<dyn Foo, String>("name", "fooooooo".to_string())
-//! //  .with_typed_parameter::<dyn Foo, String>("fooooooo".to_string()) // alternative
-//!     .resolve::<dyn Foo>()
-//!     .unwrap();
 //! ```
 
 pub use self::container_builder::*;
@@ -71,6 +54,8 @@ mod map_container;
 mod registered_type;
 
 #[cfg(not(feature = "thread_safe"))]
-type Map = anymap::Map<dyn anymap::any::Any>;
+type AnyType = dyn anymap::any::Any;
 #[cfg(feature = "thread_safe")]
-type Map = anymap::Map<dyn anymap::any::Any + Send>;
+type AnyType = dyn anymap::any::Any + Send;
+
+type Map = anymap::Map<AnyType>;

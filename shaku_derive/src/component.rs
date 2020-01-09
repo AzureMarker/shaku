@@ -44,7 +44,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
             .map(|property| {
                 /*
                 Building the following output >
-                let __di_output = container.resolve::<IOutput>()?;
+                let __di_output = container.resolve_component::<IOutput>()?;
 
                 or
 
@@ -65,7 +65,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                     property.type_to_tokens(&mut property_type);
 
                     tokens.append_all(quote! {
-                        container.resolve::<#property_type>()?;
+                        container.resolve_component::<#property_type>()?;
                     });
                 } else {
                     // Other properties => lookup in the parameters with name and type
@@ -111,23 +111,44 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         quote! { , },
     );
 
+    let dependencies: Vec<TokenStream> = container
+        .properties
+        .iter()
+        .filter(|property| property.is_component())
+        .map(|property| {
+            let property_type = &property.ty;
+
+            quote! {
+                ::std::any::TypeId::of::<#property_type>()
+            }
+        })
+        .collect();
+
     // Main implementation block
     let impl_block = quote! {
         impl ::shaku::Component for #component_name {
             type Interface = dyn #interface;
 
-            #[allow(unused_variables, unused_mut)]
+            fn dependencies() -> Vec<::std::any::TypeId> {
+                vec![
+                    #(#dependencies),*
+                ]
+            }
+
             fn build(
-                container: &mut ::shaku::Container,
+                container: &mut ::shaku::ContainerBuilder,
                 params: &mut ::shaku::parameter::ParameterMap,
-            ) -> ::shaku::Result<Box<Self::Interface>> {
+            ) -> ::shaku::Result<()> {
                 // Create the parameters
                 #parameters_block
 
-                // Build the output
-                Ok(Box::new(#component_name {
+                // Insert the resolved component into the container
+                let component = Box::new(#component_name {
                     #properties_block
-                }))
+                });
+                container.insert_resolved_component::<Self::Interface>(component);
+
+                Ok(())
             }
         }
     };
