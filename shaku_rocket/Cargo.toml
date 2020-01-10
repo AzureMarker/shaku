@@ -1,0 +1,17 @@
+[package]
+name = "shaku_rocket"
+version = "0.1.0"
+authors = ["Mark <mark.drobnak@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+shaku = "~0.3.1"
+rocket = "0.4"
+
+[dev-dependencies]
+shaku_derive = "~0.3.1"
+
+[patch.crates-io]
+shaku = { path = "../shaku" }
+shaku_internals = { path = "../shaku_internals" }
+shaku_derive = { path = "../shaku_derive" }
