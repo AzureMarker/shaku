@@ -3,8 +3,7 @@
 
 use std::sync::Arc;
 
-use shaku::Interface;
-use shaku_derive::Component;
+use shaku::{Component, Interface};
 
 // IOutput & ConsoleOutput implementation
 // ---------------------------------------------------------------------

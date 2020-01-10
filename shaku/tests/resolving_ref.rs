@@ -2,9 +2,7 @@
 
 use std::sync::Arc;
 
-use shaku::ContainerBuilder;
-use shaku::Interface;
-use shaku_derive::Component;
+use shaku::{Component, ContainerBuilder, Interface};
 
 trait Foo: Interface {
     fn get_value(&self) -> usize;

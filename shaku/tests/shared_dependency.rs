@@ -1,9 +1,7 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use shaku::component::Interface;
-use shaku::ContainerBuilder;
-use shaku_derive::Component;
+use shaku::{Component, ContainerBuilder, Interface};
 
 trait IDependency: Interface + Debug {}
 

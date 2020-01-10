@@ -86,8 +86,7 @@ In our example, we have 2 components:
 - `ConsoleOutput` of type `IOutput`
 
 To be able to identify them as components [shaku](https://crates.io/crates/shaku) exposes a
-`#[derive()]` macro (though the [shaku_derive](https://crates.io/crates/shaku_derive) crate).
-It is simply done using the following attributes:
+`#[derive()]` macro. It is simply done using the following attributes:
 
 ```rust
 #[derive(Component)] // <--- mark as a Component
@@ -113,7 +112,7 @@ property and declare the property as a
 In our example:
 
 ```rust
-use shaku_derive::Component;
+use shaku::Component;
 
 #[derive(Component)] // <--- mark a struct as a Component that can be registered & resolved
 #[interface(IDateWriter)] // <--- specify which interface it implements

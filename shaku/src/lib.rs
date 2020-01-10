@@ -83,8 +83,7 @@
 //! - `ConsoleOutput` of type `IOutput`
 //!
 //! To be able to identify them as components [shaku](https://crates.io/crates/shaku) exposes a
-//! `#[derive()]` macro (though the [shaku_derive](https://crates.io/crates/shaku_derive) crate).
-//! It is simply done using the following attributes:
+//! `#[derive()]` macro. It is simply done using the following attributes:
 //!
 //! ```rust,ignore
 //! #[derive(Component)] // <--- mark as a Component
@@ -110,7 +109,7 @@
 //! In our example:
 //!
 //! ```rust,ignore
-//! use shaku_derive::Component;
+//! use shaku::Component;
 //!
 //! #[derive(Component)] // <--- mark a struct as a Component that can be registered & resolved
 //! #[interface(IDateWriter)] // <--- specify which interface it implements
@@ -219,6 +218,9 @@
 pub extern crate anymap;
 #[macro_use]
 extern crate log;
+
+// Reexport Component derive
+pub use shaku_derive::Component;
 
 // Reexport Error type from shaku_internals
 pub use shaku_internals::error::Error;

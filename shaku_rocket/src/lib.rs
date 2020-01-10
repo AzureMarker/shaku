@@ -16,8 +16,7 @@ use shaku::Container;
 ///
 /// #[macro_use] extern crate rocket;
 ///
-/// use shaku::{ContainerBuilder, Interface};
-/// use shaku_derive::Component;
+/// use shaku::{Component, ContainerBuilder, Interface};
 /// use shaku_rocket::Inject;
 ///
 /// trait HelloWorld: Interface {

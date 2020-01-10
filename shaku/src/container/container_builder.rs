@@ -84,10 +84,7 @@ impl ContainerBuilder {
     /// # Examples
     ///
     /// ```rust
-    /// use shaku_derive::Component;
-    ///
-    /// use shaku::Error as DIError;
-    /// use shaku::component::Interface;
+    /// use shaku::{Component, Error as DIError, Interface};
     ///
     /// trait Foo: Interface { fn foo(&self); }
     /// trait FooDuplicate: Interface { fn foo(&self) -> String; }

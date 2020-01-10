@@ -2,10 +2,7 @@
 
 use std::fmt::Debug;
 
-use shaku::ContainerBuilder;
-use shaku::Error as DIError;
-use shaku::Interface;
-use shaku_derive::Component;
+use shaku::{Component, ContainerBuilder, Error as DIError, Interface};
 
 trait Foo: Interface + Debug {
     fn foo(&self);

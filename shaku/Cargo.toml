@@ -11,13 +11,13 @@ license = "MIT/Apache-2.0"
 edition = "2018"
 
 [dependencies]
+shaku_derive = "~0.3.1"
 shaku_internals = "~0.2.1"
 anymap = "0.12.1"
 log = "0.3"
 unsafe-any = "0.4"
 
 [dev-dependencies]
-shaku_derive = "~0.3.1"
 rand = "0.7.2"
 
 [features]

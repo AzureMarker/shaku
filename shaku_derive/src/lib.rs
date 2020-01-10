@@ -15,11 +15,8 @@
 //! These derives require a Rust compiler version 1.31 or newer.
 //!
 //! - Add shaku = "0.2" as a dependency in Cargo.toml.
-//! - Add shaku_derive = "0.2" as a dependency in Cargo.toml.
-//! - If you have a main.rs, add `#[macro_use] extern crate shaku_derive` there,
-//!   or import `shaku_derive::Component` as needed if using Rust 2018.
-//! - If you have a lib.rs, add `#[macro_use] extern crate shaku_derive` there,
-//!   or import `shaku_derive::Component` as needed if using Rust 2018.
+//! - If you have a main.rs, add `#[macro_use] extern crate shaku` there,
+//!   or import `shaku::Component` as needed if using Rust 2018.
 //! - Use `#[derive(Component)]` on structs that you want to flag as Component which you want to
 //!   inject or be injected.
 //! - Specify the interface this Component is implementing through `#[interface(MyTrait)]`

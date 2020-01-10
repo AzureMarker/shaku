@@ -2,8 +2,7 @@
 // This test ensures that injected components still work without using `dyn`
 #![allow(bare_trait_objects)]
 
-use shaku::Interface;
-use shaku_derive::Component;
+use shaku::{Component, Interface};
 
 #[derive(Component)]
 #[interface(Foo)]

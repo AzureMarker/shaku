@@ -23,8 +23,7 @@ use crate::result::Result as DIResult;
 /// ```rust
 /// use std::sync::Arc;
 ///
-/// use shaku::Interface;
-/// use shaku_derive::Component;
+/// use shaku::{Component, Interface};
 ///
 /// trait FooValue: Interface {
 ///     fn get_value(&self) -> usize;
