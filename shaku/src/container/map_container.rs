@@ -5,7 +5,7 @@ use std::sync::Arc;
 use shaku_internals::error::Error as DIError;
 
 use crate::component::Interface;
-use crate::container::Map;
+use crate::container::ComponentMap;
 use crate::result::Result as DIResult;
 
 /// Struct containing all the components registered during the build phase, used to `resolve`
@@ -83,12 +83,12 @@ use crate::result::Result as DIResult;
 /// See also [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container {
-    component_map: Map,
+    component_map: ComponentMap,
 }
 
 impl Container {
     /// Create a new Container from the resolved component map
-    pub(crate) fn new(component_map: Map) -> Self {
+    pub(crate) fn new(component_map: ComponentMap) -> Self {
         Container { component_map }
     }
 

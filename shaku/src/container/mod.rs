@@ -60,6 +60,6 @@ mod registered_type;
 #[cfg(not(feature = "thread_safe"))]
 type AnyType = dyn anymap::any::Any;
 #[cfg(feature = "thread_safe")]
-type AnyType = dyn anymap::any::Any + Send;
+type AnyType = dyn anymap::any::Any + Send + Sync;
 
-type Map = anymap::Map<AnyType>;
+type ComponentMap = anymap::Map<AnyType>;

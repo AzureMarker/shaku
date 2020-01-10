@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use crate::component::Interface;
-use crate::container::{Map, RegisteredType};
+use crate::container::{ComponentMap, RegisteredType};
 use crate::Container;
 use crate::Error as DIError;
 use crate::Result as DIResult;
@@ -15,14 +15,14 @@ use crate::Result as DIResult;
 /// [Component::build]: component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext {
     registration_map: HashMap<TypeId, RegisteredType>,
-    resolved_map: Map,
+    resolved_map: ComponentMap,
 }
 
 impl ContainerBuildContext {
     pub(crate) fn new(registration_map: HashMap<TypeId, RegisteredType>) -> Self {
         ContainerBuildContext {
             registration_map,
-            resolved_map: Map::new(),
+            resolved_map: ComponentMap::new(),
         }
     }
 
