@@ -3,9 +3,10 @@
 use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
-use crate::component::Component;
+use crate::component::{Component, ComponentBuildFn, Interface};
 use crate::container::{Container, ContainerBuildContext, RegisteredType};
 use crate::result::Result as DIResult;
+use crate::Dependency;
 
 /// Build a [Container](struct.Container.html) registering components
 /// with or without parameters.
@@ -43,15 +44,40 @@ impl ContainerBuilder {
     /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
     /// to add parameters to be used to instantiate this Component.
     pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType {
-        let component_type_name = type_name::<C>().to_string();
-        let interface_type_name = type_name::<C::Interface>();
-        let interface_type_id = TypeId::of::<C::Interface>();
+        self.register_lambda::<C::Interface>(
+            type_name::<C>(),
+            Box::new(C::build),
+            C::dependencies(),
+        )
+    }
+
+    /// Register a new component with this builder.
+    /// If that component was already registered, the old Component is replaced.
+    ///
+    /// This register method is an alternative to implementing [Component].
+    /// This may be useful in cases such as using a mock or dynamically choosing the
+    /// implementation based on dependencies.
+    ///
+    /// This method returns a mutable [RegisteredType](struct.RegisteredType.html)
+    /// allowing to chain calls to
+    /// [with_named_parameter()](struct.RegisteredType.html#method.with_named_parameter)
+    /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
+    /// to add parameters to be used to instantiate this Component.
+    ///
+    /// [Component]: component/trait.Component.html
+    pub fn register_lambda<I: Interface + ?Sized>(
+        &mut self,
+        component_name: &str,
+        build: ComponentBuildFn,
+        dependencies: Vec<Dependency>,
+    ) -> &mut RegisteredType {
+        let interface_type_id = TypeId::of::<I>();
 
         let registered_type = RegisteredType::new(
-            component_type_name,
+            component_name.to_string(),
             interface_type_id,
-            C::build,
-            C::dependencies(),
+            build,
+            dependencies,
         );
 
         let old_value = self
@@ -59,8 +85,8 @@ impl ContainerBuilder {
             .insert(interface_type_id, registered_type);
         if let Some(old_value) = old_value {
             warn!(
-                "::shaku::ContainerBuilder::register_type::warning trait {:?} already had Component '{:?}) registered to it",
-                interface_type_name,
+                "::shaku::ContainerBuilder::register_lambda::warning trait {:?} already had Component '{:?}) registered to it",
+                type_name::<I>(),
                 old_value.component
             );
         }

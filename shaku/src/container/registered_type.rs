@@ -89,7 +89,7 @@ impl RegisteredType {
         self
     }
 
-    pub(crate) fn build(&mut self, build_context: &mut ContainerBuildContext) -> Result<(), Error> {
+    pub(crate) fn build(mut self, build_context: &mut ContainerBuildContext) -> Result<(), Error> {
         (self.builder)(build_context, &mut self.parameters)
     }
 }
@@ -144,7 +144,7 @@ mod tests {
         let mut x = RegisteredType::new(
             "FooImpl".to_string(),
             TypeId::of::<dyn Foo>(),
-            FooImpl::build,
+            Box::new(FooImpl::build),
             FooImpl::dependencies(),
         );
 

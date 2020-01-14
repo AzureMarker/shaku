@@ -30,7 +30,7 @@ impl ContainerBuildContext {
         // Order the registrations so dependencies are resolved first (topological sort)
         let sorted_registrations = self.sort_registrations_by_dependencies()?;
 
-        for mut registration in sorted_registrations {
+        for registration in sorted_registrations {
             // Each component will add itself into resolved_map via insert_resolved_component
             registration.build(&mut self)?;
         }

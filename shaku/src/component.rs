@@ -6,7 +6,7 @@ use crate::parameter::ParameterMap;
 use crate::ContainerBuildContext;
 use crate::Dependency;
 
-pub trait Component {
+pub trait Component: 'static {
     type Interface: Interface + ?Sized;
 
     fn dependencies() -> Vec<Dependency>;
@@ -18,7 +18,7 @@ pub trait Component {
 }
 
 pub(crate) type ComponentBuildFn =
-    fn(&mut ContainerBuildContext, &mut ParameterMap) -> super::Result<()>;
+    Box<dyn FnOnce(&mut ContainerBuildContext, &mut ParameterMap) -> super::Result<()>>;
 
 // Adapted from https://stackoverflow.com/a/30293051/3267834
 // FIXME: Use real trait aliases when they are stabilized:
