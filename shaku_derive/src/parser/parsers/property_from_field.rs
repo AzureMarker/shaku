@@ -13,10 +13,13 @@ use crate::parser::{Extractor, Parser};
 impl Parser<Property> for syn::Field {
     fn parse_into(&self) -> Result<Property, DIError> {
         // TODO: return error if an injected property is not correctly formed (not Arc<dyn Trait>)
-        let is_injected = self
-            .attrs
-            .iter()
-            .any(|a| a.path.is_ident(consts::INJECT_ATTR_NAME));
+
+        let is_injected = self.attrs.iter().any(|a| {
+            a.path.is_ident(consts::ATTR_NAME)
+                && a.parse_args::<syn::Path>()
+                    .map(|p| p.is_ident(consts::INJECT_ATTR_NAME))
+                    .unwrap_or(false)
+        });
         let property_name = self.ident.clone().expect("struct properties must be named");
         let field = (*self).clone();
 

@@ -116,15 +116,15 @@ impl ContainerBuilder {
     /// trait FooDuplicate: Interface { fn foo(&self) -> String; }
     ///
     /// #[derive(Component)]
-    /// #[interface(Foo)]
+    /// #[shaku(interface = Foo)]
     /// struct FooImpl;
     ///
     /// #[derive(Component)]
-    /// #[interface(FooDuplicate)]
+    /// #[shaku(interface = FooDuplicate)]
     /// struct FooDuplicateImpl1;
     ///
     /// #[derive(Component)]
-    /// #[interface(FooDuplicate)]
+    /// #[shaku(interface = FooDuplicate)]
     /// struct FooDuplicateImpl2;
     ///
     /// impl Foo for FooImpl { fn foo(&self) { } }

@@ -5,17 +5,17 @@ use std::sync::Arc;
 use shaku::{Component, Interface};
 
 #[derive(Component)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct TestComponent1 {
-    #[inject]
+    #[shaku(inject)]
     var: Arc<dyn Bar>,
 }
 
 #[derive(Component)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct TestComponent2 {
     var1: usize,
-    #[inject]
+    #[shaku(inject)]
     var2: Arc<dyn Bar>,
 }
 

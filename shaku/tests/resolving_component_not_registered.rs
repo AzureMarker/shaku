@@ -9,7 +9,7 @@ trait Foo: Interface + Debug {
 }
 
 #[derive(Component, Debug)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct FooImpl {
     value: String,
 }

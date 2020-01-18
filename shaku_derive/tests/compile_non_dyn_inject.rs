@@ -5,17 +5,17 @@
 use shaku::{Component, Interface};
 
 #[derive(Component)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct TestComponent {
     var1: String,
     var2: usize,
     var3: Box<String>,
-    #[inject]
+    #[shaku(inject)]
     var5: Box<Bar>,
 }
 
 #[derive(Component)]
-#[interface(Bar)]
+#[shaku(interface = Bar)]
 struct BarImpl {
     val: usize,
 }

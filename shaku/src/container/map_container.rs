@@ -31,7 +31,7 @@ use crate::result::Result as DIResult;
 /// }
 ///
 /// #[derive(Component)]
-/// #[interface(FooValue)]
+/// #[shaku(interface = FooValue)]
 /// struct FooImpl {
 ///     value: usize,
 /// }

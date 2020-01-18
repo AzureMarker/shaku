@@ -10,10 +10,10 @@ trait Foo: Interface + Debug {
 }
 
 #[derive(Component, Debug)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct FooImpl {
     value: String,
-    #[inject]
+    #[shaku(inject)]
     bar: Arc<dyn Bar>,
 }
 
@@ -32,7 +32,7 @@ trait Bar: Interface + Debug {
 }
 
 #[derive(Component, Debug)]
-#[interface(Bar)]
+#[shaku(interface = Bar)]
 struct BarImpl {
     bar_value: String,
 }

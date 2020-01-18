@@ -19,7 +19,7 @@
 //!   or import `shaku::Component` as needed if using Rust 2018.
 //! - Use `#[derive(Component)]` on structs that you want to flag as Component which you want to
 //!   inject or be injected.
-//! - Specify the interface this Component is implementing through `#[interface(MyTrait)]`
+//! - Specify the interface this Component is implementing through `#[shaku(interface = MyTrait)]`
 //!
 //! # #[derive(Component)] macro
 //!
@@ -42,7 +42,7 @@ pub(crate) mod consts;
 pub(crate) mod internals;
 pub(crate) mod parser;
 
-#[proc_macro_derive(Component, attributes(interface, inject))]
+#[proc_macro_derive(Component, attributes(shaku))]
 pub fn component(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
 

@@ -11,7 +11,7 @@
 //!
 //! // Register `FooImpl` as a `Foo` Component
 //! // Requires that `Foo` was marked as a Component using the `#[derive(Component)]` macro
-//! // and `#[interface(Foo)]`
+//! // and `#[shaku(interface = Foo)]`
 //! builder.register_type::<FooImpl>();
 //! ```
 //!

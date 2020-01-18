@@ -24,7 +24,7 @@ use shaku::Container;
 /// }
 ///
 /// #[derive(Component)]
-/// #[interface(HelloWorld)]
+/// #[shaku(interface = HelloWorld)]
 /// struct HelloWorldImpl;
 ///
 /// impl HelloWorld for HelloWorldImpl {

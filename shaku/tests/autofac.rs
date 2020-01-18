@@ -13,7 +13,7 @@ trait IOutput: Interface {
 }
 
 #[derive(Component)]
-#[interface(IOutput)]
+#[shaku(interface = IOutput)]
 struct ConsoleOutput {
     prefix: String,
     other_param: usize,
@@ -40,9 +40,9 @@ trait IDateWriter: Interface {
 }
 
 #[derive(Component)]
-#[interface(IDateWriter)]
+#[shaku(interface = IDateWriter)]
 struct TodayWriter {
-    #[inject]
+    #[shaku(inject)]
     output: Arc<dyn IOutput>,
     today: String,
 }

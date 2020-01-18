@@ -90,7 +90,7 @@ To be able to identify them as components [shaku](https://crates.io/crates/shaku
 
 ```rust
 #[derive(Component)] // <--- mark as a Component
-#[interface(IOutput)] // <--- specify the type of this Component
+#[shaku(interface = IOutput)] // <--- specify the type of this Component
 struct ConsoleOutput {
     prefix: String,
     other_param: usize,
@@ -104,7 +104,7 @@ inject these components with another Component.
 In our example, `ConsoleOuput` is a Component with no dependency and `TodayWriter` a Component
 with a dependency to a `IOutput` Component.
 
-To express this dependency, use the `#[inject]` attribute within your struct to flag the
+To express this dependency, use the `#[shaku(inject)]` attribute within your struct to flag the
 property and declare the property as a
 [trait object](https://doc.rust-lang.org/book/first-edition/trait-objects.html) wrapped in an
 [Arc](https://doc.rust-lang.org/std/sync/struct.Arc.html).
@@ -115,9 +115,9 @@ In our example:
 use shaku::Component;
 
 #[derive(Component)] // <--- mark a struct as a Component that can be registered & resolved
-#[interface(IDateWriter)] // <--- specify which interface it implements
+#[shaku(interface = IDateWriter)] // <--- specify which interface it implements
 struct TodayWriter {
-    #[inject] // <--- flag 'output' as a property which can be injected
+    #[shaku(inject)] // <--- flag 'output' as a property which can be injected
     output: Arc<dyn IOutput>, // <--- trait object using the interface `IOutput`
     today: String,
     year: usize,

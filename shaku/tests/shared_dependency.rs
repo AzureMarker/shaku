@@ -6,7 +6,7 @@ use shaku::{Component, ContainerBuilder, Interface};
 trait IDependency: Interface + Debug {}
 
 #[derive(Component, Debug)]
-#[interface(IDependency)]
+#[shaku(interface = IDependency)]
 struct Dependency;
 
 impl IDependency for Dependency {}
@@ -15,18 +15,18 @@ trait IComponent1: Interface + Debug {}
 trait IComponent2: Interface + Debug {}
 
 #[derive(Component, Debug)]
-#[interface(IComponent1)]
+#[shaku(interface = IComponent1)]
 struct Component1 {
-    #[inject]
+    #[shaku(inject)]
     dependency: Arc<dyn IDependency>,
 }
 
 impl IComponent1 for Component1 {}
 
 #[derive(Component, Debug)]
-#[interface(IComponent2)]
+#[shaku(interface = IComponent2)]
 struct Component2 {
-    #[inject]
+    #[shaku(inject)]
     dependency: Arc<dyn IDependency>,
 }
 

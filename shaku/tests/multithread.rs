@@ -14,7 +14,7 @@ trait Foo: Interface {
 }
 
 #[derive(Component)]
-#[interface(Foo)]
+#[shaku(interface = Foo)]
 struct FooImpl {
     value: usize,
 }
