@@ -2,6 +2,7 @@
 
 use std::cell::RefCell;
 use std::fmt::Display;
+use std::thread::panicking;
 
 #[derive(Default)]
 pub struct ParsingContext {
@@ -67,7 +68,7 @@ impl ParsingContext {
 
 impl Drop for ParsingContext {
     fn drop(&mut self) {
-        if self.errors.borrow().is_some() {
+        if !panicking() && self.errors.borrow().is_some() {
             panic!("forgot to check for errors");
         }
     }
