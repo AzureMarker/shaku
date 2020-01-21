@@ -234,6 +234,9 @@ pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
 pub use crate::result::Result;
 
+#[macro_use]
+mod trait_alias;
+
 pub mod component;
 pub mod container;
 pub mod parameter;

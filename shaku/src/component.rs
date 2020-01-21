@@ -20,16 +20,6 @@ pub trait Component: 'static {
 pub(crate) type ComponentBuildFn =
     Box<dyn FnOnce(&mut ContainerBuildContext, &mut ParameterMap) -> super::Result<()>>;
 
-// Adapted from https://stackoverflow.com/a/30293051/3267834
-// FIXME: Use real trait aliases when they are stabilized:
-//        https://github.com/rust-lang/rust/issues/41517
-macro_rules! trait_alias {
-    ($visibility:vis $name:ident = $base1:ident $(+ $base2:ident)*) => {
-        $visibility trait $name: $base1 $(+ $base2)* { }
-        impl<T: $base1 $(+ $base2)*> $name for T { }
-    };
-}
-
 #[cfg(not(feature = "thread_safe"))]
 trait_alias!(pub Interface = Any);
 #[cfg(feature = "thread_safe")]
