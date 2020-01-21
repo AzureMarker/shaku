@@ -34,6 +34,8 @@ impl StdError for Error {
 /// Returns the error's `description()` prefixed by the error's type.
 /// For RegistrationError, list the message of each the errors encountered (i.e. the 3rd String tuple entry).
 impl fmt::Display for Error {
+    // Allow calling deprecated function StdError::description
+    #[allow(deprecated)]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::ExtractError(_) => {

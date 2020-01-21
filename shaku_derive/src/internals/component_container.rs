@@ -1,6 +1,5 @@
 //! Holds all the data parsed from syn::DeriveInput
 
-use std::error::Error;
 use std::fmt;
 
 use syn::{self, DeriveInput, Field, Ident, Visibility};
@@ -27,21 +26,21 @@ impl ComponentContainer {
             metadata: input
                 .parse_into()
                 .or_else::<DIError, _>(|di_err| {
-                    ctxt.error(di_err.description());
+                    ctxt.error(di_err);
                     Ok(MetaData { interface: None })
                 })
                 .unwrap(),
             identifier: input
                 .parse_into()
                 .or_else::<DIError, _>(|di_err| {
-                    ctxt.error(di_err.description());
+                    ctxt.error(di_err);
                     Ok(Identifier::Null)
                 })
                 .unwrap(),
             properties: input
                 .parse_into()
                 .or_else::<DIError, _>(|di_err| {
-                    ctxt.error(di_err.description());
+                    ctxt.error(di_err);
                     Ok(Vec::new())
                 })
                 .unwrap(),
