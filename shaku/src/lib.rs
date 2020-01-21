@@ -240,6 +240,7 @@ mod trait_alias;
 pub mod component;
 pub mod container;
 pub mod parameter;
+pub mod provider;
 
 // Main DI Result type mapping
 #[doc(hidden)]

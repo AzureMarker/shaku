@@ -4,7 +4,8 @@ use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
-use crate::container::{Container, ContainerBuildContext, RegisteredType};
+use crate::container::{ComponentMap, Container, ContainerBuildContext, RegisteredType};
+use crate::provider::{Provider, ProviderFn, ProvidedInterface};
 use crate::result::Result as DIResult;
 use crate::Dependency;
 
@@ -19,12 +20,14 @@ use crate::Dependency;
 /// [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build) for more details.
 pub struct ContainerBuilder {
     registration_map: HashMap<TypeId, RegisteredType>,
+    providers: ComponentMap,
 }
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
         ContainerBuilder {
             registration_map: HashMap::new(),
+            providers: ComponentMap::new(),
         }
     }
 }
@@ -95,6 +98,14 @@ impl ContainerBuilder {
         self.registration_map.get_mut(&interface_type_id).unwrap()
     }
 
+    pub fn register_provider<P: Provider>(&mut self) {
+        self.register_provider_lambda(Box::new(P::provide))
+    }
+
+    pub fn register_provider_lambda<I: ProvidedInterface + ?Sized>(&mut self, provider: ProviderFn<I>) {
+        self.providers.insert::<ProviderFn<I>>(provider);
+    }
+
     /// Parse this `ContainerBuilder` content to check if all the registrations are valid.
     /// If so, consume this `ContainerBuilder` to build a [Container]. The
     /// [ContainerBuildContext] struct will be used to build the [Container].
@@ -154,6 +165,6 @@ impl ContainerBuilder {
     /// assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
     /// ```
     pub fn build(self) -> DIResult<Container> {
-        ContainerBuildContext::new(self.registration_map).build()
+        ContainerBuildContext::new(self.registration_map, self.providers).build()
     }
 }

@@ -6,6 +6,7 @@ use shaku_internals::error::Error as DIError;
 
 use crate::component::Interface;
 use crate::container::ComponentMap;
+use crate::provider::{ProvidedInterface, ProviderFn};
 use crate::result::Result as DIResult;
 
 /// Struct containing all the components registered during the build phase, used to `resolve`
@@ -82,13 +83,17 @@ use crate::result::Result as DIResult;
 /// See also [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container {
-    component_map: ComponentMap,
+    components: ComponentMap,
+    providers: ComponentMap,
 }
 
 impl Container {
     /// Create a new Container from the resolved component map
-    pub(crate) fn new(component_map: ComponentMap) -> Self {
-        Container { component_map }
+    pub(crate) fn new(components: ComponentMap, providers: ComponentMap) -> Self {
+        Container {
+            components,
+            providers,
+        }
     }
 
     /// Get a reference to the component registered with the interface `I`. The ownership of
@@ -104,7 +109,7 @@ impl Container {
     /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>()?;
     /// ```
     pub fn resolve<I: Interface + ?Sized>(&self) -> DIResult<Arc<I>> {
-        self.component_map
+        self.components
             .get::<Arc<I>>()
             .map(Arc::clone)
             .ok_or_else(|| {
@@ -113,6 +118,29 @@ impl Container {
                     ::std::any::type_name::<I>()
                 ))
             })
+    }
+
+    /// Create a component using the provider registered with the interface `I`.
+    /// Each call will create a new instance of the component.
+    ///
+    /// # Errors
+    /// Returns a [Error::ResolveError](enum.Error.html) if the provider is not
+    /// found, or if the provider failed while creating the component.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>()?;
+    /// ```
+    pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> DIResult<Box<I>> {
+        let provider = self.providers.get::<ProviderFn<I>>().ok_or_else(|| {
+            DIError::ResolveError(format!(
+                "no provider for {} registered in this container",
+                ::std::any::type_name::<I>()
+            ))
+        })?;
+
+        provider(self)
     }
 
     /// Get a reference to the component registered with the interface `T`.
@@ -127,7 +155,7 @@ impl Container {
     /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>()?;
     /// ```
     pub fn resolve_ref<I: Interface + ?Sized>(&self) -> DIResult<&I> {
-        let component = self.component_map.get::<Arc<I>>().ok_or_else(|| {
+        let component = self.components.get::<Arc<I>>().ok_or_else(|| {
             DIError::ResolveError(format!(
                 "no component {} registered in this container",
                 ::std::any::type_name::<I>()
@@ -154,7 +182,7 @@ impl Container {
     /// ```
     /// [Error::ResolveError]: enum.Error.html
     pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> DIResult<&mut I> {
-        let component = self.component_map.get_mut::<Arc<I>>().ok_or_else(|| {
+        let component = self.components.get_mut::<Arc<I>>().ok_or_else(|| {
             DIError::ResolveError(format!(
                 "no component {} registered in this container",
                 ::std::any::type_name::<I>()

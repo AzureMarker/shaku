@@ -16,13 +16,18 @@ use crate::Result as DIResult;
 pub struct ContainerBuildContext {
     registration_map: HashMap<TypeId, RegisteredType>,
     resolved_map: ComponentMap,
+    providers: ComponentMap,
 }
 
 impl ContainerBuildContext {
-    pub(crate) fn new(registration_map: HashMap<TypeId, RegisteredType>) -> Self {
+    pub(crate) fn new(
+        registration_map: HashMap<TypeId, RegisteredType>,
+        providers: ComponentMap,
+    ) -> Self {
         ContainerBuildContext {
             registration_map,
             resolved_map: ComponentMap::new(),
+            providers,
         }
     }
 
@@ -35,7 +40,7 @@ impl ContainerBuildContext {
             registration.build(&mut self)?;
         }
 
-        Ok(Container::new(self.resolved_map))
+        Ok(Container::new(self.resolved_map, self.providers))
     }
 
     fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<RegisteredType>> {

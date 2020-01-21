@@ -1,10 +1,13 @@
 use std::ops::Deref;
 
-use rocket::request::FromRequest;
-use rocket::{http::Status, Outcome, Request, State};
+use rocket::outcome::IntoOutcome;
+use rocket::request::{FromRequest, Outcome};
+use rocket::{http::Status, Request, State};
 
 use shaku::component::Interface;
 use shaku::Container;
+use std::sync::Arc;
+use shaku::provider::ProvidedInterface;
 
 /// Used to retrieve a reference to a component from a shaku `Container`.
 /// The container should be stored in Rocket's state. Use this struct as a
@@ -51,21 +54,54 @@ use shaku::Container;
 /// # }
 /// }
 /// ```
-pub struct Inject<'r, T: Interface + ?Sized>(&'r T);
+pub struct Inject<I: Interface + ?Sized>(Arc<I>);
 
-impl<'a, 'r, T: Interface + ?Sized> FromRequest<'a, 'r> for Inject<'r, T> {
-    type Error = ();
+impl<'a, 'r, I: Interface + ?Sized> FromRequest<'a, 'r> for Inject<I> {
+    type Error = String;
 
-    fn from_request(request: &'a Request<'r>) -> Outcome<Self, (Status, Self::Error), ()> {
-        let container: State<'r, Container> = request.guard::<State<Container>>()?;
-        let component = container.inner().resolve_ref::<T>().unwrap();
+    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        let container: State<'r, Container> = request
+            .guard::<State<Container>>()
+            .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))?;
+        let component = container
+            .inner()
+            .resolve::<I>()
+            .map_err(|e| e.to_string())
+            .into_outcome(Status::InternalServerError)?;
 
         Outcome::Success(Inject(component))
     }
 }
 
-impl<'r, T: Interface + ?Sized> Deref for Inject<'r, T> {
-    type Target = T;
+impl<I: Interface + ?Sized> Deref for Inject<I> {
+    type Target = I;
+
+    fn deref(&self) -> &Self::Target {
+        &*self.0
+    }
+}
+
+pub struct InjectProvided<I: ProvidedInterface + ?Sized>(Box<I>);
+
+impl<'a, 'r, I: ProvidedInterface + ?Sized> FromRequest<'a, 'r> for InjectProvided<I> {
+    type Error = String;
+
+    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        let container: State<'r, Container> = request
+            .guard::<State<Container>>()
+            .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))?;
+        let component = container
+            .inner()
+            .provide::<I>()
+            .map_err(|e| e.to_string())
+            .into_outcome(Status::InternalServerError)?;
+
+        Outcome::Success(InjectProvided(component))
+    }
+}
+
+impl<I: ProvidedInterface + ?Sized> Deref for InjectProvided<I> {
+    type Target = I;
 
     fn deref(&self) -> &Self::Target {
         &*self.0
