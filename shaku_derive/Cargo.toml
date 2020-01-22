@@ -1,6 +1,6 @@
 [package]
 name = "shaku_derive"
-version = "0.3.1"
+version = "0.1.0"
 authors = ["Boris <boris@humanenginuity.com>", "Mark <mark.drobnak@gmail.com>"]
 description = "Code generation for shaku dependency injection / inversion of control framework"
 repository = "https://github.com/humanenginuity/shaku_derive"
@@ -15,11 +15,11 @@ name = "shaku_derive"
 proc-macro = true
 
 [dependencies]
-shaku_internals = "~0.2.1"
+shaku_internals = "~0.1.0"
 anymap = "0.12.1"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"]}
 proc-macro2 = "1.0"
 
 [dev-dependencies]
-shaku = "~0.3.1"
+shaku = "~0.1.0"

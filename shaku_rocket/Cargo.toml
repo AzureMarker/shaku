@@ -5,7 +5,7 @@ authors = ["Mark <mark.drobnak@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-shaku = "~0.3.1"
+shaku = "~0.1.0"
 rocket = "0.4"
 
 [patch.crates-io]
