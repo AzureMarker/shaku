@@ -220,6 +220,7 @@ pub extern crate anymap;
 extern crate log;
 
 // Reexport Component derive
+#[cfg(feature = "derive")]
 pub use shaku_derive::Component;
 
 // Reexport Error type from shaku_internals
