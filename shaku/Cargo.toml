@@ -1,12 +1,10 @@
 [package]
 name = "shaku"
 version = "0.1.0"
-authors = ["Boris <boris@humanenginuity.com>", "Mark <mark.drobnak@gmail.com>"]
-documentation = "https://docs.rs/crate/shaku"
-repository = "https://github.com/humanenginuity/shaku"
-categories = ["rust-patterns"]
-description = "Dependency Inversion / Dependency Injection / Inversion of control container for Rust"
-keywords = ["di", "ioc", "SOLID", "dependency", "inversion"]
+authors = ["Mark <mark.drobnak@gmail.com>"]
+description = "Dependency Injection for Rust"
+repository = "https://github.com/Mcat12/shaku"
+keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 

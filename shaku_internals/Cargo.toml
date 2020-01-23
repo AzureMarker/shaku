@@ -1,12 +1,10 @@
 [package]
 name = "shaku_internals"
 version = "0.1.0"
-authors = ["Boris <boris@humanenginuity.com>", "Mark <mark.drobnak@gmail.com>"]
+authors = ["Mark <mark.drobnak@gmail.com>"]
 description = "Common code for shaku crates"
-repository = "https://github.com/humanenginuity/shaku_internals"
-documentation = "https://docs.rs/crate/shaku"
-keywords = ["di", "ioc", "injection", "inversion", "control"]
-categories = ["rust-patterns"]
+repository = "https://github.com/Mcat12/shaku"
+keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 
