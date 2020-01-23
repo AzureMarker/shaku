@@ -13,7 +13,7 @@ mod parameter_map;
 
 macro_rules! implement {
     ($name:ident, $base:ident, $(+ $bounds:ident)*, $(+ $other_bounds:ident)*) => {
-        #[allow(dead_code)]
+        #[derive(Debug)]
         struct $name {
             name: String,
             type_of: TypeId,
@@ -21,7 +21,6 @@ macro_rules! implement {
         }
 
         impl $name {
-            #[allow(dead_code)]
             fn new<S: Into<String>, V: $base $(+ $bounds)* $(+ $other_bounds)*>(name: S, value: V) -> $name {
                 $name {
                     name: name.into(),
@@ -36,7 +35,6 @@ macro_rules! implement {
 macro_rules! implement_method {
     ([get_value] $name:ident, $base:ident, $(+ $bounds:ident)*, downcast) => {
         impl $name {
-            #[allow(dead_code)]
             fn get_value<V: $base $(+ $bounds)*>(self) -> Option<Box<V>> {
                 self.value.downcast::<V>().ok()
             }
@@ -45,7 +43,6 @@ macro_rules! implement_method {
 
     ([get_value] $name:ident, $base:ident, $(+ $bounds:ident)*, downcast_unchecked) => {
         impl $name {
-            #[allow(dead_code)]
             fn get_value<V: $base $(+ $bounds)*>(self) -> Option<Box<V>> {
                 Some(unsafe { self.value.downcast_unchecked::<V>() })
             }
@@ -56,25 +53,5 @@ macro_rules! implement_method {
 implement!(Parameter,Any,,);
 implement_method!([get_value] Parameter,Any,,downcast);
 
-impl ::std::fmt::Debug for Parameter {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(
-            f,
-            "Parameter {{name: {:?}, type_of: {:?}, value: {:?} }}",
-            &self.name, &self.type_of, &self.value
-        )
-    }
-}
-
 implement!(SendParameter,Any,+Send,);
 implement_method!([get_value] SendParameter,Any,+Send,downcast);
-
-impl ::std::fmt::Debug for SendParameter {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(
-            f,
-            "SendParameter {{name: {:?}, type_of: {:?}, value: {:?} }}",
-            &self.name, &self.type_of, &self.value
-        )
-    }
-}

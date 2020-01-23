@@ -18,7 +18,7 @@ pub type ParameterMap = AnySendParameterMap;
 macro_rules! implement {
     ($name:ident,$param:ident, $any_base:ident, $(+ $bounds:ident)*) => {
         /// Simplified variant of AnyMap used to store parameters passed to a [RegisteredType](../container/struct.RegisteredType.html) or a [Container](../container/struct.Container.html).
-        #[allow(dead_code)]
+        #[derive(Debug)]
         pub struct $name {
             map: HashMap<Key, $param>,
             type_map: HashMap<Key, TypeId>,
@@ -34,8 +34,6 @@ macro_rules! implement {
         }
 
         impl $name {
-            #![allow(dead_code)]
-
             pub fn new() -> Self {
                 Self::default()
             }
@@ -96,26 +94,6 @@ macro_rules! implement {
 
 implement!(AnyParameterMap, Parameter, Any,);
 implement!(AnySendParameterMap,SendParameter,Any,+Send);
-
-impl ::std::fmt::Debug for AnyParameterMap {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(
-            f,
-            "AnyParameterMap {{ map: {:?}, type_map: {:?} }}",
-            &self.map, &self.type_map
-        )
-    }
-}
-
-impl ::std::fmt::Debug for AnySendParameterMap {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        write!(
-            f,
-            "AnySendParameterMap {{ map: {:?}, type_map: {:?} }}",
-            &self.map, &self.type_map
-        )
-    }
-}
 
 #[cfg(test)]
 mod tests {
