@@ -1,7 +1,7 @@
 [package]
 name = "shaku_internals"
 version = "0.1.0"
-authors = ["Mark <mark.drobnak@gmail.com>"]
+authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Common code for shaku crates"
 repository = "https://github.com/Mcat12/shaku"
 keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
