@@ -1,8 +1,6 @@
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 
-use unsafe_any::UnsafeAny;
-
 use crate::parameter::*;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -98,8 +96,6 @@ macro_rules! implement {
 
 implement!(AnyParameterMap, Parameter, Any,);
 implement!(AnySendParameterMap,SendParameter,Any,+Send);
-implement!(UnsafeAnyParameterMap, UnsafeParameter, UnsafeAny,);
-implement!(UnsafeAnySendSyncParameterMap,UnsafeSendSyncParameter,UnsafeAny,+Send+Sync);
 
 impl ::std::fmt::Debug for AnyParameterMap {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
@@ -179,5 +175,4 @@ mod tests {
 
     generate_insert_remove_test!(AnyParameterMap, Parameter);
     generate_insert_remove_test!(AnySendParameterMap, SendParameter);
-    generate_insert_remove_test!(UnsafeAnySendSyncParameterMap, UnsafeSendSyncParameter);
 }

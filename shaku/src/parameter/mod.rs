@@ -7,8 +7,6 @@
 
 use std::any::{Any, TypeId};
 
-use unsafe_any::{UnsafeAny, UnsafeAnyExt};
-
 pub use self::parameter_map::*;
 
 mod parameter_map;
@@ -80,8 +78,3 @@ impl ::std::fmt::Debug for SendParameter {
         )
     }
 }
-implement!(UnsafeParameter,UnsafeAny,,);
-implement_method!([get_value] UnsafeParameter,UnsafeAny,, downcast_unchecked);
-
-implement!(UnsafeSendSyncParameter,UnsafeAny,+Send+Sync,);
-implement_method!([get_value] UnsafeSendSyncParameter,UnsafeAny,+Send+Sync, downcast_unchecked);
