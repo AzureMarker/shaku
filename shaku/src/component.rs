@@ -20,9 +20,9 @@ pub trait Component: 'static {
 
     /// Use the build context and parameters to create the component. The
     /// created component must be inserted into the build context via
-    /// [`ContainerBuildContext::insert_resolved_component`].
+    /// [`ContainerBuildContext::insert`].
     ///
-    /// [`ContainerBuildContext::insert_resolved_component`]: ../container/struct.ContainerBuildContext.html#method.insert_resolved_component
+    /// [`ContainerBuildContext::insert`]: ../container/struct.ContainerBuildContext.html#method.insert
     fn build(
         build_context: &mut ContainerBuildContext,
         params: &mut ParameterMap,

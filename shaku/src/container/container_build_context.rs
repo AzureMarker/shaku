@@ -31,7 +31,7 @@ impl ContainerBuildContext {
         let sorted_registrations = self.sort_registrations_by_dependencies()?;
 
         for registration in sorted_registrations {
-            // Each component will add itself into resolved_map via insert_resolved_component
+            // Each component will add itself into resolved_map via ContainerBuildContext::insert
             registration.build(&mut self)?;
         }
 
@@ -86,7 +86,7 @@ impl ContainerBuildContext {
     ///
     /// [`Dependency`]: struct.Dependency.html
     /// [`Component::dependencies`]: ../component/trait.Component.html#tymethod.dependencies
-    pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
+    pub fn resolve<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
         self.resolved_map
             .get::<Arc<I>>()
             .map(Arc::clone)
@@ -103,7 +103,7 @@ impl ContainerBuildContext {
     /// component directly (the generic type information is retained this way).
     ///
     /// [Component::build]: ../component/trait.Component.html#tymethod.build
-    pub fn insert_resolved_component<I: Interface + ?Sized>(&mut self, component: Box<I>) {
+    pub fn insert<I: Interface + ?Sized>(&mut self, component: Box<I>) {
         self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
 }

@@ -44,7 +44,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
             .map(|property| {
                 /*
                 Building the following output >
-                let __di_output = build_context.resolve_component::<IOutput>()?;
+                let __di_output = build_context.resolve::<IOutput>()?;
 
                 or
 
@@ -64,7 +64,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                     let property_type = &property.ty;
 
                     tokens.append_all(quote! {
-                        build_context.resolve_component::<#property_type>()?;
+                        build_context.resolve::<#property_type>()?;
                     });
                 } else {
                     // Other properties => lookup in the parameters with name and type
@@ -141,7 +141,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                 let component = Box::new(#component_name {
                     #properties_block
                 });
-                build_context.insert_resolved_component::<Self::Interface>(component);
+                build_context.insert::<Self::Interface>(component);
 
                 Ok(())
             }
