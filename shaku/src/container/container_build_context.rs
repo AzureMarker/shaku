@@ -81,6 +81,11 @@ impl ContainerBuildContext {
         Ok(())
     }
 
+    /// Resolve a component. The component interface must be listed as a
+    /// [`Dependency`] in [`Component::dependencies`].
+    ///
+    /// [`Dependency`]: struct.Dependency.html
+    /// [`Component::dependencies`]: ../component/trait.Component.html#tymethod.dependencies
     pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
         self.resolved_map
             .get::<Arc<I>>()
@@ -93,6 +98,11 @@ impl ContainerBuildContext {
             })
     }
 
+    /// Insert the resolved component into the build context. This must be
+    /// called at the end of [Component::build] in lieu of returning the
+    /// component directly (the generic type information is retained this way).
+    ///
+    /// [Component::build]: ../component/trait.Component.html#tymethod.build
     pub fn insert_resolved_component<I: Interface + ?Sized>(&mut self, component: Box<I>) {
         self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
