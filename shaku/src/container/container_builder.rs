@@ -64,7 +64,7 @@ impl ContainerBuilder {
     /// or [with_typed_parameter()](struct.RegisteredType.html#method.with_typed_parameter)
     /// to add parameters to be used to instantiate this Component.
     ///
-    /// [Component]: component/trait.Component.html
+    /// [Component]: ../component/trait.Component.html
     pub fn register_lambda<I: Interface + ?Sized>(
         &mut self,
         component_name: &str,

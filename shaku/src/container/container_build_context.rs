@@ -12,7 +12,7 @@ use crate::Result as DIResult;
 /// used during [Component::build].
 ///
 /// [Container]: struct.Container.html
-/// [Component::build]: component/trait.Component.html#tymethod.build
+/// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext {
     registration_map: HashMap<TypeId, RegisteredType>,
     resolved_map: ComponentMap,
