@@ -1,3 +1,5 @@
+//! This module contains trait definitions for components and interfaces
+
 use std::any::Any;
 
 use crate::parameter::ParameterMap;
