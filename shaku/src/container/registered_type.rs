@@ -9,21 +9,15 @@ use crate::parameter::*;
 /// Represents a component registration. It is exposed in order to provide
 /// parameters for the component.
 pub struct RegisteredType {
-    #[doc(hidden)]
     pub(crate) component: String,
-    #[doc(hidden)]
     pub(crate) interface_id: TypeId,
-    #[doc(hidden)]
     pub(crate) builder: ComponentBuildFn,
-    #[doc(hidden)]
     pub(crate) dependencies: Vec<Dependency>,
-    #[doc(hidden)]
     pub(crate) parameters: ParameterMap,
 }
 
 impl RegisteredType {
     /// Create a new RegisteredType.
-    #[doc(hidden)]
     pub(crate) fn new(
         component: String,
         interface_id: TypeId,
