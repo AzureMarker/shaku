@@ -4,7 +4,59 @@
 # Shaku
 
 Shaku is a Rust dependency injection library. See the [docs] for more details,
-including a getting started example.
+including a getting started guide.
+
+## Example
+```rust
+use shaku::{Component, ContainerBuilder, Interface};
+use std::sync::Arc;
+
+trait IOutput: Interface {
+    fn write(&self, content: String);
+}
+
+impl IOutput for ConsoleOutput {
+    fn write(&self, content: String) {
+        println!("{}", content);
+    }
+}
+
+#[derive(Component)]
+#[shaku(interface = IOutput)]
+struct ConsoleOutput;
+
+trait IDateWriter: Interface {
+    fn write_date(&self);
+}
+
+impl IDateWriter for TodayWriter {
+    fn write_date(&self) {
+        self.output.write(format!("Today is {} {}", self.today, self.year));
+    }
+}
+
+#[derive(Component)]
+#[shaku(interface = IDateWriter)]
+struct TodayWriter {
+    #[shaku(inject)]
+    output: Arc<dyn IOutput>,
+    today: String,
+    year: usize,
+}
+
+fn main() {
+    let mut builder = ContainerBuilder::new();
+    builder.register_type::<ConsoleOutput>();
+    builder
+        .register_type::<TodayWriter>()
+        .with_named_parameter("today", "Jan 26".to_string())
+        .with_typed_parameter::<usize>(2020);
+    let container = builder.build().unwrap();
+
+    let writer: &dyn IDateWriter = container.resolve_ref().unwrap();
+    writer.write_date();
+}
+```
 
 ## Acknowledgements
 This library started off as "he_di" (later renamed to "shaku") under the

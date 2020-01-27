@@ -132,7 +132,7 @@
 //! If you don't use the derive macro, return [`Dependency`] objects in [`Component::dependencies`]
 //! and inject them manually in [`Component::build`].
 //!
-//! ## Component Registration
+//! ## Register components
 //! At application startup, create a [`ContainerBuilder`] and register your components with it. It
 //! will create a [`Container`] which you can use to resolve components.
 //!
@@ -206,7 +206,7 @@
 //!     .with_typed_parameter::<usize>(2020);
 //! ```
 //!
-//! ## Resolving components
+//! ## Resolve components
 //! During application execution, you’ll need to make use of the components you registered. You do
 //! this by resolving them from a [`Container`] with one of `resolve` methods.
 //!
