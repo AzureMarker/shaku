@@ -11,7 +11,7 @@ pub struct Dependency {
 
 impl Dependency {
     /// Create a `Dependency` instance representing a dependency on `T`. The
-    /// `name` field is the name of the attribute in the component struct where
+    /// `name` field is the name of the property in the component struct where
     /// the dependency is to be injected, for debugging purposes.
     pub fn new<T: ?Sized + 'static>(name: String) -> Self {
         Dependency {
