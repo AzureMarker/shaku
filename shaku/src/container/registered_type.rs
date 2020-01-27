@@ -43,7 +43,7 @@ impl RegisteredType {
     ///
     /// `name` must match one of the struct's properties.
     pub fn with_named_parameter<
-        S: Into<String> + Clone,
+        S: Into<String>,
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
     >(
@@ -51,14 +51,16 @@ impl RegisteredType {
         name: S,
         value: V,
     ) -> &mut Self {
+        let name = name.into();
+
         if self
             .parameters
             .insert_with_name(name.clone(), value)
             .is_some()
         {
             warn!(
-                "::RegisteredType::with_named_parameter::warning overwritting existing value for property {}",
-                &name.into()
+                "::RegisteredType::with_named_parameter::warning overwriting existing value for property {}",
+                &name
             );
         }
         self
@@ -76,7 +78,7 @@ impl RegisteredType {
     ) -> &mut Self {
         if self.parameters.insert_with_type(value).is_some() {
             warn!(
-                "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
+                "::RegisteredType::with_typed_parameter::warning overwriting existing value for property with type {}",
                 ::std::any::type_name::<V>()
             );
         }
@@ -143,7 +145,9 @@ mod tests {
         registered_type.with_named_parameter("test", "value 1".to_string());
         registered_type.with_named_parameter("test", "value 2".to_string());
 
-        let value = registered_type.parameters.remove_with_name::<String>("test");
+        let value = registered_type
+            .parameters
+            .remove_with_name::<String>("test");
         assert_eq!(*value.unwrap(), "value 2".to_string());
 
         registered_type.with_typed_parameter(17 as usize);
