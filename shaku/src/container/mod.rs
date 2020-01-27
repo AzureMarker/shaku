@@ -64,16 +64,16 @@
 //! [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
 //! [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
 
+pub use self::container::Container;
 pub use self::container_build_context::ContainerBuildContext;
-pub use self::container_builder::*;
+pub use self::container_builder::ContainerBuilder;
 pub use self::dependency::Dependency;
-pub use self::map_container::Container;
 pub use self::registered_type::RegisteredType;
 
+mod container;
 mod container_build_context;
 mod container_builder;
 mod dependency;
-mod map_container;
 mod registered_type;
 
 #[cfg(not(feature = "thread_safe"))]

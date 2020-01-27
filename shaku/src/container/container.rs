@@ -102,16 +102,17 @@ impl Container {
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: Interface {}
+    /// # impl Foo for FooImpl {}
+    /// #
     /// # #[derive(Component)]
     /// # #[shaku(interface = Foo)]
     /// # struct FooImpl;
-    /// # impl Foo for FooImpl {}
     /// #
     /// # let mut builder = ContainerBuilder::new();
     /// # builder.register_type::<FooImpl>();
     /// # let container = builder.build().unwrap();
     /// #
-    /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>()?;
+    /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
     /// ```
     pub fn resolve<I: Interface + ?Sized>(&self) -> DIResult<Arc<I>> {
         self.component_map
@@ -138,16 +139,17 @@ impl Container {
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: Interface {}
+    /// # impl Foo for FooImpl {}
+    /// #
     /// # #[derive(Component)]
     /// # #[shaku(interface = Foo)]
     /// # struct FooImpl;
-    /// # impl Foo for FooImpl {}
     /// #
     /// # let mut builder = ContainerBuilder::new();
     /// # builder.register_type::<FooImpl>();
     /// # let container = builder.build().unwrap();
     /// #
-    /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>()?;
+    /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
     /// ```
     pub fn resolve_ref<I: Interface + ?Sized>(&self) -> DIResult<&I> {
         let component = self.component_map.get::<Arc<I>>().ok_or_else(|| {
@@ -177,16 +179,17 @@ impl Container {
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: Interface {}
+    /// # impl Foo for FooImpl {}
+    /// #
     /// # #[derive(Component)]
     /// # #[shaku(interface = Foo)]
     /// # struct FooImpl;
-    /// # impl Foo for FooImpl {}
     /// #
     /// # let mut builder = ContainerBuilder::new();
     /// # builder.register_type::<FooImpl>();
     /// # let mut container = builder.build().unwrap();
     /// #
-    /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>()?;
+    /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
     /// ```
     /// [Error::ResolveError]: enum.Error.html
     pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> DIResult<&mut I> {
