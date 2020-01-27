@@ -338,9 +338,6 @@
 // Linting
 #![deny(unused_must_use)]
 
-// Reexport of [anymap](https://crates.io/crates/anymap)
-#[doc(hidden)]
-pub extern crate anymap;
 #[macro_use]
 extern crate log;
 
