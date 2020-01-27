@@ -4,7 +4,7 @@ use shaku_internals::error::Error as DIError;
 
 use crate::component::Interface;
 use crate::container::ComponentMap;
-use crate::result::Result as DIResult;
+use crate::Result as DIResult;
 
 /// Resolves components registered during the build phase.
 ///

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
 use crate::container::{Container, ContainerBuildContext, RegisteredType};
-use crate::result::Result as DIResult;
+use crate::Result as DIResult;
 use crate::Dependency;
 
 /// Registers components in order to build a [`Container`].

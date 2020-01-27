@@ -106,7 +106,7 @@ mod tests {
 
     use crate::component::{Component, Interface};
     use crate::parameter::*;
-    use crate::result::Result;
+    use crate::Result;
     use crate::ContainerBuildContext;
     use crate::Dependency;
 
