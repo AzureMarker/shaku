@@ -1,4 +1,3 @@
-//! Implementation of a `Container`
 
 use std::sync::Arc;
 
@@ -8,19 +7,16 @@ use crate::component::Interface;
 use crate::container::ComponentMap;
 use crate::result::Result as DIResult;
 
-/// Struct containing all the components registered during the build phase, used to `resolve`
-/// Components.
+/// Resolves components registered during the build phase.
 ///
-/// A Container can't be used as a builder/factory of components from the same type, as only a
-/// single instance of each component is kept. These instances are made at container build time,
-/// during [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build).
-/// Use [resolve_ref()](struct.Container.html#method.resolve_ref) or
-/// [resolve_mut()](struct.Container.html#method.resolve_mut)
-/// if you just want to borrow a (mutable) reference of a Component.
+/// A `Container` stores a single instance of each component. These instances are made at container
+/// build time, during [`ContainerBuilder::build`].
+///
+/// [`ContainerBuilder::build`]: struct.ContainerBuilder.html#method.build
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```
 /// use std::sync::Arc;
 ///
 /// use shaku::{Component, Interface};
@@ -54,18 +50,18 @@ use crate::result::Result as DIResult;
 /// let mut container = builder.build().unwrap();
 ///
 /// {
-///     let foo : &dyn FooValue = container.resolve_ref::<dyn FooValue>().unwrap();
+///     let foo: &dyn FooValue = container.resolve_ref().unwrap();
 ///     assert_eq!(foo.get_value(), 17);
 /// }
 ///
 /// {
-///     let foo : &mut dyn FooValue = container.resolve_mut::<dyn FooValue>().unwrap();
+///     let foo: &mut dyn FooValue = container.resolve_mut().unwrap();
 ///     assert_eq!(foo.get_value(), 17);
 ///     foo.set_value(99);
 /// }
 ///
 /// {
-///     let foo : Arc<dyn FooValue> = container.resolve::<dyn FooValue>().unwrap();
+///     let foo: Arc<dyn FooValue> = container.resolve().unwrap();
 ///     assert_eq!(foo.get_value(), 99);
 /// }
 ///
@@ -79,14 +75,15 @@ use crate::result::Result as DIResult;
 ///     assert_eq!(foo.get_value(), 99);
 /// }
 /// ```
-/// See also [module documentation](index.html) for more details.
+///
+/// See also the [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container {
     component_map: ComponentMap,
 }
 
 impl Container {
-    /// Create a new Container from the resolved component map
+    /// Create a new `Container` from the resolved component map
     pub(crate) fn new(component_map: ComponentMap) -> Self {
         Container { component_map }
     }
@@ -96,11 +93,24 @@ impl Container {
     ///
     /// # Errors
     /// Returns a [Error::ResolveError](enum.Error.html) if the component is not found
-    /// (most likely your component wasn't registered)
+    /// (most likely it wasn't registered)
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```
+    /// # use shaku::{Component, Interface, ContainerBuilder};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: Interface {}
+    /// # #[derive(Component)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # let mut builder = ContainerBuilder::new();
+    /// # builder.register_type::<FooImpl>();
+    /// # let container = builder.build().unwrap();
+    /// #
     /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>()?;
     /// ```
     pub fn resolve<I: Interface + ?Sized>(&self) -> DIResult<Arc<I>> {
@@ -115,15 +125,28 @@ impl Container {
             })
     }
 
-    /// Get a reference to the component registered with the interface `T`.
+    /// Get a reference to the component registered with the interface `I`.
     ///
     /// # Errors
     /// Returns a [Error::ResolveError](enum.Error.html) if the component is not found
-    /// (most likely your component wasn't registered)
+    /// (most likely it wasn't registered)
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// # use shaku::{Component, Interface, ContainerBuilder};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: Interface {}
+    /// # #[derive(Component)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # let mut builder = ContainerBuilder::new();
+    /// # builder.register_type::<FooImpl>();
+    /// # let container = builder.build().unwrap();
+    /// #
     /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>()?;
     /// ```
     pub fn resolve_ref<I: Interface + ?Sized>(&self) -> DIResult<&I> {
@@ -149,8 +172,21 @@ impl Container {
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
-    /// let foo: &dyn mut Foo = container.resolve_mut::<dyn Foo>()?;
+    /// ```rust
+    /// # use shaku::{Component, Interface, ContainerBuilder};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: Interface {}
+    /// # #[derive(Component)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # let mut builder = ContainerBuilder::new();
+    /// # builder.register_type::<FooImpl>();
+    /// # let mut container = builder.build().unwrap();
+    /// #
+    /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>()?;
     /// ```
     /// [Error::ResolveError]: enum.Error.html
     pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> DIResult<&mut I> {
