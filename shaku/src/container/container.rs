@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 
 use shaku_internals::error::Error as DIError;
