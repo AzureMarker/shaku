@@ -93,9 +93,10 @@
 //! Components can depend on other components. In our example, `TodayWriter` requires an `IOutput`
 //! component.
 //!
-//! To express this dependency (when using the derive macro), use the `#[shaku(inject)]` attribute
-//! within your struct to declare the property as a
+//! To express this dependency, first make sure the property is declared as a
 //! [trait object](https://doc.rust-lang.org/book/ch17-02-trait-objects.html) wrapped in an [`Arc`].
+//! Then (when using the derive macro) use the `#[shaku(inject)]` attribute on the property to tell
+//! shaku to inject the dependency.
 //!
 //! In our example:
 //!
@@ -167,10 +168,9 @@
 //! registering a component into a [`ContainerBuilder`].
 //!
 //! You can register parameters either using their property name or their property type. In the
-//! latter case, you need to ensure that it is unique.
+//! latter case, you need to ensure that the type is unique.
 //!
-//! Passing parameters is done using the [`with_named_parameter`] or [`with_typed_parameter`]
-//! chained methods:
+//! Passing parameters is done using [`with_named_parameter`] and [`with_typed_parameter`]\:
 //!
 //! ```
 //! # use shaku::{Component, ContainerBuilder, Interface};
