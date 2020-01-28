@@ -26,7 +26,9 @@ impl ParameterMap {
         }
     }
 
-    pub fn insert_with_name<S: Into<String>, V: Any>(&mut self, key: S, value: V) -> Option<V> {
+    /// Insert a parameter based on property name. If a parameter was already inserted
+    /// with that name and type (via this method), the old value is returned.
+    pub(crate) fn insert_with_name<S: Into<String>, V: Any>(&mut self, key: S, value: V) -> Option<V> {
         let key = key.into();
 
         self.map
@@ -34,7 +36,9 @@ impl ParameterMap {
             .and_then(Parameter::get_value)
     }
 
-    pub fn insert_with_type<V: Any>(&mut self, value: V) -> Option<V> {
+    /// Insert a parameter based on property type. If a parameter was already inserted
+    /// with that type (via this method), the old value is returned.
+    pub(crate) fn insert_with_type<V: Any>(&mut self, value: V) -> Option<V> {
         self.map
             .insert(
                 Key::Id(TypeId::of::<V>()),
@@ -43,6 +47,10 @@ impl ParameterMap {
             .and_then(Parameter::get_value)
     }
 
+    /// Remove a parameter based on property name. It must have been inserted
+    /// via [`with_named_parameter`]
+    ///
+    /// [`with_named_parameter`]: ../container/struct.RegisteredType.html#method.with_named_parameter
     pub fn remove_with_name<V: Any>(&mut self, key: &str) -> Option<V> {
         let parameter = self.map.get(&Key::String(key.into()))?;
 
@@ -55,6 +63,10 @@ impl ParameterMap {
         }
     }
 
+    /// Remove a parameter based on property type. It must have been inserted
+    /// via [`with_typed_parameter`]
+    ///
+    /// [`with_typed_parameter`]: ../container/struct.RegisteredType.html#method.with_typed_parameter
     pub fn remove_with_type<V: Any>(&mut self) -> Option<V> {
         let parameter = self.map.get(&Key::Id(TypeId::of::<V>()))?;
 
