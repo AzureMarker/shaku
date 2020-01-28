@@ -148,6 +148,6 @@ mod tests {
         registered_type.with_typed_parameter(18 as usize);
 
         let value = registered_type.parameters.remove_with_type::<usize>();
-        assert_eq!(*value.unwrap(), 18);
+        assert_eq!(value.unwrap(), 18);
     }
 }

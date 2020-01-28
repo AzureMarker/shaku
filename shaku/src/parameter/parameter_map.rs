@@ -9,148 +9,112 @@ enum Key {
     Id(TypeId),
 }
 
-#[cfg(not(feature = "thread_safe"))]
-pub type ParameterMap = AnyParameterMap;
-#[cfg(feature = "thread_safe")]
-pub type ParameterMap = AnySendParameterMap;
+/// Used to store parameters passed to a [`RegisteredType`]. The parameters are
+/// later used in [`Component::build`]
+///
+/// [`RegisteredType`]: ../container/struct.RegisteredType.html
+/// [`Component::build`]: ../component/trait.Component.html#tymethod.build
+#[derive(Debug)]
+pub struct ParameterMap {
+    map: HashMap<Key, Parameter>,
+}
 
-// Common methods
-macro_rules! implement {
-    ($name:ident,$param:ident, $any_base:ident, $(+ $bounds:ident)*) => {
-        /// Simplified variant of AnyMap used to store parameters passed to a [RegisteredType](../container/struct.RegisteredType.html) or a [Container](../container/struct.Container.html).
-        #[derive(Debug)]
-        pub struct $name {
-            map: HashMap<Key, $param>,
-            type_map: HashMap<Key, TypeId>,
+impl ParameterMap {
+    pub(crate) fn new() -> Self {
+        ParameterMap {
+            map: HashMap::new(),
         }
+    }
 
-        impl Default for $name {
-            fn default() -> Self {
-                $name {
-                    map: HashMap::new(),
-                    type_map: HashMap::new(),
-                }
-            }
+    pub fn insert_with_name<S: Into<String>, V: Any>(&mut self, key: S, value: V) -> Option<V> {
+        let key = key.into();
+
+        self.map
+            .insert(Key::String(key.clone()), Parameter::new(key, value))
+            .and_then(Parameter::get_value)
+    }
+
+    pub fn insert_with_type<V: Any>(&mut self, value: V) -> Option<V> {
+        self.map
+            .insert(
+                Key::Id(TypeId::of::<V>()),
+                Parameter::new("(dummy name)", value),
+            )
+            .and_then(Parameter::get_value)
+    }
+
+    pub fn remove_with_name<V: Any>(&mut self, key: &str) -> Option<V> {
+        let parameter = self.map.get(&Key::String(key.into()))?;
+
+        if parameter.type_id == TypeId::of::<V>() {
+            self.map
+                .remove(&Key::String(key.into()))
+                .and_then(Parameter::get_value)
+        } else {
+            None
         }
+    }
 
-        impl $name {
-            pub fn new() -> Self {
-                Self::default()
-            }
+    pub fn remove_with_type<V: Any>(&mut self) -> Option<V> {
+        let parameter = self.map.get(&Key::Id(TypeId::of::<V>()))?;
 
-            pub fn insert_with_name<S: Into<String> + Clone, V: $any_base $(+ $bounds)*>(&mut self, key: S, value: V) -> Option<V> {
-                // Save type information
-                self.type_map.insert(Key::String(key.clone().into()), TypeId::of::<V>());
-                // Save value
-                self.map.insert(Key::String(key.clone().into()), $param::new(key, value))
-                    .and_then(|old_value| old_value.get_value())
-                    .map(|boxed_value| *boxed_value)
-                    .unwrap_or(None)
-            }
-
-            pub fn insert_with_type<V: $any_base $(+ $bounds)*>(&mut self, value: V) -> Option<V> {
-                // Save type information alongside value
-                self.type_map.insert(Key::Id(TypeId::of::<V>()), TypeId::of::<V>());
-                // Save value
-                self.map.insert(Key::Id(TypeId::of::<V>()), $param::new::<String, V>("(dummy name)".to_string(), value))
-                    .and_then(|old_value| old_value.get_value())
-                    .map(|boxed_value| *boxed_value)
-                    .unwrap_or(None)
-            }
-
-            pub fn remove_with_name<V: $any_base $(+ $bounds)*>(&mut self, key: &str) -> Option<Box<V>> {
-                // Check type
-                match self.type_map.get(&Key::String(key.into())) {
-                    Some(registered_type) => {
-                        if *registered_type == TypeId::of::<V>() {
-                            self.map.remove(&Key::String(key.into()))
-                                .map(|parameter| parameter.get_value::<V>())
-                                .unwrap_or(None)
-                        } else {
-                            None
-                        }
-                    },
-                    None => None,
-                }
-            }
-
-            pub fn remove_with_type<V: $any_base $(+ $bounds)*>(&mut self) -> Option<Box<V>> {
-                match self.type_map.get(&Key::Id(TypeId::of::<V>())) {
-                    Some(registered_type) => {
-                        if *registered_type == TypeId::of::<V>() {
-                            self.map.remove(&Key::Id(TypeId::of::<V>()))
-                                .map(|parameter| parameter.get_value::<V>())
-                                .unwrap_or(None)
-                        } else {
-                            None
-                        }
-                    },
-                    None => None,
-                }
-            }
+        if parameter.type_id == TypeId::of::<V>() {
+            self.map
+                .remove(&Key::Id(TypeId::of::<V>()))
+                .and_then(Parameter::get_value)
+        } else {
+            None
         }
     }
 }
 
-implement!(AnyParameterMap, Parameter, Any,);
-implement!(AnySendParameterMap,SendParameter,Any,+Send);
-
 #[cfg(test)]
 mod tests {
-    #![allow(non_snake_case)]
+    use super::*;
 
-    use crate::parameter::*;
+    #[test]
+    fn parameter_map() {
+        let mut map = ParameterMap::new();
 
-    macro_rules! generate_insert_remove_test {
-        ($map:ident, $param:ident) => {
-            #[test]
-            fn $map() {
-                let mut map: $map = $map::new();
+        // Can insert any type of value
+        map.insert_with_name("key 1", "value 1".to_string());
+        map.insert_with_name("key 2", "value 2");
+        map.insert_with_name("key 3", 123 as usize);
+        map.insert_with_name("key 4", 123.323 as f32);
+        map.insert_with_name("key 4", true);
 
-                // Can insert any type of value
-                map.insert_with_name("key 1", "value 1".to_string());
-                map.insert_with_name("key 2", "value 2");
-                map.insert_with_name("key 3", 123 as usize);
-                map.insert_with_name("key 4", 123.323 as f32);
-                map.insert_with_name("key 4", true);
+        // Can get typed data back
+        let x = map.remove_with_name::<String>("key 1").unwrap();
+        assert_eq!(x, "value 1".to_string());
 
-                // Can get typed data back
-                let x = *map.remove_with_name::<String>("key 1").unwrap();
-                assert_eq!(x, "value 1".to_string());
+        // Can't cast into anything
+        let x = map.remove_with_name::<Parameter>("key 2");
+        assert!(x.is_none());
 
-                // Can't cast into anything
-                let x = map.remove_with_name::<$param>("key 2");
-                assert!(x.is_none());
+        assert_eq!(
+            map.remove_with_name::<usize>(&"key 3".to_string()).unwrap(),
+            123
+        );
+        assert_eq!(map.remove_with_name::<bool>("key 4").unwrap(), true); // overwrite data
 
-                assert_eq!(
-                    *map.remove_with_name::<usize>(&"key 3".to_string()).unwrap(),
-                    123
-                );
-                assert_eq!(*map.remove_with_name::<bool>("key 4").unwrap(), true); // overwrite data
+        let mut map = ParameterMap::new();
 
-                let mut map: $map = $map::new();
+        // Can insert any type of value
+        map.insert_with_type("value 1".to_string());
+        map.insert_with_type("value 2");
+        map.insert_with_type(123 as usize);
+        map.insert_with_type(123.323 as f32);
+        map.insert_with_type(true);
 
-                // Can insert any type of value
-                map.insert_with_type("value 1".to_string());
-                map.insert_with_type("value 2");
-                map.insert_with_type(123 as usize);
-                map.insert_with_type(123.323 as f32);
-                map.insert_with_type(true);
+        // Can get typed data back
+        let x = map.remove_with_type::<String>().unwrap();
+        assert_eq!(x, "value 1".to_string());
 
-                // Can get typed data back
-                let x = *map.remove_with_type::<String>().unwrap();
-                assert_eq!(x, "value 1".to_string());
+        // Can't remove anything
+        let x = map.remove_with_type::<Parameter>();
+        assert!(x.is_none());
 
-                // Can't remove anything
-                let x = map.remove_with_type::<$param>();
-                assert!(x.is_none());
-
-                assert_eq!(*map.remove_with_type::<usize>().unwrap(), 123);
-                assert_eq!(*map.remove_with_type::<bool>().unwrap(), true); // overwrite data
-            }
-        };
+        assert_eq!(map.remove_with_type::<usize>().unwrap(), 123);
+        assert_eq!(map.remove_with_type::<bool>().unwrap(), true); // overwrite data
     }
-
-    generate_insert_remove_test!(AnyParameterMap, Parameter);
-    generate_insert_remove_test!(AnySendParameterMap, SendParameter);
 }

@@ -48,8 +48,8 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
                 or
 
-                let __di_output = params.remove_with_name::<Box<IOutput>>("output").map(|boxed_value| *boxed_value) )
-                    .or_else(|| params.remove_with_type::<Box<IOutput>>().map(|boxed_value| *boxed_value) )
+                let __di_output = params.remove_with_name::<Box<IOutput>>("output")
+                    .or_else(|| params.remove_with_type::<Box<IOutput>>())
                     .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
                 */
                 let prefixed_property_name = Ident::new(&format!("{}{}", &PREFIX, property.get_name_without_quotes()), Span::call_site());
@@ -81,8 +81,8 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 
                     tokens.append_all(quote! {
                         params
-                            .remove_with_name::<#property_type>(#property_name).map(|boxed_value| *boxed_value)
-                            .or_else(|| params.remove_with_type::<#property_type>().map(|boxed_value| *boxed_value))
+                            .remove_with_name::<#property_type>(#property_name)
+                            .or_else(|| params.remove_with_type::<#property_type>())
                             .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
                     });
                 }
