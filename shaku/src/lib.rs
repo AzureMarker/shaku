@@ -338,8 +338,13 @@
 // Linting
 #![deny(unused_must_use)]
 
+// Modules
 #[macro_use]
-extern crate log;
+mod trait_alias;
+
+pub mod component;
+pub mod container;
+pub mod parameter;
 
 // Reexport Component derive
 #[cfg(feature = "derive")]
@@ -358,10 +363,3 @@ pub use crate::container::Container;
 pub use crate::container::ContainerBuildContext;
 pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
-
-#[macro_use]
-mod trait_alias;
-
-pub mod component;
-pub mod container;
-pub mod parameter;

@@ -52,7 +52,7 @@ impl RegisteredType {
             .insert_with_name(name.clone(), value)
             .is_some()
         {
-            warn!(
+            log::warn!(
                 "::RegisteredType::with_named_parameter::warning overwriting existing value for property {}",
                 &name
             );
@@ -71,7 +71,7 @@ impl RegisteredType {
         value: V,
     ) -> &mut Self {
         if self.parameters.insert_with_type(value).is_some() {
-            warn!(
+            log::warn!(
                 "::RegisteredType::with_typed_parameter::warning overwriting existing value for property with type {}",
                 ::std::any::type_name::<V>()
             );

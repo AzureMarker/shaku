@@ -84,7 +84,7 @@ impl ContainerBuilder {
             .registration_map
             .insert(interface_type_id, registered_type);
         if let Some(old_value) = old_value {
-            warn!(
+            log::warn!(
                 "::shaku::ContainerBuilder::register_lambda::warning trait {:?} already had Component '{:?}) registered to it",
                 type_name::<I>(),
                 old_value.component

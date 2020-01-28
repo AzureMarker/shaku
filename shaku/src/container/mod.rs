@@ -64,17 +64,17 @@
 //! [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
 //! [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
 
-pub use self::container::Container;
-pub use self::container_build_context::ContainerBuildContext;
-pub use self::container_builder::ContainerBuilder;
-pub use self::dependency::Dependency;
-pub use self::registered_type::RegisteredType;
-
 mod container;
 mod container_build_context;
 mod container_builder;
 mod dependency;
 mod registered_type;
+
+pub use self::container::Container;
+pub use self::container_build_context::ContainerBuildContext;
+pub use self::container_builder::ContainerBuilder;
+pub use self::dependency::Dependency;
+pub use self::registered_type::RegisteredType;
 
 #[cfg(not(feature = "thread_safe"))]
 type AnyType = dyn anymap::any::Any;
