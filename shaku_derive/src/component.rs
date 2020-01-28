@@ -39,57 +39,60 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     // Temp variable block (in `fn block()`)
     const PREFIX: &str = "__di_";
     let mut parameters_block = TokenStream::new();
-    parameters_block.append_all(
-        container.properties.iter()
-            .map(|property| {
-                /*
-                Building the following output >
-                let __di_output = build_context.resolve::<IOutput>()?;
+    parameters_block.append_all(container.properties.iter().map(|property| {
+        /*
+        Building the following output >
+        let __di_output = build_context.resolve::<IOutput>()?;
 
-                or
+        or
 
-                let __di_output = params.remove_with_name::<Box<IOutput>>("output")
-                    .or_else(|| params.remove_with_type::<Box<IOutput>>())
-                    .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
-                */
-                let prefixed_property_name = Ident::new(&format!("{}{}", &PREFIX, property.get_name_without_quotes()), Span::call_site());
+        let __di_output = params.remove_with_name::<Box<IOutput>>("output")
+            .or_else(|| params.remove_with_type::<Box<IOutput>>())
+            .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
+        */
+        let prefixed_property_name = Ident::new(
+            &format!("{}{}", &PREFIX, property.get_name_without_quotes()),
+            Span::call_site(),
+        );
 
-                let mut tokens = TokenStream::new();
-                tokens.append_all(quote! {
-                    let #prefixed_property_name =
-                });
+        let mut tokens = TokenStream::new();
+        tokens.append_all(quote! {
+            let #prefixed_property_name =
+        });
 
-                if property.is_component() {
-                    // Injected components => resolve
-                    let property_type = &property.ty;
+        if property.is_component() {
+            // Injected components => resolve
+            let property_type = &property.ty;
 
-                    tokens.append_all(quote! {
-                        build_context.resolve::<#property_type>()?;
-                    });
-                } else {
-                    // Other properties => lookup in the parameters with name and type
-                    let property_type = if property.is_arc {
-                        let property_type = &property.ty;
+            tokens.append_all(quote! {
+                build_context.resolve::<#property_type>()?;
+            });
+        } else {
+            // Other properties => lookup in the parameters with name and type
+            let property_type = if property.is_arc {
+                let property_type = &property.ty;
 
-                        quote! { Arc<#property_type> }
-                    } else {
-                        property.ty.to_token_stream()
-                    };
+                quote! { Arc<#property_type> }
+            } else {
+                property.ty.to_token_stream()
+            };
 
-                    let property_name = property.get_name();
-                    let error_msg = format!("unable to find parameter with name or type for property {}", &property.get_name());
+            let property_name = property.get_name();
+            let error_msg = format!(
+                "unable to find parameter with name or type for property {}",
+                &property.get_name()
+            );
 
-                    tokens.append_all(quote! {
-                        params
-                            .remove_with_name::<#property_type>(#property_name)
-                            .or_else(|| params.remove_with_type::<#property_type>())
-                            .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
-                    });
-                }
+            tokens.append_all(quote! {
+                params
+                    .remove_with_name::<#property_type>(#property_name)
+                    .or_else(|| params.remove_with_type::<#property_type>())
+                    .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
+            });
+        }
 
-                tokens
-            })
-    );
+        tokens
+    }));
 
     // Property block (in `fn block()`)
     let mut properties_block = TokenStream::new();

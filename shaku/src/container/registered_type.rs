@@ -47,11 +47,7 @@ impl RegisteredType {
     ) -> &mut Self {
         let name = name.into();
 
-        if self
-            .parameters
-            .insert_with_name(&name, value)
-            .is_some()
-        {
+        if self.parameters.insert_with_name(&name, value).is_some() {
             log::warn!(
                 "::RegisteredType::with_named_parameter::warning overwriting existing value for property {}",
                 &name
@@ -100,9 +96,9 @@ mod tests {
 
     use crate::component::{Component, Interface};
     use crate::parameter::*;
-    use crate::Result;
     use crate::ContainerBuildContext;
     use crate::Dependency;
+    use crate::Result;
 
     use super::RegisteredType;
 

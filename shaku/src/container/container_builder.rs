@@ -3,8 +3,8 @@ use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
 use crate::container::{Container, ContainerBuildContext, RegisteredType};
-use crate::Result as DIResult;
 use crate::Dependency;
+use crate::Result as DIResult;
 
 /// Registers components in order to build a [`Container`].
 ///
