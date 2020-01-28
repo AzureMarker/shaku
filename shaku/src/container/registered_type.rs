@@ -49,7 +49,7 @@ impl RegisteredType {
 
         if self
             .parameters
-            .insert_with_name(name.clone(), value)
+            .insert_with_name(&name, value)
             .is_some()
         {
             log::warn!(
