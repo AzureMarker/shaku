@@ -31,7 +31,7 @@ trait IDateWriter: Interface {
 
 impl IDateWriter for TodayWriter {
     fn write_date(&self) {
-        self.output.write(format!("Today is {} {}", self.today, self.year));
+        self.output.write(format!("Today is {}, {}", self.today, self.year));
     }
 }
 
