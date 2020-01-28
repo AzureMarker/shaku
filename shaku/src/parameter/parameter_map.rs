@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::parameter::*;
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 enum Key {
     String(String),
     Id(TypeId),
