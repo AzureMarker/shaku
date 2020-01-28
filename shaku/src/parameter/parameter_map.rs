@@ -80,49 +80,76 @@ impl ParameterMap {
 mod tests {
     use super::*;
 
+    /// Values inserted by name can be retrieved by name
     #[test]
-    fn parameter_map() {
+    fn by_name_get_value() {
         let mut map = ParameterMap::new();
-
-        // Can insert any type of value
         map.insert_with_name("key 1", "value 1".to_string());
-        map.insert_with_name("key 2", "value 2");
-        map.insert_with_name("key 3", 123 as usize);
-        map.insert_with_name("key 4", 123.323 as f32);
-        map.insert_with_name("key 4", true);
-
-        // Can get typed data back
-        let x = map.remove_with_name::<String>("key 1").unwrap();
-        assert_eq!(x, "value 1".to_string());
-
-        // Can't cast into anything
-        let x = map.remove_with_name::<Parameter>("key 2");
-        assert!(x.is_none());
 
         assert_eq!(
-            map.remove_with_name::<usize>(&"key 3".to_string()).unwrap(),
-            123
+            map.remove_with_name::<String>("key 1"),
+            Some("value 1".to_string())
         );
-        assert_eq!(map.remove_with_name::<bool>("key 4").unwrap(), true); // overwrite data
+    }
 
+    /// Values inserted by name will not be returned as the wrong type
+    #[test]
+    fn by_name_get_same_type() {
+        let mut map = ParameterMap::new();
+        map.insert_with_name("key 1", "value 1".to_string());
+
+        assert_eq!(map.remove_with_name::<usize>("key 1"), None);
+    }
+
+    /// Values inserted by name will be overwritten by the same name, regardless
+    /// of type
+    #[test]
+    fn by_name_overwrite() {
+        let mut map = ParameterMap::new();
+        map.insert_with_name("key 1", 123.323 as f32);
+        map.insert_with_name("key 1", true);
+
+        assert_eq!(map.remove_with_name::<bool>("key 1"), Some(true));
+    }
+
+    /// Values inserted by name will be overwritten by the same name, regardless
+    /// of type. Accessing via the old type will return None.
+    #[test]
+    fn by_name_overwrite_old_type() {
+        let mut map = ParameterMap::new();
+        map.insert_with_name("key 1", 123.323 as f32);
+        map.insert_with_name("key 1", true);
+
+        assert_eq!(map.remove_with_name::<f32>("key 1"), None);
+    }
+
+    /// Values inserted by type can be retrieved by type
+    #[test]
+    fn by_type_get_value() {
+        let mut map = ParameterMap::new();
+        map.insert_with_type("value 1".to_string());
+
+        assert_eq!(
+            map.remove_with_type::<String>(),
+            Some("value 1".to_string())
+        );
+    }
+
+    /// Cannot retrieve a type that has not been inserted
+    #[test]
+    fn by_type_missing() {
         let mut map = ParameterMap::new();
 
-        // Can insert any type of value
-        map.insert_with_type("value 1".to_string());
-        map.insert_with_type("value 2");
-        map.insert_with_type(123 as usize);
-        map.insert_with_type(123.323 as f32);
+        assert_eq!(map.remove_with_type::<usize>(), None)
+    }
+
+    /// Values inserted by type will be overwritten by the same type
+    #[test]
+    fn by_type_overwrite() {
+        let mut map = ParameterMap::new();
+        map.insert_with_type(false);
         map.insert_with_type(true);
 
-        // Can get typed data back
-        let x = map.remove_with_type::<String>().unwrap();
-        assert_eq!(x, "value 1".to_string());
-
-        // Can't remove anything
-        let x = map.remove_with_type::<Parameter>();
-        assert!(x.is_none());
-
-        assert_eq!(map.remove_with_type::<usize>().unwrap(), 123);
-        assert_eq!(map.remove_with_type::<bool>().unwrap(), true); // overwrite data
+        assert_eq!(map.remove_with_type::<bool>(), Some(true));
     }
 }
