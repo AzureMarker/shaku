@@ -64,6 +64,7 @@
 //! [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
 //! [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
 
+#[allow(clippy::module_inception)]
 mod container;
 mod container_build_context;
 mod container_builder;
