@@ -20,7 +20,6 @@ impl Parser<Property> for syn::Field {
                     .unwrap_or(false)
         });
         let property_name = self.ident.clone().expect("struct properties must be named");
-        let field = (*self).clone();
 
         match &self.ty {
             // Arc object => continue parsing to recover `Property::traits` information
@@ -68,20 +67,16 @@ impl Parser<Property> for syn::Field {
                         Ok(Property {
                             property_name,
                             ty: traits.remove(0),
-                            is_parsed: true,
                             is_arc: true,
                             is_injected,
-                            _field: field,
                         })
                     }
                 } else {
                     Ok(Property {
                         property_name,
                         ty: self.ty.clone(),
-                        is_parsed: false,
                         is_arc: false,
                         is_injected: false,
-                        _field: field,
                     })
                 }
             }
@@ -90,10 +85,8 @@ impl Parser<Property> for syn::Field {
             _ => Ok(Property {
                 property_name,
                 ty: self.ty.clone(),
-                is_parsed: false,
                 is_arc: false,
                 is_injected: false,
-                _field: field,
             }),
         }
     }

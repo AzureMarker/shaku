@@ -2,7 +2,7 @@ use std::error::Error as StdError;
 use std::fmt::{self, Debug};
 
 #[derive(Clone, Debug)]
-pub(crate) enum Error {
+pub enum Error {
     /// Error while parsing the input tokens
     ParseError(String),
 }
