@@ -1,6 +1,6 @@
 use std::iter::Iterator;
 
-use shaku_internals::error::Error as DIError;
+use crate::error::Error;
 
 pub use self::extractors::*;
 
@@ -9,13 +9,13 @@ mod parsers;
 
 /// Generic parser for syn structures
 // Note: Can't use `std::convert::From` here because we don't want to consume `T`
-pub trait Parser<T: Sized> {
-    fn parse_into(&self) -> Result<T, DIError>;
+pub(crate) trait Parser<T: Sized> {
+    fn parse_into(&self) -> Result<T, Error>;
 }
 
 /// Extract `T` data from self
-pub trait Extractor<T> {
-    fn extract(&self) -> Result<ExtractorIterator<T>, DIError>;
+pub(crate) trait Extractor<T> {
+    fn extract(&self) -> Result<ExtractorIterator<T>, Error>;
 }
 
 pub struct ExtractorIterator<T> {

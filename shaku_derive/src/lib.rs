@@ -37,10 +37,11 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
-pub(crate) mod component;
-pub(crate) mod consts;
-pub(crate) mod internals;
-pub(crate) mod parser;
+mod component;
+mod consts;
+mod error;
+mod internals;
+mod parser;
 
 #[proc_macro_derive(Component, attributes(shaku))]
 pub fn component(input: TokenStream) -> TokenStream {

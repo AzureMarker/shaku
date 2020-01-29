@@ -1,9 +1,8 @@
 use proc_macro2::Span;
 use syn::{self, AngleBracketedGenericArguments, GenericArgument, Ident, Type};
 
-use shaku_internals::error::Error as DIError;
-
 use crate::consts;
+use crate::error::Error;
 use crate::internals::Property;
 use crate::parser::{Extractor, Parser};
 
@@ -11,7 +10,7 @@ use crate::parser::{Extractor, Parser};
 /// - Trait object (i.e. "Arc<...>") => parse into a complete `Property` object
 /// - Other => just clone `self` into Property::_field
 impl Parser<Property> for syn::Field {
-    fn parse_into(&self) -> Result<Property, DIError> {
+    fn parse_into(&self) -> Result<Property, Error> {
         // TODO: return error if an injected property is not correctly formed (not Arc<dyn Trait>)
 
         let is_injected = self.attrs.iter().any(|a| {
@@ -28,11 +27,11 @@ impl Parser<Property> for syn::Field {
             Type::Path(path) => {
                 if path.path.segments[0].ident == Ident::new("Arc", Span::call_site()) {
                     let mut abpd_vect : Vec<AngleBracketedGenericArguments> = self.ty.extract() // ~ Result<ExtractorIterator<AngleBracketedParameterData>>
-                        .map_err(|_| DIError::ParseError(format!("unexpected field structure > no PathParameters::AngleBracketed in a trait object > field = {:?}", &self)))?
+                        .map_err(|_| Error::ParseError(format!("unexpected field structure > no PathParameters::AngleBracketed in a trait object > field = {:?}", &self)))?
                         .collect();
 
                     if abpd_vect.len() != 1 {
-                        return Err(DIError::ParseError(format!(
+                        return Err(Error::ParseError(format!(
                             "unsupported format > {} AngleBracketedParameterData for {:?}",
                             &abpd_vect.len(),
                             &path
@@ -51,7 +50,7 @@ impl Parser<Property> for syn::Field {
                     });
 
                     if has_lifetimes || has_bindings {
-                        return Err(DIError::ParseError(format!("unsupported AngleBracketedParameterData > lifetimes or bindings data and not empty > {:?}", &abpd)));
+                        return Err(Error::ParseError(format!("unsupported AngleBracketedParameterData > lifetimes or bindings data and not empty > {:?}", &abpd)));
                     }
                     // All ok => return a Property object
                     let mut traits: Vec<Type> = abpd
@@ -64,7 +63,7 @@ impl Parser<Property> for syn::Field {
                         .collect();
 
                     if traits.len() != 1 {
-                        Err(DIError::ParseError(format!("unsupported AngleBracketedParameterData > {} elements found while expecting 1 > {:?}", traits.len(), &abpd)))
+                        Err(Error::ParseError(format!("unsupported AngleBracketedParameterData > {} elements found while expecting 1 > {:?}", traits.len(), &abpd)))
                     } else {
                         Ok(Property {
                             property_name,

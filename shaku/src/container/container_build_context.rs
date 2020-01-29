@@ -6,7 +6,7 @@ use crate::component::Interface;
 use crate::container::{ComponentMap, RegisteredType};
 use crate::Container;
 use crate::Error as DIError;
-use crate::Result as DIResult;
+use crate::Result;
 
 /// Holds the registration and resolved components while building a [Container]. This struct is
 /// used during [Component::build].
@@ -26,7 +26,7 @@ impl ContainerBuildContext {
         }
     }
 
-    pub(crate) fn build(mut self) -> DIResult<Container> {
+    pub(crate) fn build(mut self) -> Result<Container> {
         // Order the registrations so dependencies are resolved first (topological sort)
         let sorted_registrations = self.sort_registrations_by_dependencies()?;
 
@@ -38,7 +38,7 @@ impl ContainerBuildContext {
         Ok(Container::new(self.resolved_map))
     }
 
-    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<RegisteredType>> {
+    fn sort_registrations_by_dependencies(&mut self) -> Result<Vec<RegisteredType>> {
         let mut visited = HashSet::new();
         let mut sorted = Vec::new();
 
@@ -58,7 +58,7 @@ impl ContainerBuildContext {
         registration: RegisteredType,
         visited: &mut HashSet<TypeId>,
         sorted: &mut Vec<RegisteredType>,
-    ) -> DIResult<()> {
+    ) -> Result<()> {
         visited.insert(registration.interface_id);
 
         for dependency in &registration.dependencies {
@@ -86,7 +86,7 @@ impl ContainerBuildContext {
     ///
     /// [`Dependency`]: struct.Dependency.html
     /// [`Component::dependencies`]: ../component/trait.Component.html#tymethod.dependencies
-    pub fn resolve<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
+    pub fn resolve<I: Interface + ?Sized>(&mut self) -> Result<Arc<I>> {
         self.resolved_map
             .get::<Arc<I>>()
             .map(Arc::clone)

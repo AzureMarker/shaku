@@ -1,10 +1,9 @@
 use std::any::{Any, TypeId};
 
-use shaku_internals::error::Error;
-
 use crate::component::ComponentBuildFn;
 use crate::container::{ContainerBuildContext, Dependency};
 use crate::parameter::*;
+use crate::Error;
 
 /// Represents a component registration. It is exposed in order to provide
 /// parameters for the component.

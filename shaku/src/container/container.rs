@@ -1,10 +1,9 @@
 use std::sync::Arc;
 
-use shaku_internals::error::Error as DIError;
-
 use crate::component::Interface;
 use crate::container::ComponentMap;
-use crate::Result as DIResult;
+use crate::Error;
+use crate::Result;
 
 /// Resolves components registered during the build phase.
 ///
@@ -113,12 +112,12 @@ impl Container {
     /// #
     /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
     /// ```
-    pub fn resolve<I: Interface + ?Sized>(&self) -> DIResult<Arc<I>> {
+    pub fn resolve<I: Interface + ?Sized>(&self) -> Result<Arc<I>> {
         self.component_map
             .get::<Arc<I>>()
             .map(Arc::clone)
             .ok_or_else(|| {
-                DIError::ResolveError(format!(
+                Error::ResolveError(format!(
                     "no component {} registered in this container",
                     ::std::any::type_name::<I>()
                 ))
@@ -150,9 +149,9 @@ impl Container {
     /// #
     /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
     /// ```
-    pub fn resolve_ref<I: Interface + ?Sized>(&self) -> DIResult<&I> {
+    pub fn resolve_ref<I: Interface + ?Sized>(&self) -> Result<&I> {
         let component = self.component_map.get::<Arc<I>>().ok_or_else(|| {
-            DIError::ResolveError(format!(
+            Error::ResolveError(format!(
                 "no component {} registered in this container",
                 ::std::any::type_name::<I>()
             ))
@@ -191,16 +190,16 @@ impl Container {
     /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
     /// ```
     /// [Error::ResolveError]: enum.Error.html
-    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> DIResult<&mut I> {
+    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> Result<&mut I> {
         let component = self.component_map.get_mut::<Arc<I>>().ok_or_else(|| {
-            DIError::ResolveError(format!(
+            Error::ResolveError(format!(
                 "no component {} registered in this container",
                 ::std::any::type_name::<I>()
             ))
         })?;
 
         Arc::get_mut(component).ok_or_else(|| {
-            DIError::ResolveError(format!(
+            Error::ResolveError(format!(
                 "Unable to get a mutable reference of component {}, there are existing Arc references",
                 ::std::any::type_name::<I>()
             ))

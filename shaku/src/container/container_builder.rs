@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::component::{Component, ComponentBuildFn, Interface};
 use crate::container::{Container, ContainerBuildContext, RegisteredType};
 use crate::Dependency;
-use crate::Result as DIResult;
+use crate::Result;
 
 /// Registers components in order to build a [`Container`].
 ///
@@ -154,7 +154,7 @@ impl ContainerBuilder {
     ///     assert_eq!(foo.unwrap().foo(), "FooDuplicateImpl2".to_string());
     /// }
     /// ```
-    pub fn build(self) -> DIResult<Container> {
+    pub fn build(self) -> Result<Container> {
         ContainerBuildContext::new(self.registration_map).build()
     }
 }

@@ -1,7 +1,6 @@
 use syn;
 
-use shaku_internals::error::Error as DIError;
-
+use crate::error::Error;
 use crate::internals::Property;
 use crate::parser::{Extractor, Parser};
 
@@ -9,8 +8,8 @@ use crate::parser::{Extractor, Parser};
 /// 1. extract Field data
 /// 2. parse each Field into a Property
 impl Parser<Vec<Property>> for syn::DeriveInput {
-    fn parse_into(&self) -> Result<Vec<Property>, DIError> {
-        let vect: Vec<Result<Property, DIError>> = self
+    fn parse_into(&self) -> Result<Vec<Property>, Error> {
+        let vect: Vec<Result<Property, Error>> = self
             .extract()? // ~ Result<ExtractorIterator<Field>>
             .map(|field: syn::Field| field.parse_into()) // ~ Iterator<Result<Property>>
             .collect();

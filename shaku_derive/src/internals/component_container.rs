@@ -4,8 +4,7 @@ use std::fmt;
 
 use syn::{self, DeriveInput, Field, Ident, Visibility};
 
-use shaku_internals::error::Error as DIError;
-
+use crate::error::Error;
 use crate::parser::Parser;
 
 use super::ParsingContext;
@@ -25,21 +24,21 @@ impl ComponentContainer {
         ComponentContainer {
             metadata: input
                 .parse_into()
-                .or_else::<DIError, _>(|di_err| {
+                .or_else::<Error, _>(|di_err| {
                     ctxt.error(di_err);
                     Ok(MetaData { interface: None })
                 })
                 .unwrap(),
             identifier: input
                 .parse_into()
-                .or_else::<DIError, _>(|di_err| {
+                .or_else::<Error, _>(|di_err| {
                     ctxt.error(di_err);
                     Ok(Identifier::Null)
                 })
                 .unwrap(),
             properties: input
                 .parse_into()
-                .or_else::<DIError, _>(|di_err| {
+                .or_else::<Error, _>(|di_err| {
                     ctxt.error(di_err);
                     Ok(Vec::new())
                 })

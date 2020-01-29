@@ -10,7 +10,6 @@ edition = "2018"
 
 [dependencies]
 shaku_derive = { version = "~0.1.0", optional = true }
-shaku_internals = "~0.1.0"
 anymap = "0.12.1"
 log = "0.4"
 

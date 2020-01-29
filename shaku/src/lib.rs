@@ -341,6 +341,7 @@
 // Modules
 #[macro_use]
 mod trait_alias;
+mod error;
 
 pub mod component;
 pub mod container;
@@ -350,11 +351,8 @@ pub mod parameter;
 #[cfg(feature = "derive")]
 pub use shaku_derive::Component;
 
-// Reexport Error type from shaku_internals
-pub use shaku_internals::error::Error;
-
 /// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
-pub type Result<T> = std::result::Result<T, shaku_internals::error::Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 // Shortcut to main types / traits
 pub use crate::component::Component;
@@ -363,3 +361,4 @@ pub use crate::container::Container;
 pub use crate::container::ContainerBuildContext;
 pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
+pub use crate::error::Error;

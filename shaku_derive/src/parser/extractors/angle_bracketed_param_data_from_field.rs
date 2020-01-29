@@ -1,13 +1,12 @@
 use syn::{self, AngleBracketedGenericArguments, Type};
 
-use shaku_internals::error::Error as DIError;
-
+use crate::error::Error;
 use crate::parser::{Extractor, ExtractorIterator};
 
 /// Extract `syn::AngleBracketedParameterData` data from a `syn::Type` parameter
 /// - Path => lookup for AngleBracketed PathParameters into a Path's segments
 impl Extractor<AngleBracketedGenericArguments> for syn::Type {
-    fn extract(&self) -> Result<ExtractorIterator<AngleBracketedGenericArguments>, DIError> {
+    fn extract(&self) -> Result<ExtractorIterator<AngleBracketedGenericArguments>, Error> {
         let abpd_vect: Vec<AngleBracketedGenericArguments> = match self {
             Type::Path(path) => Ok(path
                 .path
@@ -19,7 +18,7 @@ impl Extractor<AngleBracketedGenericArguments> for syn::Type {
                     _ => None,
                 })
                 .collect()),
-            _ => Err(DIError::ExtractError(format!(
+            _ => Err(Error::ParseError(format!(
                 "unable to extract AngleBracketedParameterData from {:?}",
                 &self
             ))),

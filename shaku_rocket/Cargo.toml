@@ -14,5 +14,4 @@ rocket = "0.4"
 
 [patch.crates-io]
 shaku = { path = "../shaku" }
-shaku_internals = { path = "../shaku_internals" }
 shaku_derive = { path = "../shaku_derive" }
