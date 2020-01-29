@@ -23,7 +23,7 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::ResolveError(msg) => write!(f, "Resolve Error > {}", msg),
+            Error::ResolveError(msg) => write!(f, "Resolve Error: {}", msg),
         }
     }
 }

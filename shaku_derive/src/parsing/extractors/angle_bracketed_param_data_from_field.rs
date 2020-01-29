@@ -1,7 +1,7 @@
 use syn::{self, AngleBracketedGenericArguments, Type};
 
 use crate::error::Error;
-use crate::parser::{Extractor, ExtractorIterator};
+use crate::parsing::{Extractor, ExtractorIterator};
 
 /// Extract `syn::AngleBracketedParameterData` data from a `syn::Type` parameter
 /// - Path => lookup for AngleBracketed PathParameters into a Path's segments

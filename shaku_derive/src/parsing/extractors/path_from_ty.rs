@@ -3,7 +3,7 @@ use std::iter;
 use syn::{self, Path, Type, TypeParamBound};
 
 use crate::error::Error;
-use crate::parser::{Extractor, ExtractorIterator};
+use crate::parsing::{Extractor, ExtractorIterator};
 
 /// Extract the path for this type (ex. `std::collections::HashMap`)
 impl Extractor<Path> for syn::Type {

@@ -2,13 +2,22 @@ use syn;
 
 use crate::consts;
 use crate::error::Error;
-use crate::internals::MetaData;
-use crate::parser::parsers::PathKeyValue;
-use crate::parser::Parser;
+use crate::parsing::parsers::PathKeyValue;
+use crate::parsing::Parser;
+use crate::structures::MetaData;
 
-/// Parse DeriveInput's attributes to populate ComponentContainer's MetaData
 impl Parser<MetaData> for syn::DeriveInput {
     fn parse_into(&self) -> Result<MetaData, Error> {
+        // Make sure it's a struct
+        match self.data {
+            syn::Data::Struct(_) => {}
+            _ => {
+                return Err(Error::ParseError(
+                    "Only structs are currently supported".to_string(),
+                ));
+            }
+        };
+
         // Find the shaku(interface = ?) attribute
         let shaku_attribute = self
             .attrs
@@ -49,7 +58,8 @@ impl Parser<MetaData> for syn::DeriveInput {
         }
 
         Ok(MetaData {
-            interface: Some(path_kv.value.get_ident().unwrap().clone()),
+            identifier: self.ident.clone(),
+            interface: path_kv.value.get_ident().unwrap().clone(),
         })
     }
 }

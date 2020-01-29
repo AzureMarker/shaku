@@ -3,8 +3,8 @@ use syn::{self, AngleBracketedGenericArguments, GenericArgument, Ident, Type};
 
 use crate::consts;
 use crate::error::Error;
-use crate::internals::Property;
-use crate::parser::{Extractor, Parser};
+use crate::structures::Property;
+use crate::parsing::{Extractor, Parser};
 
 /// Parse a `syn::DeriveInput` into a `Property` object
 /// - Trait object (i.e. "Arc<...>") => parse into a complete `Property` object

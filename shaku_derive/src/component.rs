@@ -7,36 +7,17 @@ use quote::{ToTokens, TokenStreamExt};
 use syn::{DeriveInput, Ident};
 
 use crate::consts;
-use crate::internals::{ComponentContainer, ParsingContext};
+use crate::structures::ComponentContainer;
 
 pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream {
-    let ctxt = ParsingContext::new();
-    let container = ComponentContainer::from_derive_input(&ctxt, input);
+    let container = ComponentContainer::from_derive_input(input).unwrap();
 
-    let debug_level = env::vars()
-        .find(|&(ref key, ref value)| {
-            key == consts::DEBUG_ENV_VAR
-                && value.parse::<usize>().is_ok()
-                && value.parse::<usize>().unwrap() > 0
-        })
-        .map(|(_, value)| value.parse::<usize>().unwrap())
-        .unwrap_or(0);
-
+    let debug_level = get_debug_level();
     if debug_level > 1 {
-        println!("Container built from input > {:#?}", container);
+        println!("Container built from input: {:#?}", container);
     }
 
-    // Assert overall preconditions
-    precondition(&ctxt, &container);
-    ctxt.check()
-        .map_err(|error_message| panic!(error_message))
-        .unwrap();
-
-    // Generate the actual code
-    let component_name = container.identifier.get_name();
-    let interface = container.metadata.interface.unwrap();
-
-    // Temp variable block (in `fn block()`)
+    // Temp variable block
     const PREFIX: &str = "__di_";
     let mut parameters_block = TokenStream::new();
     parameters_block.append_all(container.properties.iter().map(|property| {
@@ -94,7 +75,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         tokens
     }));
 
-    // Property block (in `fn block()`)
+    // Property block
     let mut properties_block = TokenStream::new();
     properties_block.append_terminated(
         container.properties.iter().map(|ref property| {
@@ -123,6 +104,8 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         .collect();
 
     // Main implementation block
+    let component_name = container.metadata.identifier;
+    let interface = container.metadata.interface;
     let impl_block = quote! {
         impl ::shaku::Component for #component_name {
             type Interface = dyn #interface;
@@ -158,18 +141,9 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     impl_block
 }
 
-/// Precondition on the overall metadata
-fn precondition(ctxt: &ParsingContext, cont: &ComponentContainer) {
-    // Supports only struct for now
-    if !cont.is_struct() {
-        ctxt.error("#[derive(Component)] is only defined for structs, not for enums yet!");
-    }
-
-    // Ensure we have one interface defined
-    if cont.metadata.interface.is_none() {
-        ctxt.error(format!(
-            "No interface/trait defined for Component's candidate {:?}",
-            cont.identifier.get_name()
-        ));
-    }
+fn get_debug_level() -> usize {
+    env::var(consts::DEBUG_ENV_VAR)
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(0)
 }

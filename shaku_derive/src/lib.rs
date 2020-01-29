@@ -40,8 +40,8 @@ use proc_macro::TokenStream;
 mod component;
 mod consts;
 mod error;
-mod internals;
-mod parser;
+mod parsing;
+mod structures;
 
 #[proc_macro_derive(Component, attributes(shaku))]
 pub fn component(input: TokenStream) -> TokenStream {

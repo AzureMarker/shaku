@@ -1,8 +1,8 @@
 use syn;
 
 use crate::error::Error;
-use crate::internals::Property;
-use crate::parser::{Extractor, Parser};
+use crate::structures::Property;
+use crate::parsing::{Extractor, Parser};
 
 /// Parse a DeriveInput into a vector of Property objects
 /// 1. extract Field data

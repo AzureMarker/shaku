@@ -1,7 +1,7 @@
 use syn::{self, Data, Field};
 
 use crate::error::Error;
-use crate::parser::{Extractor, ExtractorIterator};
+use crate::parsing::{Extractor, ExtractorIterator};
 
 /// Extract the `Field` data of a struct
 /// - Enum => return an error

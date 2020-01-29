@@ -22,7 +22,7 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Error::ParseError(msg) => write!(f, "Parse Error > {}", msg),
+            Error::ParseError(msg) => write!(f, "Parse Error: {}", msg),
         }
     }
 }

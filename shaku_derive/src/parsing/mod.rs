@@ -2,10 +2,10 @@ use std::iter::Iterator;
 
 use crate::error::Error;
 
-pub use self::extractors::*;
-
 mod extractors;
 mod parsers;
+
+pub use self::extractors::*;
 
 /// Generic parser for syn structures
 // Note: Can't use `std::convert::From` here because we don't want to consume `T`
