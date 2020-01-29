@@ -1,4 +1,4 @@
-use syn::{self, Data, Field};
+use syn::{Data, Field};
 
 use crate::error::Error;
 use crate::parsing::{Extractor, ExtractorIterator};

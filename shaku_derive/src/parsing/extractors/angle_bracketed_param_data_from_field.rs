@@ -1,4 +1,4 @@
-use syn::{self, AngleBracketedGenericArguments, Type};
+use syn::{AngleBracketedGenericArguments, Type};
 
 use crate::error::Error;
 use crate::parsing::{Extractor, ExtractorIterator};

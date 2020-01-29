@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use syn::{self, DeriveInput, Field, Ident};
+use syn::{DeriveInput, Field, Ident};
 
 use crate::error::Error;
 use crate::parsing::Parser;

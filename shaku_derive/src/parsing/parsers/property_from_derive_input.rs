@@ -1,5 +1,3 @@
-use syn;
-
 use crate::error::Error;
 use crate::structures::Property;
 use crate::parsing::{Extractor, Parser};

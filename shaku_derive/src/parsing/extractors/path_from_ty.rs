@@ -1,6 +1,6 @@
 use std::iter;
 
-use syn::{self, Path, Type, TypeParamBound};
+use syn::{Path, Type, TypeParamBound};
 
 use crate::error::Error;
 use crate::parsing::{Extractor, ExtractorIterator};

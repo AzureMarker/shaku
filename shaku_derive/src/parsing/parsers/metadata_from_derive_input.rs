@@ -1,5 +1,3 @@
-use syn;
-
 use crate::consts;
 use crate::error::Error;
 use crate::parsing::parsers::PathKeyValue;

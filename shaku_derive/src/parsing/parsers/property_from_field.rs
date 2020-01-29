@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use syn::{self, AngleBracketedGenericArguments, GenericArgument, Ident, Type};
+use syn::{AngleBracketedGenericArguments, GenericArgument, Ident, Type};
 
 use crate::consts;
 use crate::error::Error;
