@@ -28,9 +28,6 @@
 //! - inject: for a struct's property, tag a property as being a dependency to another Component
 //!   (currently only supports `Arc<Interface>`/`Arc<dyn Interface>` syntax)
 
-// The `quote!` macro requires deep recursion.
-#![recursion_limit = "128"]
-
 extern crate proc_macro;
 #[macro_use]
 extern crate quote;
