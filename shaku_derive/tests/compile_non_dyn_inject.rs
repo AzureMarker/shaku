@@ -3,6 +3,7 @@
 #![allow(bare_trait_objects)]
 
 use shaku::{Component, Interface};
+use std::sync::Arc;
 
 #[derive(Component)]
 #[shaku(interface = Foo)]
@@ -11,7 +12,7 @@ struct TestComponent {
     var2: usize,
     var3: Box<String>,
     #[shaku(inject)]
-    var5: Box<Bar>,
+    var5: Arc<Bar>,
 }
 
 #[derive(Component)]

@@ -33,14 +33,8 @@ pub struct MetaData {
 #[derive(Clone, Debug)]
 pub struct Property {
     pub property_name: Ident,
+    /// The full type if not a component.
+    /// Otherwise, the interface type (the type inside the Arc).
     pub ty: Type,
-    pub is_arc: bool,
-    pub is_injected: bool,
-}
-
-impl Property {
-    /// Check if the current `Property` is a potential candidate for injection
-    pub fn is_component(&self) -> bool {
-        self.is_injected && self.is_arc
-    }
+    pub is_component: bool
 }

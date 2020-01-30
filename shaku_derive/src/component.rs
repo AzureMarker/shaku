@@ -3,7 +3,7 @@
 use std::env;
 
 use proc_macro2::TokenStream;
-use quote::{ToTokens, TokenStreamExt};
+use quote::TokenStreamExt;
 use syn::DeriveInput;
 
 use crate::consts;
@@ -74,7 +74,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
 }
 
 fn create_dependency(property: &Property) -> Option<TokenStream> {
-    if !property.is_component() {
+    if !property.is_component {
         return None;
     }
 
@@ -105,29 +105,20 @@ fn create_resolve_code(property: &Property) -> TokenStream {
         .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
     */
     let prefixed_property_name = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
+    let property_type = &property.ty;
 
     let mut tokens = TokenStream::new();
     tokens.append_all(quote! {
         let #prefixed_property_name =
     });
 
-    if property.is_component() {
+    if property.is_component {
         // Injected components => resolve
-        let property_type = &property.ty;
-
         tokens.append_all(quote! {
             build_context.resolve::<#property_type>()?;
         });
     } else {
         // Other properties => lookup in the parameters with name and type
-        let property_type = if property.is_arc {
-            let property_type = &property.ty;
-
-            quote! { Arc<#property_type> }
-        } else {
-            property.ty.to_token_stream()
-        };
-
         let property_name = property.property_name.to_string();
         let error_msg = format!(
             "unable to find parameter with name or type for property {}",

@@ -1,2 +1,1 @@
-mod angle_bracketed_param_data_from_field;
 mod struct_fields_from_derive_input;
