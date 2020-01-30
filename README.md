@@ -69,7 +69,7 @@ guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
 [builds]: https://circleci.com/gh/Mcat12/shaku
 [crate-badge]: https://img.shields.io/crates/v/shaku.svg
 [doc-badge]: https://docs.rs/shaku/badge.svg
-[build-badge]: https://circleci.com/gh/Mcat12/shaku.svg?style=shield](https://circleci.com/gh/Mcat12/shaku
+[build-badge]: https://circleci.com/gh/Mcat12/shaku.svg?style=shield
 [@bgbahoue]: https://github.com/bgbahoue
 [@U007D]: https://github.com/U007D
 [@Mcat12]: https://github.com/Mcat12
