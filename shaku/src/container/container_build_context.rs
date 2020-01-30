@@ -6,13 +6,13 @@ use crate::component::Interface;
 use crate::container::{ComponentMap, RegisteredType};
 use crate::Container;
 use crate::Error as DIError;
-use crate::Result as DIResult;
+use crate::Result;
 
 /// Holds the registration and resolved components while building a [Container]. This struct is
 /// used during [Component::build].
 ///
 /// [Container]: struct.Container.html
-/// [Component::build]: component/trait.Component.html#tymethod.build
+/// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext {
     registration_map: HashMap<TypeId, RegisteredType>,
     resolved_map: ComponentMap,
@@ -31,19 +31,19 @@ impl ContainerBuildContext {
         }
     }
 
-    pub(crate) fn build(mut self) -> DIResult<Container> {
+    pub(crate) fn build(mut self) -> Result<Container> {
         // Order the registrations so dependencies are resolved first (topological sort)
         let sorted_registrations = self.sort_registrations_by_dependencies()?;
 
         for registration in sorted_registrations {
-            // Each component will add itself into resolved_map via insert_resolved_component
+            // Each component will add itself into resolved_map via ContainerBuildContext::insert
             registration.build(&mut self)?;
         }
 
         Ok(Container::new(self.resolved_map, self.providers))
     }
 
-    fn sort_registrations_by_dependencies(&mut self) -> DIResult<Vec<RegisteredType>> {
+    fn sort_registrations_by_dependencies(&mut self) -> Result<Vec<RegisteredType>> {
         let mut visited = HashSet::new();
         let mut sorted = Vec::new();
 
@@ -63,7 +63,7 @@ impl ContainerBuildContext {
         registration: RegisteredType,
         visited: &mut HashSet<TypeId>,
         sorted: &mut Vec<RegisteredType>,
-    ) -> DIResult<()> {
+    ) -> Result<()> {
         visited.insert(registration.interface_id);
 
         for dependency in &registration.dependencies {
@@ -86,7 +86,12 @@ impl ContainerBuildContext {
         Ok(())
     }
 
-    pub fn resolve_component<I: Interface + ?Sized>(&mut self) -> DIResult<Arc<I>> {
+    /// Resolve a component. The component interface must be listed as a
+    /// [`Dependency`] in [`Component::dependencies`].
+    ///
+    /// [`Dependency`]: struct.Dependency.html
+    /// [`Component::dependencies`]: ../component/trait.Component.html#tymethod.dependencies
+    pub fn resolve<I: Interface + ?Sized>(&mut self) -> Result<Arc<I>> {
         self.resolved_map
             .get::<Arc<I>>()
             .map(Arc::clone)
@@ -98,7 +103,12 @@ impl ContainerBuildContext {
             })
     }
 
-    pub fn insert_resolved_component<I: Interface + ?Sized>(&mut self, component: Box<I>) {
+    /// Insert the resolved component into the build context. This must be
+    /// called at the end of [Component::build] in lieu of returning the
+    /// component directly (the generic type information is retained this way).
+    ///
+    /// [Component::build]: ../component/trait.Component.html#tymethod.build
+    pub fn insert<I: Interface + ?Sized>(&mut self, component: Box<I>) {
         self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
 }

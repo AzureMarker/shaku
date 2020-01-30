@@ -1,35 +1,22 @@
-//! Implementation of a `RegisteredType`
-
 use std::any::{Any, TypeId};
-
-use shaku_internals::error::Error;
 
 use crate::component::ComponentBuildFn;
 use crate::container::{ContainerBuildContext, Dependency};
 use crate::parameter::*;
+use crate::Error;
 
-/// DI Container entry associated with a unique interface and implementation.
-///
-/// When running the following command
-/// `container_builder.register_type::<MyImplOfTrait>();`
-/// - `MyImplOfTrait` -> `component`
-/// - `MyImplOfTrait::Interface` -> `interface`
+/// Represents a component registration. It is exposed in order to provide
+/// parameters for the component.
 pub struct RegisteredType {
-    #[doc(hidden)]
     pub(crate) component: String,
-    #[doc(hidden)]
     pub(crate) interface_id: TypeId,
-    #[doc(hidden)]
     pub(crate) builder: ComponentBuildFn,
-    #[doc(hidden)]
     pub(crate) dependencies: Vec<Dependency>,
-    #[doc(hidden)]
     pub(crate) parameters: ParameterMap,
 }
 
 impl RegisteredType {
     /// Create a new RegisteredType.
-    #[doc(hidden)]
     pub(crate) fn new(
         component: String,
         interface_id: TypeId,
@@ -45,11 +32,11 @@ impl RegisteredType {
         }
     }
 
-    /// Add a new parameter for this Container entry.
+    /// Add a new parameter based on property name.
     ///
-    /// `name` must match one of the struct's property name of the current Component.
+    /// `name` must match one of the struct's properties.
     pub fn with_named_parameter<
-        S: Into<String> + Clone,
+        S: Into<String>,
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
     >(
@@ -57,22 +44,20 @@ impl RegisteredType {
         name: S,
         value: V,
     ) -> &mut Self {
-        if self
-            .parameters
-            .insert_with_name(name.clone(), value)
-            .is_some()
-        {
-            warn!(
-                "::RegisteredType::with_named_parameter::warning overwritting existing value for property {}",
-                &name.into()
+        let name = name.into();
+
+        if self.parameters.insert_with_name(&name, value).is_some() {
+            log::warn!(
+                "::RegisteredType::with_named_parameter::warning overwriting existing value for property {}",
+                &name
             );
         }
         self
     }
 
-    /// Add a new parameter for this Container entry.
+    /// Add a new parameter based on type.
     ///
-    /// `type` must refer to a unique property's.
+    /// `V` must be a unique type in the component struct's properties.
     pub fn with_typed_parameter<
         #[cfg(not(feature = "thread_safe"))] V: Any,
         #[cfg(feature = "thread_safe")] V: Any + Send,
@@ -81,8 +66,8 @@ impl RegisteredType {
         value: V,
     ) -> &mut Self {
         if self.parameters.insert_with_type(value).is_some() {
-            warn!(
-                "::RegisteredType::with_typed_parameter::warning overwritting existing value for property with type {}",
+            log::warn!(
+                "::RegisteredType::with_typed_parameter::warning overwriting existing value for property with type {}",
                 ::std::any::type_name::<V>()
             );
         }
@@ -106,15 +91,13 @@ impl ::std::fmt::Debug for RegisteredType {
 
 #[cfg(test)]
 mod tests {
-    #![allow(non_snake_case)]
-
     use std::any::TypeId;
 
     use crate::component::{Component, Interface};
     use crate::parameter::*;
-    use crate::result::Result;
     use crate::ContainerBuildContext;
     use crate::Dependency;
+    use crate::Result;
 
     use super::RegisteredType;
 
@@ -140,24 +123,26 @@ mod tests {
     }
 
     #[test]
-    fn RegisteredType_test_overwrite() {
-        let mut x = RegisteredType::new(
+    fn test_overwrite() {
+        let mut registered_type = RegisteredType::new(
             "FooImpl".to_string(),
             TypeId::of::<dyn Foo>(),
             Box::new(FooImpl::build),
             FooImpl::dependencies(),
         );
 
-        x.with_named_parameter("test", "value 1".to_string());
-        x.with_named_parameter("test", "value 2".to_string());
+        registered_type.with_named_parameter("test", "value 1".to_string());
+        registered_type.with_named_parameter("test", "value 2".to_string());
 
-        let value = x.parameters.remove_with_name::<String>("test");
+        let value = registered_type
+            .parameters
+            .remove_with_name::<String>("test");
         assert_eq!(*value.unwrap(), "value 2".to_string());
 
-        x.with_typed_parameter(17 as usize);
-        x.with_typed_parameter(18 as usize);
+        registered_type.with_typed_parameter(17 as usize);
+        registered_type.with_typed_parameter(18 as usize);
 
-        let value = x.parameters.remove_with_type::<usize>();
-        assert_eq!(*value.unwrap(), 18);
+        let value = registered_type.parameters.remove_with_type::<usize>();
+        assert_eq!(value.unwrap(), 18);
     }
 }

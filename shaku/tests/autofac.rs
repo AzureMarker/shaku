@@ -9,26 +9,17 @@ use shaku::{Component, Interface};
 // ---------------------------------------------------------------------
 trait IOutput: Interface {
     fn write(&self, content: String);
-    fn get_date(&self, content: String) -> String;
 }
 
 #[derive(Component)]
 #[shaku(interface = IOutput)]
 struct ConsoleOutput {
     prefix: String,
-    other_param: usize,
 }
 
 impl IOutput for ConsoleOutput {
     fn write(&self, content: String) {
-        println!(
-            "[Outputting to the console] {} #{} {}",
-            self.prefix, self.other_param, content
-        );
-    }
-
-    fn get_date(&self, content: String) -> String {
-        format!("{}#{} {}", self.prefix, self.other_param, content)
+        println!("{} {}", self.prefix, content);
     }
 }
 
@@ -45,19 +36,16 @@ struct TodayWriter {
     #[shaku(inject)]
     output: Arc<dyn IOutput>,
     today: String,
+    year: usize,
 }
 
 impl IDateWriter for TodayWriter {
     fn write_date(&self) {
-        let mut content = "Today is ".to_string();
-        content.push_str(self.today.as_str());
-        self.output.write(content);
+        self.output.write(self.get_date());
     }
 
     fn get_date(&self) -> String {
-        let mut content = "Today is ".to_string();
-        content.push_str(self.today.as_str());
-        self.output.get_date(content)
+        format!("Today is {}, {}", self.today, self.year)
     }
 }
 
@@ -68,11 +56,11 @@ fn main_test() {
 
     builder
         .register_type::<ConsoleOutput>()
-        .with_named_parameter("prefix", "PREFIX > ".to_string())
-        .with_typed_parameter::<usize>(117 as usize);
+        .with_named_parameter("prefix", "PREFIX > ".to_string());
     builder
         .register_type::<TodayWriter>()
-        .with_typed_parameter::<String>("June 19".to_string());
+        .with_typed_parameter::<String>("June 19".to_string())
+        .with_typed_parameter::<usize>(2020);
     let container = builder.build().unwrap();
 
     // The WriteDate method is where we'll make use
@@ -82,5 +70,5 @@ fn main_test() {
     let writer = container.resolve::<dyn IDateWriter>().unwrap();
     writer.write_date();
     let date = writer.get_date();
-    assert_eq!(date, "PREFIX > #117 Today is June 19");
+    assert_eq!(date, "Today is June 19, 2020");
 }

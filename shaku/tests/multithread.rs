@@ -1,4 +1,4 @@
-#![allow(non_snake_case)]
+#![allow(clippy::blacklisted_name, clippy::mutex_atomic)]
 
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -50,7 +50,7 @@ fn simple_multithreaded_resolve_ref() {
 
         handles.push(
             thread::Builder::new()
-                .name(format!("reader #{}", &i).into())
+                .name(format!("reader #{}", &i))
                 .spawn(move || {
                     // Inject some randomness in the test
                     let sleep =
@@ -79,7 +79,7 @@ fn simple_multithreaded_resolve_ref() {
         handles
             .remove(0)
             .join()
-            .expect(format!("Couldn't join thread {}", i).as_str());
+            .unwrap_or_else(|_| panic!("Couldn't join thread {}", i));
     }
 }
 
@@ -103,7 +103,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
         handles.push(
             thread::Builder::new()
-                .name(format!("reader #{}", &i).into())
+                .name(format!("reader #{}", &i))
                 .spawn(move || {
                     // Inject some randomness in the test
                     let sleep =
@@ -152,7 +152,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
         handles
             .remove(0)
             .join()
-            .expect(format!("Couldn't join thread {}", i).as_str());
+            .unwrap_or_else(|_| panic!("Couldn't join thread {}", i));
     }
 }
 
@@ -179,7 +179,7 @@ fn simple_multithreaded_resolve_n_own() {
 
         handles.push(
             thread::Builder::new()
-                .name(format!("reader #{}", &i).into())
+                .name(format!("reader #{}", &i))
                 .spawn(move || {
                     // Inject some randomness in the test
                     let sleep =
@@ -240,6 +240,6 @@ fn simple_multithreaded_resolve_n_own() {
         handles
             .remove(0)
             .join()
-            .expect(format!("Couldn't join thread {}", i).as_str());
+            .unwrap_or_else(|_| panic!("Couldn't join thread {}", i));
     }
 }

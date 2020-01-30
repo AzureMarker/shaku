@@ -15,6 +15,3 @@ rls.toml
 
 # Rustfmt backups
 **/*.rs.bk
-
-# Misc files
-requirements.md

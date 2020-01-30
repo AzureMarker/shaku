@@ -1,61 +1,81 @@
-//! `ContainerBuilder` and `Container` structs used respectively to register and resolve
-//! Components.
+//! This module handles registering, building, and resolving components.
 //!
 //! # Application startup
-//! At application startup, you need to create a
-//! [ContainerBuilder](struct.ContainerBuilder.html#method.new) and register your components with
-//! it.
+//! At application startup, create a [`ContainerBuilder`] and register your components with it.
 //!
-//! ```rust,ignore
-//! let mut builder = shaku::ContainerBuilder::new();
+//! ```
+//! # use shaku::{Component, ContainerBuilder, Interface};
+//! #
+//! # trait Foo: Interface {}
+//! # impl Foo for FooImpl {}
+//! #
+//! #[derive(Component)]
+//! #[shaku(interface = Foo)]
+//! struct FooImpl;
+//!
+//! let mut builder = ContainerBuilder::new();
 //!
 //! // Register `FooImpl` as a `Foo` Component
-//! // Requires that `Foo` was marked as a Component using the `#[derive(Component)]` macro
-//! // and `#[shaku(interface = Foo)]`
 //! builder.register_type::<FooImpl>();
 //! ```
 //!
-//! Once you are done registering all your components,
-//! use [ContainerBuilder::build()](struct.ContainerBuilder.html#method.build)
-//! to create the [Container](struct.Container.html) instance that will allow you to
-//! resolve the components you registered from the Container instance. The component instances
-//! themselves will be created during the container build step, so watch out for configuration
-//! errors during that step.
+//! Once you are done registering all your components, use [`ContainerBuilder::build`] to create
+//! the [`Container`] instance that will allow you to resolve the components. The component
+//! instances themselves will be created during [`ContainerBuilder::build`], so check the result
+//! for configuration errors.
 //!
-//! # Application execution
+//! # Resolving components
 //! During application execution, you’ll need to make use of the components you registered.
-//! You do this by resolving them from a `Container` with one of the following `resolve` method:
+//! You do this by resolving them from a [`Container`] with one of the following `resolve` methods:
 //!
-//! - [Container::resolve()](struct.Container.html#method.resolve): get a shared ownership reference
-//!   (`Arc`) to the component.
-//! - [Container::resolve_ref()](struct.Container.html#method.resolve_ref): get a normal reference
-//!   (`&dyn`) to the component.
-//! - [Container::resolve_mut()](struct.Container.html#method.resolve_mut): same as `resolve_ref()`
-//!   but returns a mutable reference (`&dyn mut`).
+//! - [`resolve`]\: get a shared ownership reference (`Arc`) to the component.
+//! - [`resolve_ref`]\: get a normal reference (`&dyn`) to the component.
+//! - [`resolve_mut`]\: same as `resolve_ref` but returns a mutable reference
+//!   (`&dyn mut`).
 //!
 //! # Passing parameters
-//! Passing parameters can be done when registering (i.e. when calling
-//! [ContainerBuilder::register()](struct.ContainerBuilder.html#method.register_type)), just chain
-//! a `with_name_parameter()` or `with_type_parameter()` call.
+//! Passing parameters can be done when registering, just chain a [`with_named_parameter`] or
+//! [`with_typed_parameter`] call.
 //!
-//! ```rust,ignore
+//! ```
+//! # use shaku::{Component, ContainerBuilder, Interface};
+//! #
+//! # trait Foo: Interface {}
+//! # impl Foo for FooImpl {}
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = Foo)]
+//! # struct FooImpl;
+//! #
+//! # let mut builder = ContainerBuilder::new();
+//! #
 //! builder
 //!     .register_type::<FooImpl>()
-//!     .with_named_parameter("name", "fooooo".to_string());
-//! //  .with_type_parameter::<String>("fooooo".to_string()); // alternative
+//!     .with_named_parameter("name", "foo".to_string());
+//! //  .with_typed_parameter::<String>("foo".to_string()); // alternative
 //! ```
+//!
+//! [`ContainerBuilder`]: struct.ContainerBuilder.html
+//! [`Container`]: struct.Container.html
+//! [`ContainerBuilder::build`]: struct.ContainerBuilder.html#method.build
+//! [`resolve`]: struct.Container.html#method.resolve
+//! [`resolve_ref`]: struct.Container.html#method.resolve_ref
+//! [`resolve_mut`]: struct.Container.html#method.resolve_mut
+//! [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
+//! [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
 
-pub use self::container_build_context::ContainerBuildContext;
-pub use self::container_builder::*;
-pub use self::dependency::Dependency;
-pub use self::map_container::Container;
-pub use self::registered_type::RegisteredType;
-
+#[allow(clippy::module_inception)]
+mod container;
 mod container_build_context;
 mod container_builder;
 mod dependency;
-mod map_container;
 mod registered_type;
+
+pub use self::container::Container;
+pub use self::container_build_context::ContainerBuildContext;
+pub use self::container_builder::ContainerBuilder;
+pub use self::dependency::Dependency;
+pub use self::registered_type::RegisteredType;
 
 #[cfg(not(feature = "thread_safe"))]
 type AnyType = dyn anymap::any::Any;

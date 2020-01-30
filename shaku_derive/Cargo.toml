@@ -1,25 +1,20 @@
 [package]
 name = "shaku_derive"
-version = "0.3.1"
-authors = ["Boris <boris@humanenginuity.com>", "Mark <mark.drobnak@gmail.com>"]
-description = "Code generation for shaku dependency injection / inversion of control framework"
-repository = "https://github.com/humanenginuity/shaku_derive"
-documentation = "https://docs.rs/crate/shaku"
-categories = ["rust-patterns"]
-keywords = ["di", "ioc", "injection", "inversion", "control"]
+version = "0.1.0"
+authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
+description = "Code generation for the shaku dependency injection framework"
+repository = "https://github.com/Mcat12/shaku"
+keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 
 [lib]
-name = "shaku_derive"
 proc-macro = true
 
 [dependencies]
-shaku_internals = "~0.2.1"
-anymap = "0.12.1"
 quote = "1.0"
 syn = { version = "1.0", features = ["extra-traits"]}
 proc-macro2 = "1.0"
 
 [dev-dependencies]
-shaku = "~0.3.1"
+shaku = "~0.1.0"
