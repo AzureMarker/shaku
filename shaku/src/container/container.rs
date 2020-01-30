@@ -1,9 +1,10 @@
+use std::any::type_name;
 use std::sync::Arc;
 
-use crate::component::Interface;
 use crate::container::ComponentMap;
 use crate::provider::{ProvidedInterface, ProviderFn};
 use crate::Error;
+use crate::Interface;
 use crate::Result;
 
 /// Resolves components registered during the build phase.
@@ -124,7 +125,7 @@ impl Container {
             .ok_or_else(|| {
                 Error::ResolveError(format!(
                     "no component {} registered in this container",
-                    ::std::any::type_name::<I>()
+                    type_name::<I>()
                 ))
             })
     }
@@ -157,7 +158,7 @@ impl Container {
         let provider = self.providers.get::<ProviderFn<I>>().ok_or_else(|| {
             Error::ResolveError(format!(
                 "no provider for {} registered in this container",
-                ::std::any::type_name::<I>()
+                type_name::<I>()
             ))
         })?;
 
@@ -193,7 +194,7 @@ impl Container {
         let component = self.components.get::<Arc<I>>().ok_or_else(|| {
             Error::ResolveError(format!(
                 "no component {} registered in this container",
-                ::std::any::type_name::<I>()
+                type_name::<I>()
             ))
         })?;
 
@@ -234,14 +235,14 @@ impl Container {
         let component = self.components.get_mut::<Arc<I>>().ok_or_else(|| {
             Error::ResolveError(format!(
                 "no component {} registered in this container",
-                ::std::any::type_name::<I>()
+                type_name::<I>()
             ))
         })?;
 
         Arc::get_mut(component).ok_or_else(|| {
             Error::ResolveError(format!(
                 "Unable to get a mutable reference of component {}, there are existing Arc references",
-                ::std::any::type_name::<I>()
+                type_name::<I>()
             ))
         })
     }

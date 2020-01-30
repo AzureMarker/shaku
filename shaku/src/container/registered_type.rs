@@ -1,4 +1,5 @@
-use std::any::{Any, TypeId};
+use std::any::{type_name, Any, TypeId};
+use std::fmt::{self, Debug};
 
 use crate::component::ComponentBuildFn;
 use crate::container::{ContainerBuildContext, Dependency};
@@ -68,7 +69,7 @@ impl RegisteredType {
         if self.parameters.insert_with_type(value).is_some() {
             log::warn!(
                 "::RegisteredType::with_typed_parameter::warning overwriting existing value for property with type {}",
-                ::std::any::type_name::<V>()
+               type_name::<V>()
             );
         }
         self
@@ -79,8 +80,8 @@ impl RegisteredType {
     }
 }
 
-impl ::std::fmt::Debug for RegisteredType {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+impl Debug for RegisteredType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "RegisteredType {{ component: {:?}, parameters: {:?}, dependencies: {:?} }}",

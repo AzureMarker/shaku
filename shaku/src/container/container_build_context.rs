@@ -1,4 +1,4 @@
-use std::any::TypeId;
+use std::any::{type_name, TypeId};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -98,7 +98,7 @@ impl ContainerBuildContext {
             .ok_or_else(|| {
                 DIError::ResolveError(format!(
                     "Component {} has not yet been resolved, or is not registered. Check your dependencies.",
-                    ::std::any::type_name::<I>()
+                   type_name::<I>()
                 ))
             })
     }
