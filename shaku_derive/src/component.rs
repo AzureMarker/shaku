@@ -1,13 +1,13 @@
-//! Implementation of '#[derive(Component)]' procedural macro
+//! Implementation of the '#[derive(Component)]' procedural macro
 
 use std::env;
 
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::{ToTokens, TokenStreamExt};
-use syn::{DeriveInput, Ident};
+use syn::DeriveInput;
 
 use crate::consts;
-use crate::structures::ComponentContainer;
+use crate::structures::{ComponentContainer, Property};
 
 pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream {
     let container = ComponentContainer::from_derive_input(input).unwrap();
@@ -17,93 +17,25 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
         println!("Container built from input: {:#?}", container);
     }
 
-    // Temp variable block
-    const PREFIX: &str = "__di_";
-    let mut parameters_block = TokenStream::new();
-    parameters_block.append_all(container.properties.iter().map(|property| {
-        /*
-        Building the following output >
-        let __di_output = build_context.resolve::<IOutput>()?;
+    let parameters: TokenStream = container
+        .properties
+        .iter()
+        .map(create_resolve_code)
+        .collect();
 
-        or
-
-        let __di_output = params.remove_with_name::<Box<IOutput>>("output")
-            .or_else(|| params.remove_with_type::<Box<IOutput>>())
-            .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
-        */
-        let prefixed_property_name = Ident::new(
-            &format!("{}{}", &PREFIX, property.get_name_without_quotes()),
-            Span::call_site(),
-        );
-
-        let mut tokens = TokenStream::new();
-        tokens.append_all(quote! {
-            let #prefixed_property_name =
-        });
-
-        if property.is_component() {
-            // Injected components => resolve
-            let property_type = &property.ty;
-
-            tokens.append_all(quote! {
-                build_context.resolve::<#property_type>()?;
-            });
-        } else {
-            // Other properties => lookup in the parameters with name and type
-            let property_type = if property.is_arc {
-                let property_type = &property.ty;
-
-                quote! { Arc<#property_type> }
-            } else {
-                property.ty.to_token_stream()
-            };
-
-            let property_name = property.get_name();
-            let error_msg = format!(
-                "unable to find parameter with name or type for property {}",
-                &property.get_name()
-            );
-
-            tokens.append_all(quote! {
-                params
-                    .remove_with_name::<#property_type>(#property_name)
-                    .or_else(|| params.remove_with_type::<#property_type>())
-                    .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
-            });
-        }
-
-        tokens
-    }));
-
-    // Property block
-    let mut properties_block = TokenStream::new();
-    properties_block.append_terminated(
-        container.properties.iter().map(|ref property| {
-            let property_name = &property.property_name;
-            let value_ident = format_ident!("{}{}", &PREFIX, property.get_name_without_quotes());
-
-            Some(quote! {
-                #property_name: #value_ident
-            })
-        }),
-        quote! { , },
-    );
+    let properties: Vec<TokenStream> = container
+        .properties
+        .iter()
+        .map(create_property_assignment)
+        .collect();
 
     let dependencies: Vec<TokenStream> = container
         .properties
         .iter()
-        .filter(|property| property.is_component())
-        .map(|property| {
-            let property_type = &property.ty;
-            let property_name = property.get_name();
-
-            quote! {
-                ::shaku::Dependency::new::<#property_type>(String::from(#property_name))
-            }
-        })
+        .filter_map(create_dependency)
         .collect();
 
-    // Main implementation block
+    // Component implementation
     let component_name = container.metadata.identifier;
     let interface = container.metadata.interface;
     let impl_block = quote! {
@@ -121,11 +53,11 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
                 params: &mut ::shaku::parameter::ParameterMap,
             ) -> ::shaku::Result<()> {
                 // Create the parameters
-                #parameters_block
+                #parameters
 
                 // Insert the resolved component
-                let component = Box::new(#component_name {
-                    #properties_block
+                let component = Box::new(Self {
+                    #(#properties),*
                 });
                 build_context.insert::<Self::Interface>(component);
 
@@ -135,10 +67,82 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     };
 
     if debug_level > 0 {
-        println!("{}", &impl_block.to_string());
+        println!("{}", impl_block);
     }
 
     impl_block
+}
+
+fn create_dependency(property: &Property) -> Option<TokenStream> {
+    if !property.is_component() {
+        return None;
+    }
+
+    let property_type = &property.ty;
+    let property_name = property.property_name.to_string();
+
+    Some(quote! {
+        ::shaku::Dependency::new::<#property_type>(String::from(#property_name))
+    })
+}
+
+fn create_property_assignment(property: &Property) -> TokenStream {
+    let property_name = &property.property_name;
+    let value_ident = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
+
+    quote! {
+        #property_name: #value_ident
+    }
+}
+
+fn create_resolve_code(property: &Property) -> TokenStream {
+    /*
+    Building the following output:
+    let __di_output = build_context.resolve::<IOutput>()?;
+    or
+    let __di_output = params.remove_with_name::<Arc<IOutput>>("output")
+        .or_else(|| params.remove_with_type::<Arc<IOutput>>())
+        .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
+    */
+    let prefixed_property_name = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
+
+    let mut tokens = TokenStream::new();
+    tokens.append_all(quote! {
+        let #prefixed_property_name =
+    });
+
+    if property.is_component() {
+        // Injected components => resolve
+        let property_type = &property.ty;
+
+        tokens.append_all(quote! {
+            build_context.resolve::<#property_type>()?;
+        });
+    } else {
+        // Other properties => lookup in the parameters with name and type
+        let property_type = if property.is_arc {
+            let property_type = &property.ty;
+
+            quote! { Arc<#property_type> }
+        } else {
+            property.ty.to_token_stream()
+        };
+
+        let property_name = property.property_name.to_string();
+        let error_msg = format!(
+            "unable to find parameter with name or type for property {}",
+            property_name
+        );
+
+        tokens.append_all(quote! {
+            params
+                .remove_with_name::<#property_type>(#property_name)
+                .or_else(|| params.remove_with_type::<#property_type>())
+                .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
+        });
+    }
+
+    tokens
 }
 
 fn get_debug_level() -> usize {

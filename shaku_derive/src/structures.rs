@@ -43,14 +43,4 @@ impl Property {
     pub fn is_component(&self) -> bool {
         self.is_injected && self.is_arc
     }
-
-    /// Get the property name as a String without the extra ""
-    pub fn get_name_without_quotes(&self) -> String {
-        self.get_name().replace("\"", "")
-    }
-
-    /// Get the property name as a String (with quotes)
-    pub fn get_name(&self) -> String {
-        self.property_name.to_string()
-    }
 }
