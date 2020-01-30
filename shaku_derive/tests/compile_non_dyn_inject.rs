@@ -30,15 +30,11 @@ trait Bar: Interface {
 }
 
 impl Foo for TestComponent {
-    fn foo(&self) {
-        ()
-    }
+    fn foo(&self) {}
 }
 
 impl Bar for BarImpl {
-    fn bar(&self) {
-        ()
-    }
+    fn bar(&self) {}
 }
 
 #[test]
