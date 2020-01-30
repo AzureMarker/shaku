@@ -36,5 +36,5 @@ pub struct Property {
     /// The full type if not a component.
     /// Otherwise, the interface type (the type inside the Arc).
     pub ty: Type,
-    pub is_component: bool
+    pub is_component: bool,
 }
