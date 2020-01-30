@@ -1,5 +1,10 @@
 version: 2.1
 commands:
+  install-tools:
+    steps:
+      - run:
+          name: "Install Tools"
+          command: rustup component add rustfmt clippy
   style-check:
     steps:
       - run:
@@ -26,6 +31,7 @@ jobs:
       - image: rust
     steps:
       - checkout
+      - install-tools
       - style-check
       - lint-check
       - code-check
