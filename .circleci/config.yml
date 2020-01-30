@@ -1,0 +1,49 @@
+version: 2.1
+commands:
+  style-check:
+    steps:
+      - run:
+          name: "Code Style Check"
+          command: cargo fmt -- --check
+  lint-check:
+    steps:
+      - run:
+          name: "Code Lint Check"
+          command: cargo clippy --all-targets --all-features -- -D clippy::all
+  code-check:
+    steps:
+      - run:
+          name: "Cargo Check"
+          command: cargo check
+  test:
+    steps:
+      - run:
+          name: "Test"
+          command: cargo test
+jobs:
+  shaku:
+    docker:
+      - image: rust
+    steps:
+      - checkout
+      - style-check
+      - lint-check
+      - code-check
+      - test
+  shaku_rocket:
+    docker:
+      - image: rustlang/rust:nightly
+    working_directory: ~/project/shaku_rocket
+    steps:
+      - checkout:
+          path: ~/project
+      - style-check
+      - lint-check
+      - code-check
+      - test
+workflows:
+  version: 2
+  build:
+    jobs:
+      - shaku
+      - shaku_rocket
