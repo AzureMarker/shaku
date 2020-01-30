@@ -3,7 +3,7 @@
 use syn::{DeriveInput, Ident, Type};
 
 use crate::error::Error;
-use crate::parsing::Parser;
+use crate::parser::Parser;
 
 /// The main data structure, representing the data required to implement
 /// Component.
@@ -16,8 +16,8 @@ pub struct ComponentContainer {
 impl ComponentContainer {
     pub fn from_derive_input(input: &DeriveInput) -> Result<Self, Error> {
         Ok(ComponentContainer {
-            metadata: input.parse_into()?,
-            properties: input.parse_into()?,
+            metadata: input.parse_as()?,
+            properties: input.parse_as()?,
         })
     }
 }

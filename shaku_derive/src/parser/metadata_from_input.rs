@@ -1,21 +1,10 @@
 use crate::consts;
 use crate::error::Error;
-use crate::parsing::parsers::PathKeyValue;
-use crate::parsing::Parser;
+use crate::parser::{Parser, PathKeyValue};
 use crate::structures::MetaData;
 
 impl Parser<MetaData> for syn::DeriveInput {
-    fn parse_into(&self) -> Result<MetaData, Error> {
-        // Make sure it's a struct
-        match self.data {
-            syn::Data::Struct(_) => {}
-            _ => {
-                return Err(Error::ParseError(
-                    "Only structs are currently supported".to_string(),
-                ));
-            }
-        };
-
+    fn parse_as(&self) -> Result<MetaData, Error> {
         // Find the shaku(interface = ?) attribute
         let shaku_attribute = self
             .attrs

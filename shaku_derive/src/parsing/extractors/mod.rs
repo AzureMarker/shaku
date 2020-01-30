@@ -1,1 +1,0 @@
-mod struct_fields_from_derive_input;

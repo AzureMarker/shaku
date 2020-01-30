@@ -9,7 +9,7 @@ use proc_macro::TokenStream;
 mod component;
 mod consts;
 mod error;
-mod parsing;
+mod parser;
 mod structures;
 
 #[proc_macro_derive(Component, attributes(shaku))]

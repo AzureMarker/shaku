@@ -2,11 +2,11 @@ use syn::{Field, GenericArgument, Path, PathArguments, Type};
 
 use crate::consts;
 use crate::error::Error;
-use crate::parsing::Parser;
+use crate::parser::Parser;
 use crate::structures::Property;
 
 impl Parser<Property> for Field {
-    fn parse_into(&self) -> Result<Property, Error> {
+    fn parse_as(&self) -> Result<Property, Error> {
         let is_injected = self.attrs.iter().any(|a| {
             a.path.is_ident(consts::ATTR_NAME)
                 && a.parse_args::<Path>()
