@@ -138,8 +138,20 @@ impl Container {
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
-    /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>()?;
+    /// ```
+    /// # use shaku::{Component, Interface, ContainerBuilder};
+    /// # use shaku::provider::ProvidedInterface;
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: ProvidedInterface {}
+    /// # impl Foo for FooImpl {}
+    /// # struct FooImpl;
+    /// #
+    /// # let mut builder = ContainerBuilder::new();
+    /// # builder.register_provider_lambda::<dyn Foo>(Box::new(|_| Ok(Box::new(FooImpl))));
+    /// # let container = builder.build().unwrap();
+    /// #
+    /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>().unwrap();
     /// ```
     pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> Result<Box<I>> {
         let provider = self.providers.get::<ProviderFn<I>>().ok_or_else(|| {
