@@ -1,5 +1,6 @@
-[![Current version](https://img.shields.io/crates/v/shaku.svg)](https://crates.io/crates/shaku)
-[![Current documentation](https://docs.rs/shaku/badge.svg)][docs]
+[![Current version][crate-badge]][crates-io]
+[![Current documentation][doc-badge]][docs]
+[![Build status][build-badge]][builds]
 
 # Shaku
 
@@ -63,7 +64,12 @@ This library started off as "he_di" (later renamed to "shaku") under the
 guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
 ([@Mcat12]) to continue the library from where they left off.
 
+[crates-io]: https://crates.io/crates/shaku
 [docs]: https://docs.rs/crate/shaku
+[builds]: https://circleci.com/gh/Mcat12/shaku
+[crate-badge]: https://img.shields.io/crates/v/shaku.svg
+[doc-badge]: https://docs.rs/shaku/badge.svg
+[build-badge]: https://circleci.com/gh/Mcat12/shaku.svg?style=shield](https://circleci.com/gh/Mcat12/shaku
 [@bgbahoue]: https://github.com/bgbahoue
 [@U007D]: https://github.com/U007D
 [@Mcat12]: https://github.com/Mcat12
