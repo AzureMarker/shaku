@@ -1,13 +1,13 @@
 use std::ops::Deref;
+use std::sync::Arc;
 
 use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
 use rocket::{http::Status, Request, State};
 
 use shaku::component::Interface;
-use shaku::Container;
-use std::sync::Arc;
 use shaku::provider::ProvidedInterface;
+use shaku::Container;
 
 /// Used to retrieve a reference to a component from a shaku `Container`.
 /// The container should be stored in Rocket's state. Use this struct as a

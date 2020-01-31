@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
 use crate::container::{ComponentMap, Container, ContainerBuildContext, RegisteredType};
-use crate::provider::{Provider, ProviderFn, ProvidedInterface};
+use crate::provider::{ProvidedInterface, Provider, ProviderFn};
 use crate::Dependency;
 use crate::Result;
 
@@ -102,7 +102,10 @@ impl ContainerBuilder {
         self.register_provider_lambda(Box::new(P::provide))
     }
 
-    pub fn register_provider_lambda<I: ProvidedInterface + ?Sized>(&mut self, provider: ProviderFn<I>) {
+    pub fn register_provider_lambda<I: ProvidedInterface + ?Sized>(
+        &mut self,
+        provider: ProviderFn<I>,
+    ) {
         self.providers.insert::<ProviderFn<I>>(provider);
     }
 
