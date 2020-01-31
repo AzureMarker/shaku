@@ -77,7 +77,7 @@ impl<I: Interface + ?Sized> Deref for Inject<I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {
-        &*self.0
+        &self.0
     }
 }
 
@@ -104,6 +104,6 @@ impl<I: ProvidedInterface + ?Sized> Deref for InjectProvided<I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {
-        &*self.0
+        &self.0
     }
 }
