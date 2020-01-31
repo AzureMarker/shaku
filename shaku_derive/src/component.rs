@@ -79,10 +79,9 @@ fn create_dependency(property: &Property) -> Option<TokenStream> {
     }
 
     let property_type = &property.ty;
-    let property_name = property.property_name.to_string();
 
     Some(quote! {
-        ::shaku::Dependency::new::<#property_type>(String::from(#property_name))
+        ::shaku::Dependency::component::<#property_type>()
     })
 }
 

@@ -73,7 +73,7 @@ fn resolving_component_without_dependency_should_err() {
     if let Err(DIError::ResolveError(err)) = build_result {
         assert_eq!(
             err,
-            "Unable to resolve dependency 'bar: dyn resolving_component_without_parameters::Bar' of component 'resolving_component_without_parameters::FooImpl'"
+            "Unable to resolve dependency 'dyn resolving_component_without_parameters::Bar' of component 'resolving_component_without_parameters::FooImpl'"
         );
     } else {
         panic!("unexpected state > result should be Err");

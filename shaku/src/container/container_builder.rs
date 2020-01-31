@@ -98,7 +98,7 @@ impl ContainerBuilder {
         self.registration_map.get_mut(&interface_type_id).unwrap()
     }
 
-    pub fn register_provider<P: Provider>(&mut self) {
+    pub fn register_provider<P: Provider + ?Sized>(&mut self) {
         self.register_provider_lambda(Box::new(P::provide))
     }
 

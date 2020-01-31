@@ -73,8 +73,8 @@ impl ContainerBuildContext {
                     .remove(&dependency.type_id)
                     .ok_or_else(|| {
                         DIError::ResolveError(format!(
-                            "Unable to resolve dependency '{}: {}' of component '{}'",
-                            dependency.name, dependency.type_name, registration.component
+                            "Unable to resolve dependency '{}' of component '{}'",
+                            dependency.type_name, registration.component
                         ))
                     })?;
 

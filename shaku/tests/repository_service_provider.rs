@@ -1,6 +1,6 @@
 use shaku::component::Interface;
 use shaku::provider::{ProvidedInterface, Provider};
-use shaku::{Component, Container, ContainerBuilder, Error};
+use shaku::{Component, Container, ContainerBuilder, Dependency, Error};
 use std::cell::RefCell;
 
 trait ConnectionPool: Interface {
@@ -36,24 +36,42 @@ impl ConnectionPool for DatabaseConnectionPool {
     }
 }
 
+impl Provider for dyn ConnectionPool {
+    type Interface = DBConnection;
+
+    fn dependencies() -> Vec<Dependency> {
+        vec![Dependency::component::<dyn ConnectionPool>()]
+    }
+
+    fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
+        let pool = container.resolve_ref::<dyn ConnectionPool>()?;
+
+        Ok(Box::new(pool.get()))
+    }
+}
+
 // This struct is Send + !Sync due to the DBConnection
 struct RepositoryImpl {
-    db: DBConnection,
+    db: Box<DBConnection>,
 }
 
 impl Repository for RepositoryImpl {
     fn get(&self) -> usize {
-        *self.db.0.borrow()
+        *(*self.db).0.borrow()
     }
 }
 
 impl Provider for RepositoryImpl {
     type Interface = dyn Repository;
 
-    fn provide(container: &Container) -> Result<Box<Self::Interface>, Error> {
-        let db_pool: &dyn ConnectionPool = container.resolve_ref()?;
+    fn dependencies() -> Vec<Dependency> {
+        vec![Dependency::provider::<DBConnection>()]
+    }
 
-        Ok(Box::new(RepositoryImpl { db: db_pool.get() }))
+    fn provide(container: &Container) -> Result<Box<dyn Repository>, Error> {
+        Ok(Box::new(RepositoryImpl {
+            db: container.provide()?,
+        }))
     }
 }
 
@@ -71,7 +89,11 @@ impl Service for ServiceImpl {
 impl Provider for ServiceImpl {
     type Interface = dyn Service;
 
-    fn provide(container: &Container) -> Result<Box<Self::Interface>, Error> {
+    fn dependencies() -> Vec<Dependency> {
+        vec![Dependency::provider::<dyn Repository>()]
+    }
+
+    fn provide(container: &Container) -> Result<Box<dyn Service>, Error> {
         Ok(Box::new(ServiceImpl {
             repo: container.provide()?,
         }))
@@ -85,6 +107,7 @@ fn can_provide_send_component() {
     builder
         .register_type::<DatabaseConnectionPool>()
         .with_typed_parameter::<usize>(42);
+    builder.register_provider::<dyn ConnectionPool>();
     builder.register_provider::<RepositoryImpl>();
     builder.register_provider::<ServiceImpl>();
     let container = builder.build().unwrap();
@@ -109,6 +132,7 @@ fn can_mock_database() {
 
     let mut builder = ContainerBuilder::new();
     builder.register_type::<MockDatabase>();
+    builder.register_provider::<dyn ConnectionPool>();
     builder.register_provider::<RepositoryImpl>();
     let container = builder.build().unwrap();
 

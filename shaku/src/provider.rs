@@ -1,13 +1,14 @@
 use std::any::Any;
 
-use crate::Container;
+use crate::{Container, Dependency};
 
 pub trait Provider: 'static {
     type Interface: ProvidedInterface + ?Sized;
 
-    fn provide(container: &Container) -> super::Result<Box<Self::Interface>>
-    where
-        Self: Sized;
+    /// The services/providers which this provider depends on.
+    fn dependencies() -> Vec<Dependency>;
+
+    fn provide(container: &Container) -> super::Result<Box<Self::Interface>>;
 }
 
 #[cfg(not(feature = "thread_safe"))]
