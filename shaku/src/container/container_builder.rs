@@ -2,6 +2,7 @@ use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
+use crate::container::provider_registration::ProviderRegistration;
 use crate::container::{ComponentMap, ComponentRegistration, Container, ContainerBuildContext};
 use crate::provider::{ProvidedInterface, Provider, ProviderFn};
 use crate::Dependency;
@@ -19,6 +20,7 @@ use crate::Result;
 /// [`ContainerBuilder::build`]: #method.build
 pub struct ContainerBuilder {
     component_registrations: HashMap<TypeId, ComponentRegistration>,
+    provider_registrations: HashMap<TypeId, ProviderRegistration>,
     providers: ComponentMap,
 }
 
@@ -26,6 +28,7 @@ impl Default for ContainerBuilder {
     fn default() -> Self {
         ContainerBuilder {
             component_registrations: HashMap::new(),
+            provider_registrations: HashMap::new(),
             providers: ComponentMap::new(),
         }
     }
@@ -75,7 +78,6 @@ impl ContainerBuilder {
         dependencies: Vec<Dependency>,
     ) -> &mut ComponentRegistration {
         let interface_type_id = TypeId::of::<I>();
-
         let registration = ComponentRegistration::new(
             component_name.to_string(),
             interface_type_id,
@@ -101,13 +103,34 @@ impl ContainerBuilder {
     }
 
     pub fn register_provider<P: Provider + ?Sized>(&mut self) {
-        self.register_provider_lambda(Box::new(P::provide))
+        self.register_provider_lambda::<P::Interface>(
+            type_name::<P>(),
+            P::dependencies(),
+            Box::new(P::provide),
+        )
     }
 
     pub fn register_provider_lambda<I: ProvidedInterface + ?Sized>(
         &mut self,
+        provider_name: &str,
+        dependencies: Vec<Dependency>,
         provider: ProviderFn<I>,
     ) {
+        let interface_type_id = TypeId::of::<I>();
+        let registration =
+            ProviderRegistration::new(provider_name.to_string(), interface_type_id, dependencies);
+
+        let old_value = self
+            .provider_registrations
+            .insert(interface_type_id, registration);
+        if let Some(old_value) = old_value {
+            log::warn!(
+                "::shaku::ContainerBuilder::register_provider_lambda::warning trait '{:?}' already had Provider '{:?}') registered to it",
+                type_name::<I>(),
+                old_value.name
+            );
+        }
+
         self.providers.insert::<ProviderFn<I>>(provider);
     }
 
@@ -171,6 +194,11 @@ impl ContainerBuilder {
     /// }
     /// ```
     pub fn build(self) -> Result<Container> {
-        ContainerBuildContext::new(self.component_registrations, self.providers).build()
+        ContainerBuildContext::new(
+            self.component_registrations,
+            self.provider_registrations,
+            self.providers,
+        )
+        .build()
     }
 }

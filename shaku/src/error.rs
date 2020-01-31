@@ -1,9 +1,11 @@
 use std::error::Error as StdError;
 use std::fmt::{self, Debug};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum Error {
+    /// Error while registering a component/provider
+    Registration(String),
     /// Error while resolving a component
     ResolveError(String),
 }
@@ -11,6 +13,7 @@ pub enum Error {
 impl StdError for Error {
     fn description(&self) -> &str {
         match self {
+            Error::Registration(msg) => msg,
             Error::ResolveError(msg) => msg,
         }
     }
@@ -23,6 +26,7 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Error::Registration(msg) => write!(f, "Registration Error: {}", msg),
             Error::ResolveError(msg) => write!(f, "Resolve Error: {}", msg),
         }
     }

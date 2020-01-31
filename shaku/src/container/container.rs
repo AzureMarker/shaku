@@ -140,16 +140,25 @@ impl Container {
     /// # Examples
     ///
     /// ```
-    /// # use shaku::{Component, Interface, ContainerBuilder};
-    /// # use shaku::provider::ProvidedInterface;
+    /// # use shaku::{Component, Interface, ContainerBuilder, Container, Error, Dependency};
+    /// # use shaku::provider::{ProvidedInterface, Provider};
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: ProvidedInterface {}
     /// # impl Foo for FooImpl {}
     /// # struct FooImpl;
+    /// # impl Provider for FooImpl {
+    /// #     type Interface = dyn Foo;
+    /// #     fn dependencies() -> Vec<Dependency> {
+    /// #         Vec::new()
+    /// #     }
+    /// #     fn provide(_: &Container) -> Result<Box<Self::Interface>, Error> {
+    /// #         Ok(Box::new(FooImpl))
+    /// #     }
+    /// # }
     /// #
     /// # let mut builder = ContainerBuilder::new();
-    /// # builder.register_provider_lambda::<dyn Foo>(Box::new(|_| Ok(Box::new(FooImpl))));
+    /// # builder.register_provider::<FooImpl>();
     /// # let container = builder.build().unwrap();
     /// #
     /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>().unwrap();

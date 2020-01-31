@@ -151,8 +151,20 @@ fn can_mock_repository() {
         }
     }
 
+    impl Provider for MockRepository {
+        type Interface = dyn Repository;
+
+        fn dependencies() -> Vec<Dependency> {
+            Vec::new()
+        }
+
+        fn provide(_: &Container) -> Result<Box<Self::Interface>, Error> {
+            Ok(Box::new(MockRepository))
+        }
+    }
+
     let mut builder = ContainerBuilder::new();
-    builder.register_provider_lambda::<dyn Repository>(Box::new(|_| Ok(Box::new(MockRepository))));
+    builder.register_provider::<MockRepository>();
     builder.register_provider::<ServiceImpl>();
     let container = builder.build().unwrap();
 

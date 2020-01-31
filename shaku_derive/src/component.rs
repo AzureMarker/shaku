@@ -128,7 +128,7 @@ fn create_resolve_code(property: &Property) -> TokenStream {
             params
                 .remove_with_name::<#property_type>(#property_name)
                 .or_else(|| params.remove_with_type::<#property_type>())
-                .ok_or(::shaku::Error::ResolveError(#error_msg.to_string()))?;
+                .ok_or(::shaku::Error::Registration(#error_msg.to_string()))?;
         });
     }
 

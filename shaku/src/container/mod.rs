@@ -70,6 +70,7 @@ mod container;
 mod container_build_context;
 mod container_builder;
 mod dependency;
+mod provider_registration;
 
 pub use self::component_registration::ComponentRegistration;
 pub use self::container::Container;
