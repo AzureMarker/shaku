@@ -8,7 +8,7 @@ use crate::Error;
 
 /// Represents a component registration. It is exposed in order to provide
 /// parameters for the component.
-pub struct RegisteredType {
+pub struct ComponentRegistration {
     pub(crate) component: String,
     pub(crate) interface_id: TypeId,
     pub(crate) builder: ComponentBuildFn,
@@ -16,15 +16,15 @@ pub struct RegisteredType {
     pub(crate) parameters: ParameterMap,
 }
 
-impl RegisteredType {
-    /// Create a new RegisteredType.
+impl ComponentRegistration {
+    /// Create a new ComponentRegistration.
     pub(crate) fn new(
         component: String,
         interface_id: TypeId,
         builder: ComponentBuildFn,
         dependencies: Vec<Dependency>,
     ) -> Self {
-        RegisteredType {
+        ComponentRegistration {
             component,
             interface_id,
             builder,
@@ -49,7 +49,7 @@ impl RegisteredType {
 
         if self.parameters.insert_with_name(&name, value).is_some() {
             log::warn!(
-                "::RegisteredType::with_named_parameter::warning overwriting existing value for property {}",
+                "::ComponentRegistration::with_named_parameter::warning overwriting existing value for property {}",
                 &name
             );
         }
@@ -68,7 +68,7 @@ impl RegisteredType {
     ) -> &mut Self {
         if self.parameters.insert_with_type(value).is_some() {
             log::warn!(
-                "::RegisteredType::with_typed_parameter::warning overwriting existing value for property with type {}",
+                "::ComponentRegistration::with_typed_parameter::warning overwriting existing value for property with type {}",
                type_name::<V>()
             );
         }
@@ -80,11 +80,11 @@ impl RegisteredType {
     }
 }
 
-impl Debug for RegisteredType {
+impl Debug for ComponentRegistration {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "RegisteredType {{ component: {:?}, parameters: {:?}, dependencies: {:?} }}",
+            "ComponentRegistration {{ component: {:?}, parameters: {:?}, dependencies: {:?} }}",
             self.component, self.parameters, self.dependencies
         )
     }
@@ -100,7 +100,7 @@ mod tests {
     use crate::Dependency;
     use crate::Result;
 
-    use super::RegisteredType;
+    use super::ComponentRegistration;
 
     trait Foo: Interface {
         fn foo(&self);
@@ -125,25 +125,23 @@ mod tests {
 
     #[test]
     fn test_overwrite() {
-        let mut registered_type = RegisteredType::new(
+        let mut registration = ComponentRegistration::new(
             "FooImpl".to_string(),
             TypeId::of::<dyn Foo>(),
             Box::new(FooImpl::build),
             FooImpl::dependencies(),
         );
 
-        registered_type.with_named_parameter("test", "value 1".to_string());
-        registered_type.with_named_parameter("test", "value 2".to_string());
+        registration.with_named_parameter("test", "value 1".to_string());
+        registration.with_named_parameter("test", "value 2".to_string());
 
-        let value = registered_type
-            .parameters
-            .remove_with_name::<String>("test");
+        let value = registration.parameters.remove_with_name::<String>("test");
         assert_eq!(*value.unwrap(), "value 2".to_string());
 
-        registered_type.with_typed_parameter(17 as usize);
-        registered_type.with_typed_parameter(18 as usize);
+        registration.with_typed_parameter(17 as usize);
+        registration.with_typed_parameter(18 as usize);
 
-        let value = registered_type.parameters.remove_with_type::<usize>();
+        let value = registration.parameters.remove_with_type::<usize>();
         assert_eq!(value.unwrap(), 18);
     }
 }

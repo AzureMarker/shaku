@@ -332,8 +332,8 @@
 //! [`Component::build`]: component/trait.Component.html#tymethod.build
 //! [`ContainerBuilder`]: container/struct.ContainerBuilder.html
 //! [`Container`]: container/struct.Container.html
-//! [`with_named_parameter`]: container/struct.RegisteredType.html#method.with_named_parameter
-//! [`with_typed_parameter`]: container/struct.RegisteredType.html#method.with_typed_parameter
+//! [`with_named_parameter`]: container/struct.ComponentRegistration.html#method.with_named_parameter
+//! [`with_typed_parameter`]: container/struct.ComponentRegistration.html#method.with_typed_parameter
 
 // Linting
 #![deny(unused_must_use)]

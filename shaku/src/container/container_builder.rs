@@ -2,7 +2,7 @@ use std::any::{type_name, TypeId};
 use std::collections::HashMap;
 
 use crate::component::{Component, ComponentBuildFn, Interface};
-use crate::container::{ComponentMap, Container, ContainerBuildContext, RegisteredType};
+use crate::container::{ComponentMap, ComponentRegistration, Container, ContainerBuildContext};
 use crate::provider::{ProvidedInterface, Provider, ProviderFn};
 use crate::Dependency;
 use crate::Result;
@@ -18,14 +18,14 @@ use crate::Result;
 /// [module documentation]: index.html
 /// [`ContainerBuilder::build`]: #method.build
 pub struct ContainerBuilder {
-    registration_map: HashMap<TypeId, RegisteredType>,
+    component_registrations: HashMap<TypeId, ComponentRegistration>,
     providers: ComponentMap,
 }
 
 impl Default for ContainerBuilder {
     fn default() -> Self {
         ContainerBuilder {
-            registration_map: HashMap::new(),
+            component_registrations: HashMap::new(),
             providers: ComponentMap::new(),
         }
     }
@@ -40,13 +40,13 @@ impl ContainerBuilder {
     /// Register a new component with this builder.
     /// If that component was already registered, the old Component is replaced.
     ///
-    /// This method returns a mutable [`RegisteredType`], allowing you to chain
+    /// This method returns a mutable [`ComponentRegistration`], allowing you to chain
     /// calls to [`with_named_parameter`] or [`with_typed_parameter`].
     ///
-    /// [`RegisteredType`]: struct.RegisteredType.html
-    /// [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
-    /// [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
-    pub fn register_type<C: Component>(&mut self) -> &mut RegisteredType {
+    /// [`ComponentRegistration`]: struct.ComponentRegistration.html
+    /// [`with_named_parameter`]: struct.ComponentRegistration.html#method.with_named_parameter
+    /// [`with_typed_parameter`]: struct.ComponentRegistration.html#method.with_typed_parameter
+    pub fn register_type<C: Component>(&mut self) -> &mut ComponentRegistration {
         self.register_lambda::<C::Interface>(
             type_name::<C>(),
             Box::new(C::build),
@@ -61,22 +61,22 @@ impl ContainerBuilder {
     /// This may be useful in cases such as using a mock or dynamically choosing the
     /// implementation based on dependencies.
     ///
-    /// This method returns a mutable [`RegisteredType`], allowing you to chain
+    /// This method returns a mutable [`ComponentRegistration`], allowing you to chain
     /// calls to [`with_named_parameter`] or [`with_typed_parameter`].
     ///
     /// [`Component`]: ../component/trait.Component.html
-    /// [`RegisteredType`]: struct.RegisteredType.html
-    /// [`with_named_parameter`]: struct.RegisteredType.html#method.with_named_parameter
-    /// [`with_typed_parameter`]: struct.RegisteredType.html#method.with_typed_parameter
+    /// [`ComponentRegistration`]: struct.ComponentRegistration.html
+    /// [`with_named_parameter`]: struct.ComponentRegistration.html#method.with_named_parameter
+    /// [`with_typed_parameter`]: struct.ComponentRegistration.html#method.with_typed_parameter
     pub fn register_lambda<I: Interface + ?Sized>(
         &mut self,
         component_name: &str,
         build: ComponentBuildFn,
         dependencies: Vec<Dependency>,
-    ) -> &mut RegisteredType {
+    ) -> &mut ComponentRegistration {
         let interface_type_id = TypeId::of::<I>();
 
-        let registered_type = RegisteredType::new(
+        let registration = ComponentRegistration::new(
             component_name.to_string(),
             interface_type_id,
             build,
@@ -84,8 +84,8 @@ impl ContainerBuilder {
         );
 
         let old_value = self
-            .registration_map
-            .insert(interface_type_id, registered_type);
+            .component_registrations
+            .insert(interface_type_id, registration);
         if let Some(old_value) = old_value {
             log::warn!(
                 "::shaku::ContainerBuilder::register_lambda::warning trait {:?} already had Component '{:?}) registered to it",
@@ -95,7 +95,9 @@ impl ContainerBuilder {
         }
 
         // Return the registration for further configuration
-        self.registration_map.get_mut(&interface_type_id).unwrap()
+        self.component_registrations
+            .get_mut(&interface_type_id)
+            .unwrap()
     }
 
     pub fn register_provider<P: Provider + ?Sized>(&mut self) {
@@ -169,6 +171,6 @@ impl ContainerBuilder {
     /// }
     /// ```
     pub fn build(self) -> Result<Container> {
-        ContainerBuildContext::new(self.registration_map, self.providers).build()
+        ContainerBuildContext::new(self.component_registrations, self.providers).build()
     }
 }

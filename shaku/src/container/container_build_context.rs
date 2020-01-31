@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use crate::component::Interface;
-use crate::container::{ComponentMap, RegisteredType};
+use crate::container::{ComponentMap, ComponentRegistration};
 use crate::Container;
 use crate::Error as DIError;
 use crate::Result;
@@ -14,18 +14,18 @@ use crate::Result;
 /// [Container]: struct.Container.html
 /// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext {
-    registration_map: HashMap<TypeId, RegisteredType>,
+    component_registrations: HashMap<TypeId, ComponentRegistration>,
     resolved_map: ComponentMap,
     providers: ComponentMap,
 }
 
 impl ContainerBuildContext {
     pub(crate) fn new(
-        registration_map: HashMap<TypeId, RegisteredType>,
+        component_registrations: HashMap<TypeId, ComponentRegistration>,
         providers: ComponentMap,
     ) -> Self {
         ContainerBuildContext {
-            registration_map,
+            component_registrations,
             resolved_map: ComponentMap::new(),
             providers,
         }
@@ -43,12 +43,12 @@ impl ContainerBuildContext {
         Ok(Container::new(self.resolved_map, self.providers))
     }
 
-    fn sort_registrations_by_dependencies(&mut self) -> Result<Vec<RegisteredType>> {
+    fn sort_registrations_by_dependencies(&mut self) -> Result<Vec<ComponentRegistration>> {
         let mut visited = HashSet::new();
         let mut sorted = Vec::new();
 
-        while let Some(interface_id) = self.registration_map.keys().next().copied() {
-            let registration = self.registration_map.remove(&interface_id).unwrap();
+        while let Some(interface_id) = self.component_registrations.keys().next().copied() {
+            let registration = self.component_registrations.remove(&interface_id).unwrap();
 
             if !visited.contains(&interface_id) {
                 self.registration_sort_visit(registration, &mut visited, &mut sorted)?;
@@ -60,16 +60,16 @@ impl ContainerBuildContext {
 
     fn registration_sort_visit(
         &mut self,
-        registration: RegisteredType,
+        registration: ComponentRegistration,
         visited: &mut HashSet<TypeId>,
-        sorted: &mut Vec<RegisteredType>,
+        sorted: &mut Vec<ComponentRegistration>,
     ) -> Result<()> {
         visited.insert(registration.interface_id);
 
         for dependency in &registration.dependencies {
             if !visited.contains(&dependency.type_id) {
                 let dependency_registration = self
-                    .registration_map
+                    .component_registrations
                     .remove(&dependency.type_id)
                     .ok_or_else(|| {
                         DIError::ResolveError(format!(

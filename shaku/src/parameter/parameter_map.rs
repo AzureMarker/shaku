@@ -9,10 +9,10 @@ enum Key {
     Id(TypeId),
 }
 
-/// Used to store parameters passed to a [`RegisteredType`]. The parameters are
+/// Used to store parameters passed to a [`ComponentRegistration`]. The parameters are
 /// later used in [`Component::build`]
 ///
-/// [`RegisteredType`]: ../container/struct.RegisteredType.html
+/// [`ComponentRegistration`]: ../container/struct.ComponentRegistration.html
 /// [`Component::build`]: ../component/trait.Component.html#tymethod.build
 #[derive(Debug)]
 pub struct ParameterMap {
@@ -48,7 +48,7 @@ impl ParameterMap {
     /// Remove a parameter based on property name. It must have been inserted
     /// via [`with_named_parameter`]
     ///
-    /// [`with_named_parameter`]: ../container/struct.RegisteredType.html#method.with_named_parameter
+    /// [`with_named_parameter`]: ../container/struct.ComponentRegistration.html#method.with_named_parameter
     pub fn remove_with_name<V: Any>(&mut self, key: &str) -> Option<V> {
         let key = Key::String(key.to_string());
         let parameter = self.map.get(&key)?;
@@ -63,7 +63,7 @@ impl ParameterMap {
     /// Remove a parameter based on property type. It must have been inserted
     /// via [`with_typed_parameter`]
     ///
-    /// [`with_typed_parameter`]: ../container/struct.RegisteredType.html#method.with_typed_parameter
+    /// [`with_typed_parameter`]: ../container/struct.ComponentRegistration.html#method.with_typed_parameter
     pub fn remove_with_type<V: Any>(&mut self) -> Option<V> {
         let key = Key::Id(TypeId::of::<V>());
         let parameter = self.map.get(&key)?;
