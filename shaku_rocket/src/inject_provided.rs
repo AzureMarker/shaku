@@ -16,31 +16,20 @@ use shaku::{Container, ProvidedInterface};
 ///
 /// #[macro_use] extern crate rocket;
 ///
-/// use shaku::{Container, ContainerBuilder, Dependency, ProvidedInterface, Provider};
+/// use shaku::{ContainerBuilder, ProvidedInterface, Provider};
 /// use shaku_rocket::InjectProvided;
 ///
 /// trait HelloWorld: ProvidedInterface {
 ///     fn greet(&self) -> String;
 /// }
 ///
+/// #[derive(Provider)]
+/// #[shaku(interface = HelloWorld)]
 /// struct HelloWorldImpl;
 ///
 /// impl HelloWorld for HelloWorldImpl {
 ///     fn greet(&self) -> String {
 ///         "Hello, world!".to_owned()
-///     }
-/// }
-///
-/// # // TODO: use a derive macro for this
-/// impl Provider for HelloWorldImpl {
-///     type Interface = dyn HelloWorld;
-///
-///     fn dependencies() -> Vec<Dependency> {
-///         Vec::new()
-///     }
-///
-///     fn provide(container: &Container) -> Result<Box<Self::Interface>, shaku::Error> {
-///         Ok(Box::new(HelloWorldImpl))
 ///     }
 /// }
 ///

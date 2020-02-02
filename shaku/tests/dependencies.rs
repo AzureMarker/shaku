@@ -5,8 +5,7 @@
 use std::sync::Arc;
 
 use shaku::{
-    Component, Container, ContainerBuilder, Dependency, Error as DIError, Error, Interface,
-    ProvidedInterface, Provider,
+    Component, ContainerBuilder, Dependency, Error, Interface, ProvidedInterface, Provider,
 };
 
 trait IComponent: Interface {}
@@ -28,44 +27,22 @@ impl IComponent for Component1 {}
 struct Dependency1;
 impl IDependency for Dependency1 {}
 
+#[derive(Provider)]
+#[shaku(interface = IProvided)]
 struct Provided1 {
     #[allow(unused)]
+    #[shaku(inject)]
     component_dependency: Arc<dyn IComponent>,
     #[allow(unused)]
+    #[shaku(provide)]
     provided_dependency: Box<dyn IProvidedDependency>,
 }
 impl IProvided for Provided1 {}
-impl Provider for Provided1 {
-    type Interface = dyn IProvided;
 
-    fn dependencies() -> Vec<Dependency> {
-        vec![
-            Dependency::component::<dyn IComponent>(),
-            Dependency::provider::<dyn IProvidedDependency>(),
-        ]
-    }
-
-    fn provide(container: &Container) -> Result<Box<Self::Interface>, Error> {
-        Ok(Box::new(Self {
-            component_dependency: container.resolve()?,
-            provided_dependency: container.provide()?,
-        }))
-    }
-}
-
+#[derive(Provider)]
+#[shaku(interface = IProvidedDependency)]
 struct ProvidedDependency1;
 impl IProvidedDependency for ProvidedDependency1 {}
-impl Provider for ProvidedDependency1 {
-    type Interface = dyn IProvidedDependency;
-
-    fn dependencies() -> Vec<Dependency> {
-        Vec::new()
-    }
-
-    fn provide(_: &Container) -> Result<Box<Self::Interface>, Error> {
-        Ok(Box::new(Self))
-    }
-}
 
 /// It is an error to have a missing component dependency
 #[test]
@@ -77,7 +54,7 @@ fn component_dependency_missing() {
     assert!(build_result.is_err());
     assert_eq!(
         build_result.unwrap_err(),
-        DIError::Registration(
+        Error::Registration(
             "Unable to find dependency 'dyn dependencies::IDependency' of component 'dependencies::Component1'".to_string()
         )
     );
@@ -97,7 +74,7 @@ fn component_with_provider_dependency() {
     assert!(build_result.is_err());
     assert_eq!(
         build_result.unwrap_err(),
-        DIError::Registration(
+        Error::Registration(
             "Error in Component1: Components can only have component dependencies".to_string()
         )
     );
@@ -114,7 +91,7 @@ fn missing_provider_dependency_provider() {
     assert!(build_result.is_err());
     assert_eq!(
         build_result.unwrap_err(),
-        DIError::Registration(
+        Error::Registration(
             "Unable to find provider dependency 'dyn dependencies::IProvidedDependency' for provider 'dependencies::Provided1'".to_string()
         )
     );
@@ -131,7 +108,7 @@ fn missing_provider_dependency_component() {
     assert!(build_result.is_err());
     assert_eq!(
         build_result.unwrap_err(),
-        DIError::Registration(
+        Error::Registration(
             "Unable to find component dependency 'dyn dependencies::IComponent' for provider 'dependencies::Provided1'".to_string()
         )
     );

@@ -353,9 +353,11 @@ pub mod container;
 pub mod parameter;
 pub mod provider;
 
-// Reexport Component derive
+// Reexport derives
 #[cfg(feature = "derive")]
 pub use shaku_derive::Component;
+#[cfg(feature = "derive")]
+pub use shaku_derive::Provider;
 
 /// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
 pub type Result<T> = std::result::Result<T, Error>;

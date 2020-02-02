@@ -52,7 +52,10 @@ impl Provider for dyn ConnectionPool {
 }
 
 // This struct is Send + !Sync due to the DBConnection
+#[derive(Provider)]
+#[shaku(interface = Repository)]
 struct RepositoryImpl {
+    #[shaku(provide)]
     db: Box<DBConnection>,
 }
 
@@ -62,42 +65,17 @@ impl Repository for RepositoryImpl {
     }
 }
 
-impl Provider for RepositoryImpl {
-    type Interface = dyn Repository;
-
-    fn dependencies() -> Vec<Dependency> {
-        vec![Dependency::provider::<DBConnection>()]
-    }
-
-    fn provide(container: &Container) -> Result<Box<dyn Repository>, Error> {
-        Ok(Box::new(RepositoryImpl {
-            db: container.provide()?,
-        }))
-    }
-}
-
 // This struct is Send + !Sync due to the Repository
+#[derive(Provider)]
+#[shaku(interface = Service)]
 struct ServiceImpl {
+    #[shaku(provide)]
     repo: Box<dyn Repository>,
 }
 
 impl Service for ServiceImpl {
     fn get_double(&self) -> usize {
         self.repo.get() * 2
-    }
-}
-
-impl Provider for ServiceImpl {
-    type Interface = dyn Service;
-
-    fn dependencies() -> Vec<Dependency> {
-        vec![Dependency::provider::<dyn Repository>()]
-    }
-
-    fn provide(container: &Container) -> Result<Box<dyn Service>, Error> {
-        Ok(Box::new(ServiceImpl {
-            repo: container.provide()?,
-        }))
     }
 }
 
@@ -144,23 +122,13 @@ fn can_mock_database() {
 /// The repository dependency can be mocked to test the service
 #[test]
 fn can_mock_repository() {
+    #[derive(Provider)]
+    #[shaku(interface = Repository)]
     struct MockRepository;
 
     impl Repository for MockRepository {
         fn get(&self) -> usize {
             3
-        }
-    }
-
-    impl Provider for MockRepository {
-        type Interface = dyn Repository;
-
-        fn dependencies() -> Vec<Dependency> {
-            Vec::new()
-        }
-
-        fn provide(_: &Container) -> Result<Box<Self::Interface>, Error> {
-            Ok(Box::new(MockRepository))
         }
     }
 

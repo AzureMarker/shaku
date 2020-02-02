@@ -6,35 +6,51 @@ use crate::error::Error;
 use crate::parser::Parser;
 
 /// The main data structure, representing the data required to implement
-/// Component.
+/// Component or Provider.
 #[derive(Clone, Debug)]
-pub struct ComponentContainer {
+pub struct ServiceContainer {
     pub metadata: MetaData,
     pub properties: Vec<Property>,
 }
 
-impl ComponentContainer {
+impl ServiceContainer {
     pub fn from_derive_input(input: &DeriveInput) -> Result<Self, Error> {
-        Ok(ComponentContainer {
+        Ok(ServiceContainer {
             metadata: input.parse_as()?,
             properties: input.parse_as()?,
         })
     }
 }
 
-/// Metadata for a component
+/// Metadata for a service
 #[derive(Clone, Debug)]
 pub struct MetaData {
     pub identifier: Ident,
     pub interface: Ident,
 }
 
-/// Holds information about a component property.
+#[derive(Copy, Clone, Debug)]
+pub enum PropertyType {
+    Parameter,
+    Component,
+    Provided,
+}
+
+/// Holds information about a service property.
 #[derive(Clone, Debug)]
 pub struct Property {
     pub property_name: Ident,
-    /// The full type if not a component.
-    /// Otherwise, the interface type (the type inside the Arc).
+    /// The full type if not a service.
+    /// Otherwise, the interface type (the type inside the Arc or Box).
     pub ty: Type,
-    pub is_component: bool,
+    pub property_type: PropertyType,
+}
+
+impl Property {
+    pub fn is_component(&self) -> bool {
+        match self.property_type {
+            PropertyType::Component | PropertyType::Provided => true,
+            PropertyType::Parameter => false,
+        }
+    }
 }

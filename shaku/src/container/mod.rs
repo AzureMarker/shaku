@@ -19,21 +19,9 @@
 //! #[shaku(interface = Foo)]
 //! struct FooImpl;
 //!
+//! #[derive(Provider)]
+//! #[shaku(interface = Bar)]
 //! struct BarImpl;
-//!
-//! # // TODO: use a derive macro for this
-//! impl Provider for BarImpl {
-//!     type Interface = dyn Bar;
-//!
-//!     fn dependencies() -> Vec<Dependency> {
-//!         Vec::new()
-//!     }
-//!
-//!     fn provide(container: &Container) -> Result<Box<Self::Interface>, Error> {
-//!         Ok(Box::new(BarImpl))
-//!     }
-//!
-//! }
 //!
 //! let mut builder = ContainerBuilder::new();
 //!

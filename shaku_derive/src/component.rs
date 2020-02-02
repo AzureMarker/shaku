@@ -1,20 +1,20 @@
 //! Implementation of the '#[derive(Component)]' procedural macro
 
-use std::env;
-
 use proc_macro2::TokenStream;
 use quote::TokenStreamExt;
 use syn::DeriveInput;
 
+use crate::common_output::create_dependency;
 use crate::consts;
-use crate::structures::{ComponentContainer, Property};
+use crate::debug::get_debug_level;
+use crate::structures::{Property, ServiceContainer};
 
-pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream {
-    let container = ComponentContainer::from_derive_input(input).unwrap();
+pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
+    let container = ServiceContainer::from_derive_input(input).unwrap();
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
-        println!("Container built from input: {:#?}", container);
+        println!("Container built from Component input: {:#?}", container);
     }
 
     let parameters: TokenStream = container
@@ -73,18 +73,6 @@ pub fn expand_derive_component(input: &DeriveInput) -> proc_macro2::TokenStream 
     impl_block
 }
 
-fn create_dependency(property: &Property) -> Option<TokenStream> {
-    if !property.is_component {
-        return None;
-    }
-
-    let property_type = &property.ty;
-
-    Some(quote! {
-        ::shaku::Dependency::component::<#property_type>()
-    })
-}
-
 fn create_property_assignment(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
     let value_ident = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
@@ -111,7 +99,7 @@ fn create_resolve_code(property: &Property) -> TokenStream {
         let #prefixed_property_name =
     });
 
-    if property.is_component {
+    if property.is_component() {
         // Injected components => resolve
         tokens.append_all(quote! {
             build_context.resolve::<#property_type>()?;
@@ -133,11 +121,4 @@ fn create_resolve_code(property: &Property) -> TokenStream {
     }
 
     tokens
-}
-
-fn get_debug_level() -> usize {
-    env::var(consts::DEBUG_ENV_VAR)
-        .ok()
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(0)
 }

@@ -147,16 +147,10 @@ impl Container {
     /// #
     /// # trait Foo: ProvidedInterface {}
     /// # impl Foo for FooImpl {}
+    /// #
+    /// # #[derive(Provider)]
+    /// # #[shaku(interface = Foo)]
     /// # struct FooImpl;
-    /// # impl Provider for FooImpl {
-    /// #     type Interface = dyn Foo;
-    /// #     fn dependencies() -> Vec<Dependency> {
-    /// #         Vec::new()
-    /// #     }
-    /// #     fn provide(_: &Container) -> Result<Box<Self::Interface>, Error> {
-    /// #         Ok(Box::new(FooImpl))
-    /// #     }
-    /// # }
     /// #
     /// # let mut builder = ContainerBuilder::new();
     /// # builder.register_provider::<FooImpl>();
