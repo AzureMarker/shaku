@@ -15,7 +15,7 @@ pub trait Component: 'static {
     /// The trait/interface which this component implements
     type Interface: Interface + ?Sized;
 
-    /// The other services which this component depends on.
+    /// The other components which this component depends on.
     fn dependencies() -> Vec<Dependency>;
 
     /// Use the build context and parameters to create the component. The
