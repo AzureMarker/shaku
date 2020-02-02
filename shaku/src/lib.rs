@@ -3,6 +3,10 @@
 //! [`shaku_rocket`](https://crates.io/crates/shaku_rocket)).
 //!
 //! # Getting started
+//! Note: This getting started guide focuses on components, which live for the lifetime of the
+//! application (or, technically, the container). After reading this getting started guide, check
+//! out the [`provider`] module to learn how to create services with shorter lifetimes.
+//!
 //! ## Structure your application
 //! Start with your application's structs and traits. Use `Arc<dyn T>` for
 //! dependencies.
@@ -324,6 +328,7 @@
 //! writer.write_date();
 //! ```
 //!
+//! [`provider`]: provider/index.html
 //! [`Interface`]: component/trait.Interface.html
 //! [`Component`]: component/trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html

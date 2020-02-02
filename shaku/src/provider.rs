@@ -1,4 +1,10 @@
 //! This module contains trait definitions for provided services and interfaces
+//!
+//! # Getting started with providers
+//! This guide assumes you have already read the general getting started guide
+//! ([here](../index.html#getting-started)).
+//!
+//! TODO (write after derive is available)
 
 use std::any::Any;
 
