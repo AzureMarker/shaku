@@ -41,7 +41,7 @@ impl ContainerBuilder {
     }
 
     /// Register a new component with this builder.
-    /// If that component was already registered, the old Component is replaced.
+    /// If the component was already registered, the old component is replaced.
     ///
     /// This method returns a mutable [`ComponentRegistration`], allowing you to chain
     /// calls to [`with_named_parameter`] or [`with_typed_parameter`].
@@ -58,7 +58,7 @@ impl ContainerBuilder {
     }
 
     /// Register a new component with this builder.
-    /// If that component was already registered, the old Component is replaced.
+    /// If the component was already registered, the old component is replaced.
     ///
     /// This register method is an alternative to implementing [`Component`].
     /// This may be useful in cases such as using a mock or dynamically choosing the
@@ -102,6 +102,8 @@ impl ContainerBuilder {
             .unwrap()
     }
 
+    /// Register a new provider with this builder.
+    /// If the provider was already registered, the old provider is replaced.
     pub fn register_provider<P: Provider + ?Sized>(&mut self) {
         self.register_provider_lambda::<P::Interface>(
             type_name::<P>(),
@@ -110,6 +112,14 @@ impl ContainerBuilder {
         )
     }
 
+    /// Register a new provider with this builder.
+    /// If the provider was already registered, the old provider is replaced.
+    ///
+    /// This register method is an alternative to implementing [`Provider`].
+    /// This may be useful in cases such as using a mock or dynamically choosing the
+    /// implementation based on dependencies.
+    ///
+    /// [`Provider`]: ../provider/trait.Provider.html
     pub fn register_provider_lambda<I: ProvidedInterface + ?Sized>(
         &mut self,
         provider_name: &str,
@@ -136,7 +146,7 @@ impl ContainerBuilder {
 
     /// Consume this `ContainerBuilder` to build a [`Container`]. The
     /// [`ContainerBuildContext`] struct will be used to build the [`Container`].
-    /// The components are built at this time.
+    /// The components are built at this time, and dependencies are checked.
     ///
     /// [`Container`]: struct.Container.html
     /// [`ContainerBuildContext`]: struct.ContainerBuildContext.html

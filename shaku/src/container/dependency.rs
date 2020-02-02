@@ -2,8 +2,8 @@ use std::any::{type_name, TypeId};
 
 use crate::{Interface, ProvidedInterface};
 
-/// Represents a component dependency. `Dependency` is used to determine the
-/// build order of components (build only after dependencies are built).
+/// Represents a service dependency. Notably, `Dependency` is used to determine
+/// the build order of components (build only after dependencies are built).
 #[derive(Debug)]
 pub struct Dependency {
     pub(crate) type_id: TypeId,

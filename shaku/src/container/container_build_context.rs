@@ -10,8 +10,8 @@ use crate::Container;
 use crate::Error as DIError;
 use crate::Result;
 
-/// Holds the registration and resolved components while building a [Container]. This struct is
-/// used during [Component::build].
+/// Holds registration data, providers, and resolved components while building a [Container].
+/// This struct is used during [Component::build].
 ///
 /// [Container]: struct.Container.html
 /// [Component::build]: ../component/trait.Component.html#tymethod.build

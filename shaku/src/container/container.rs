@@ -7,10 +7,10 @@ use crate::Error;
 use crate::Interface;
 use crate::Result;
 
-/// Resolves components registered during the build phase.
+/// Resolves services registered during the build phase.
 ///
-/// A `Container` stores a single instance of each component. These instances are made at container
-/// build time, during [`ContainerBuilder::build`].
+/// A `Container` stores a single instance of each component, and stores provider functions.
+/// These component instances are made at container build time, during [`ContainerBuilder::build`].
 ///
 /// [`ContainerBuilder::build`]: struct.ContainerBuilder.html#method.build
 ///
@@ -84,7 +84,6 @@ pub struct Container {
 }
 
 impl Container {
-    /// Create a new `Container` from the resolved component map
     pub(crate) fn new(components: ComponentMap, providers: ComponentMap) -> Self {
         Container {
             components,
@@ -130,17 +129,20 @@ impl Container {
             })
     }
 
-    /// Create a component using the provider registered with the interface `I`.
-    /// Each call will create a new instance of the component.
+    /// Create a service using the provider registered with the interface `I`.
+    /// Each call will create a new instance of the service.
     ///
     /// # Errors
     /// Returns a [Error::ResolveError](enum.Error.html) if the provider is not
-    /// found, or if the provider failed while creating the component.
+    /// found, or if the provider failed while creating the service.
     ///
     /// # Examples
     ///
     /// ```
-    /// # use shaku::{Component, Interface, ContainerBuilder, Container, Error, Dependency, ProvidedInterface, Provider};
+    /// # use shaku::{
+    /// #     Component, Interface, ContainerBuilder, Container, Error, Dependency,
+    /// #     ProvidedInterface, Provider
+    /// # };
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: ProvidedInterface {}

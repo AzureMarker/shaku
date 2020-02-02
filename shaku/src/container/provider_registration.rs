@@ -2,8 +2,8 @@ use std::any::TypeId;
 
 use crate::Dependency;
 
-/// Stores metadata associated with a provider. Currently only used for
-/// verifying provider dependencies exist.
+/// Stores metadata associated with a provider. Currently only used to
+/// verify provider dependencies exist.
 pub(crate) struct ProviderRegistration {
     pub name: String,
     pub interface_id: TypeId,

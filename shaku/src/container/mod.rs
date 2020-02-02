@@ -1,41 +1,63 @@
-//! This module handles registering, building, and resolving components.
+//! This module handles registering, building, and resolving services.
 //!
 //! # Application startup
-//! At application startup, create a [`ContainerBuilder`] and register your components with it.
+//! At application startup, create a [`ContainerBuilder`] and register your services with it.
 //!
 //! ```
-//! # use shaku::{Component, ContainerBuilder, Interface};
+//! # use shaku::{Component, ContainerBuilder, Interface, Provider, Container, Error, Dependency};
 //! #
 //! # trait Foo: Interface {}
 //! # impl Foo for FooImpl {}
+//! #
+//! # trait Bar: Interface {}
+//! # impl Bar for BarImpl {}
 //! #
 //! #[derive(Component)]
 //! #[shaku(interface = Foo)]
 //! struct FooImpl;
 //!
+//! struct BarImpl;
+//!
+//! # // TODO: use a derive macro for this
+//! impl Provider for BarImpl {
+//!     type Interface = dyn Bar;
+//!
+//!     fn dependencies() -> Vec<Dependency> {
+//!         Vec::new()
+//!     }
+//!
+//!     fn provide(container: &Container) -> Result<Box<Self::Interface>, Error> {
+//!         Ok(Box::new(BarImpl))
+//!     }
+//!
+//! }
+//!
 //! let mut builder = ContainerBuilder::new();
 //!
-//! // Register `FooImpl` as a `Foo` Component
+//! // Register `FooImpl` as a `Foo` component
 //! builder.register_type::<FooImpl>();
+//! // Register `BarImpl` as a provider of `Bar` services
+//! builder.register_provider::<BarImpl>();
 //! ```
 //!
-//! Once you are done registering all your components, use [`ContainerBuilder::build`] to create
-//! the [`Container`] instance that will allow you to resolve the components. The component
-//! instances themselves will be created during [`ContainerBuilder::build`], so check the result
-//! for configuration errors.
+//! Once you are done registering all your services, use [`ContainerBuilder::build`] to create
+//! the [`Container`] instance that will allow you to resolve the services. The component
+//! instances themselves will be created during [`ContainerBuilder::build`], and dependencies for
+//! all services will be verified, so check the result for configuration errors.
 //!
-//! # Resolving components
-//! During application execution, you’ll need to make use of the components you registered.
-//! You do this by resolving them from a [`Container`] with one of the following `resolve` methods:
+//! # Resolving services
+//! During application execution, you’ll need to make use of the services you registered.
+//! You do this by resolving them from a [`Container`] with one of the following methods:
 //!
 //! - [`resolve`]\: get a shared ownership reference (`Arc`) to the component.
 //! - [`resolve_ref`]\: get a normal reference (`&dyn`) to the component.
 //! - [`resolve_mut`]\: same as `resolve_ref` but returns a mutable reference
 //!   (`&dyn mut`).
+//! - [`provide`]\: create a provided service (wrapped in a `Box`)
 //!
 //! # Passing parameters
-//! Passing parameters can be done when registering, just chain a [`with_named_parameter`] or
-//! [`with_typed_parameter`] call.
+//! Passing parameters can be done when registering components, just chain a
+//! [`with_named_parameter`] or [`with_typed_parameter`] call.
 //!
 //! ```
 //! # use shaku::{Component, ContainerBuilder, Interface};
@@ -61,6 +83,7 @@
 //! [`resolve`]: struct.Container.html#method.resolve
 //! [`resolve_ref`]: struct.Container.html#method.resolve_ref
 //! [`resolve_mut`]: struct.Container.html#method.resolve_mut
+//! [`provide`]: struct.Container.html#method.provide
 //! [`with_named_parameter`]: struct.ComponentRegistration.html#method.with_named_parameter
 //! [`with_typed_parameter`]: struct.ComponentRegistration.html#method.with_typed_parameter
 
