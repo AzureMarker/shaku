@@ -363,3 +363,5 @@ pub use crate::container::ContainerBuildContext;
 pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
 pub use crate::error::Error;
+pub use crate::provider::ProvidedInterface;
+pub use crate::provider::Provider;

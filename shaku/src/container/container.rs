@@ -140,8 +140,7 @@ impl Container {
     /// # Examples
     ///
     /// ```
-    /// # use shaku::{Component, Interface, ContainerBuilder, Container, Error, Dependency};
-    /// # use shaku::provider::{ProvidedInterface, Provider};
+    /// # use shaku::{Component, Interface, ContainerBuilder, Container, Error, Dependency, ProvidedInterface, Provider};
     /// # use std::sync::Arc;
     /// #
     /// # trait Foo: ProvidedInterface {}

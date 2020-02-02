@@ -1,7 +1,6 @@
 use std::any::{type_name, TypeId};
 
-use crate::component::Interface;
-use crate::provider::ProvidedInterface;
+use crate::{Interface, ProvidedInterface};
 
 /// Represents a component dependency. `Dependency` is used to determine the
 /// build order of components (build only after dependencies are built).

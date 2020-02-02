@@ -4,9 +4,9 @@
 
 use std::sync::Arc;
 
-use shaku::provider::{ProvidedInterface, Provider};
 use shaku::{
     Component, Container, ContainerBuilder, Dependency, Error as DIError, Error, Interface,
+    ProvidedInterface, Provider,
 };
 
 trait IComponent: Interface {}

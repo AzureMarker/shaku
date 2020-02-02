@@ -1,6 +1,7 @@
-use shaku::component::Interface;
-use shaku::provider::{ProvidedInterface, Provider};
-use shaku::{Component, Container, ContainerBuilder, Dependency, Error};
+use shaku::{
+    Component, Container, ContainerBuilder, Dependency, Error, Interface, ProvidedInterface,
+    Provider,
+};
 use std::cell::RefCell;
 
 trait ConnectionPool: Interface {
