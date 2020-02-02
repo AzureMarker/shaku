@@ -37,7 +37,7 @@ impl ConnectionPool for DatabaseConnectionPool {
     }
 }
 
-impl Provider for dyn ConnectionPool {
+impl Provider for DBConnection {
     type Interface = DBConnection;
 
     fn dependencies() -> Vec<Dependency> {
@@ -86,7 +86,7 @@ fn can_provide_send_component() {
     builder
         .register_type::<DatabaseConnectionPool>()
         .with_typed_parameter::<usize>(42);
-    builder.register_provider::<dyn ConnectionPool>();
+    builder.register_provider::<DBConnection>();
     builder.register_provider::<RepositoryImpl>();
     builder.register_provider::<ServiceImpl>();
     let container = builder.build().unwrap();
@@ -111,7 +111,7 @@ fn can_mock_database() {
 
     let mut builder = ContainerBuilder::new();
     builder.register_type::<MockDatabase>();
-    builder.register_provider::<dyn ConnectionPool>();
+    builder.register_provider::<DBConnection>();
     builder.register_provider::<RepositoryImpl>();
     let container = builder.build().unwrap();
 
