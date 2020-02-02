@@ -4,12 +4,15 @@
 //! At application startup, create a [`ContainerBuilder`] and register your services with it.
 //!
 //! ```
-//! # use shaku::{Component, ContainerBuilder, Interface, Provider, Container, Error, Dependency};
+//! # use shaku::{
+//! #     Component, ContainerBuilder, Interface, ProvidedInterface, Provider, Container, Error,
+//! #     Dependency
+//! # };
 //! #
 //! # trait Foo: Interface {}
 //! # impl Foo for FooImpl {}
 //! #
-//! # trait Bar: Interface {}
+//! # trait Bar: ProvidedInterface {}
 //! # impl Bar for BarImpl {}
 //! #
 //! #[derive(Component)]
