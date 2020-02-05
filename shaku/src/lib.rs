@@ -18,16 +18,16 @@
 //!     fn write(&self, content: String);
 //! }
 //!
+//! trait IDateWriter {
+//!     fn write_date(&self);
+//! }
+//!
 //! struct ConsoleOutput;
 //!
 //! impl IOutput for ConsoleOutput {
 //!     fn write(&self, content: String) {
 //!         println!("{}", content);
 //!     }
-//! }
-//!
-//! trait IDateWriter {
-//!     fn write_date(&self);
 //! }
 //!
 //! struct TodayWriter {
@@ -188,12 +188,6 @@
 //! #     fn write_date(&self);
 //! # }
 //! #
-//! # impl IDateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
-//! #     }
-//! # }
-//! #
 //! # #[derive(Component)]
 //! # #[shaku(interface = IDateWriter)]
 //! # struct TodayWriter {
@@ -201,6 +195,12 @@
 //! #     output: Arc<dyn IOutput>,
 //! #     today: String,
 //! #     year: usize,
+//! # }
+//! #
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
 //! # }
 //! #
 //! # let mut builder = ContainerBuilder::new();
@@ -224,23 +224,17 @@
 //! #     fn write(&self, content: String);
 //! # }
 //! #
-//! # impl IOutput for ConsoleOutput {
-//! #     fn write(&self, content: String) {
-//! #         println!("{}", content);
-//! #     }
+//! # trait IDateWriter: Interface {
+//! #     fn write_date(&self);
 //! # }
 //! #
 //! # #[derive(Component)]
 //! # #[shaku(interface = IOutput)]
 //! # struct ConsoleOutput;
 //! #
-//! # trait IDateWriter: Interface {
-//! #     fn write_date(&self);
-//! # }
-//! #
-//! # impl IDateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl IOutput for ConsoleOutput {
+//! #     fn write(&self, content: String) {
+//! #         println!("{}", content);
 //! #     }
 //! # }
 //! #
@@ -251,6 +245,12 @@
 //! #     output: Arc<dyn IOutput>,
 //! #     today: String,
 //! #     year: usize,
+//! # }
+//! #
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
 //! # }
 //! #
 //! # let mut builder = ContainerBuilder::new();
@@ -287,23 +287,17 @@
 //!     fn write(&self, content: String);
 //! }
 //!
-//! impl IOutput for ConsoleOutput {
-//!     fn write(&self, content: String) {
-//!         println!("{}", content);
-//!     }
+//! trait IDateWriter: Interface {
+//!     fn write_date(&self);
 //! }
 //!
 //! #[derive(Component)]
 //! #[shaku(interface = IOutput)]
 //! struct ConsoleOutput;
 //!
-//! trait IDateWriter: Interface {
-//!     fn write_date(&self);
-//! }
-//!
-//! impl IDateWriter for TodayWriter {
-//!     fn write_date(&self) {
-//!         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! impl IOutput for ConsoleOutput {
+//!     fn write(&self, content: String) {
+//!         println!("{}", content);
 //!     }
 //! }
 //!
@@ -314,6 +308,12 @@
 //!     output: Arc<dyn IOutput>,
 //!     today: String,
 //!     year: usize,
+//! }
+//!
+//! impl IDateWriter for TodayWriter {
+//!     fn write_date(&self) {
+//!         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//!     }
 //! }
 //!
 //! let mut builder = ContainerBuilder::new();
