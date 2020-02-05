@@ -328,6 +328,14 @@
 //! writer.write_date();
 //! ```
 //!
+//! # Crate features
+//! By default shaku is thread-safe and exposes derive macros, but these can be disabled by opting
+//! out of the following features:
+//!
+//! - `thread_safe`: Requires components to be `Send + Sync` and provided services to be `Send`
+//! - `derive`: Uses the `shaku_derive` crate to provide proc-macro derives of `Component` and
+//!   `Provider`.
+//!
 //! [`provider`]: provider/index.html
 //! [`Interface`]: component/trait.Interface.html
 //! [`Component`]: component/trait.Component.html
