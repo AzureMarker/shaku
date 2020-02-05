@@ -5,10 +5,13 @@ use std::sync::Arc;
 
 use shaku::{Component, Interface};
 
-// IOutput & ConsoleOutput implementation
-// ---------------------------------------------------------------------
 trait IOutput: Interface {
     fn write(&self, content: String);
+}
+
+trait IDateWriter: Interface {
+    fn write_date(&self);
+    fn get_date(&self) -> String;
 }
 
 #[derive(Component)]
@@ -21,13 +24,6 @@ impl IOutput for ConsoleOutput {
     fn write(&self, content: String) {
         println!("{} {}", self.prefix, content);
     }
-}
-
-// IDateWriter & TodayWriter implementation
-// ---------------------------------------------------------------------
-trait IDateWriter: Interface {
-    fn write_date(&self);
-    fn get_date(&self) -> String;
 }
 
 #[derive(Component)]
@@ -51,7 +47,6 @@ impl IDateWriter for TodayWriter {
 
 #[test]
 fn main_test() {
-    // Create your builder.
     let mut builder = shaku::ContainerBuilder::new();
 
     builder
@@ -62,10 +57,6 @@ fn main_test() {
         .with_typed_parameter::<String>("June 19".to_string())
         .with_typed_parameter::<usize>(2020);
     let container = builder.build().unwrap();
-
-    // The WriteDate method is where we'll make use
-    // of our dependency injection. We'll define that
-    // in a bit.
 
     let writer = container.resolve::<dyn IDateWriter>().unwrap();
     writer.write_date();

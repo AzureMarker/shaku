@@ -1,21 +1,19 @@
-#![allow(clippy::blacklisted_name)]
-
 use std::sync::Arc;
 
 use shaku::{Component, ContainerBuilder, Interface};
 
-trait Foo: Interface {
+trait ValueService: Interface {
     fn get_value(&self) -> usize;
     fn set_value(&mut self, _: usize);
 }
 
 #[derive(Component)]
-#[shaku(interface = Foo)]
-struct FooImpl {
+#[shaku(interface = ValueService)]
+struct ValueServiceImpl {
     value: usize,
 }
 
-impl Foo for FooImpl {
+impl ValueService for ValueServiceImpl {
     fn get_value(&self) -> usize {
         self.value
     }
@@ -29,34 +27,31 @@ impl Foo for FooImpl {
 fn resolving_immutable_ref() {
     let mut builder = ContainerBuilder::new();
     builder
-        .register_type::<FooImpl>()
+        .register_type::<ValueServiceImpl>()
         .with_named_parameter("value", 17 as usize);
-
     let container = builder.build().unwrap();
 
-    let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
-    assert_eq!(foo.get_value(), 17);
+    let service: &dyn ValueService = container.resolve_ref().unwrap();
+    assert_eq!(service.get_value(), 17);
 }
 
 #[test]
 fn resolving_mutable_ref() {
     let mut builder = ContainerBuilder::new();
     builder
-        .register_type::<FooImpl>()
+        .register_type::<ValueServiceImpl>()
         .with_named_parameter("value", 17 as usize);
-
     let mut container = builder.build().unwrap();
 
     {
-        let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-        foo.set_value(99);
+        let service: &mut dyn ValueService = container.resolve_mut().unwrap();
+        assert_eq!(service.get_value(), 17);
+        service.set_value(99);
     }
 
     {
-        let foo = container.resolve_ref::<dyn Foo>();
-        assert!(foo.is_ok());
-        assert_eq!(foo.unwrap().get_value(), 99);
+        let service: &dyn ValueService = container.resolve_ref().unwrap();
+        assert_eq!(service.get_value(), 99);
     }
 }
 
@@ -64,19 +59,18 @@ fn resolving_mutable_ref() {
 fn resolving_ref_then_value() {
     let mut builder = ContainerBuilder::new();
     builder
-        .register_type::<FooImpl>()
+        .register_type::<ValueServiceImpl>()
         .with_named_parameter("value", 17 as usize);
-
     let container = builder.build().unwrap();
 
     {
-        let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
+        let service: &dyn ValueService = container.resolve_ref().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 
     {
-        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
+        let service: Arc<dyn ValueService> = container.resolve().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 }
 
@@ -84,25 +78,24 @@ fn resolving_ref_then_value() {
 fn resolving_ref_then_mut_then_value() {
     let mut builder = ContainerBuilder::new();
     builder
-        .register_type::<FooImpl>()
+        .register_type::<ValueServiceImpl>()
         .with_named_parameter("value", 17 as usize);
-
     let mut container = builder.build().unwrap();
 
     {
-        let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
+        let service: &dyn ValueService = container.resolve_ref().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 
     {
-        let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-        foo.set_value(99);
+        let service: &mut dyn ValueService = container.resolve_mut().unwrap();
+        assert_eq!(service.get_value(), 17);
+        service.set_value(99);
     }
 
     {
-        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 99);
+        let service: Arc<dyn ValueService> = container.resolve().unwrap();
+        assert_eq!(service.get_value(), 99);
     }
 }
 
@@ -110,58 +103,22 @@ fn resolving_ref_then_mut_then_value() {
 fn resolving_value_then_ref() {
     let mut builder = ContainerBuilder::new();
     builder
-        .register_type::<FooImpl>()
+        .register_type::<ValueServiceImpl>()
         .with_named_parameter("value", 17 as usize);
-
-    let mut container = builder.build().unwrap();
-    {
-        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-    }
-
-    {
-        let foo = container.resolve_ref::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-    }
-
-    {
-        let foo = container.resolve_mut::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-    }
-}
-
-#[test]
-fn resolving_ref_doc_example() {
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .with_named_parameter("value", 17 as usize);
-
     let mut container = builder.build().unwrap();
 
     {
-        let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
+        let service: Arc<dyn ValueService> = container.resolve().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 
     {
-        let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 17);
-        foo.set_value(99);
+        let service: &dyn ValueService = container.resolve_ref().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 
     {
-        let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
-        assert_eq!(foo.get_value(), 99);
-    }
-
-    {
-        let foo = container.resolve_ref::<dyn Foo>();
-        assert!(foo.is_ok());
-    }
-
-    {
-        let foo = container.resolve_mut::<dyn Foo>();
-        assert!(foo.is_ok());
+        let service: &mut dyn ValueService = container.resolve_mut().unwrap();
+        assert_eq!(service.get_value(), 17);
     }
 }
