@@ -33,8 +33,8 @@ jobs:
       - checkout
       - install-tools
       - style-check
-      - code-check
       - lint-check
+      - code-check
       - test
   shaku_rocket:
     docker:
@@ -44,8 +44,8 @@ jobs:
       - checkout:
           path: ~/project
       - style-check
-      - code-check
       - lint-check
+      - code-check
       - test
 workflows:
   version: 2
