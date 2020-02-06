@@ -28,12 +28,20 @@ commands:
 jobs:
   shaku:
     docker:
-      - image: rust
+      - image: rust:1.41.0
     steps:
       - checkout
       - install-tools
       - style-check
       - lint-check
+      - code-check
+      - test
+  shaku-msrv:
+    docker:
+      - image: rust:1.40.0
+    steps:
+      - checkout
+      - install-tools
       - code-check
       - test
   shaku_rocket:
