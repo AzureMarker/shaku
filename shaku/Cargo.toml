@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Dependency Injection for Rust"
 repository = "https://github.com/Mcat12/shaku"
+readme = "../README.md"
 keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
 license = "MIT/Apache-2.0"
 edition = "2018"
