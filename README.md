@@ -74,7 +74,7 @@ guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
 ([@Mcat12]) to continue the library from where they left off.
 
 [crates-io]: https://crates.io/crates/shaku
-[docs]: https://docs.rs/crate/shaku
+[docs]: https://docs.rs/shaku
 [builds]: https://circleci.com/gh/Mcat12/shaku
 [crate-badge]: https://img.shields.io/crates/v/shaku.svg
 [doc-badge]: https://docs.rs/shaku/badge.svg
