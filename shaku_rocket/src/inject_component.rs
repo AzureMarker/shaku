@@ -1,5 +1,4 @@
 use std::ops::Deref;
-use std::sync::Arc;
 
 use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
@@ -52,9 +51,9 @@ use shaku::{Container, Interface};
 /// # }
 /// }
 /// ```
-pub struct Inject<I: Interface + ?Sized>(Arc<I>);
+pub struct Inject<'r, I: Interface + ?Sized>(&'r I);
 
-impl<'a, 'r, I: Interface + ?Sized> FromRequest<'a, 'r> for Inject<I> {
+impl<'a, 'r, I: Interface + ?Sized> FromRequest<'a, 'r> for Inject<'r, I> {
     type Error = String;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
@@ -63,7 +62,7 @@ impl<'a, 'r, I: Interface + ?Sized> FromRequest<'a, 'r> for Inject<I> {
             .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))?;
         let component = container
             .inner()
-            .resolve::<I>()
+            .resolve_ref::<I>()
             .map_err(|e| e.to_string())
             .into_outcome(Status::InternalServerError)?;
 
@@ -71,7 +70,7 @@ impl<'a, 'r, I: Interface + ?Sized> FromRequest<'a, 'r> for Inject<I> {
     }
 }
 
-impl<I: Interface + ?Sized> Deref for Inject<I> {
+impl<'r, I: Interface + ?Sized> Deref for Inject<'r, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {
