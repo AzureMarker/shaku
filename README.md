@@ -59,6 +59,15 @@ fn main() {
 }
 ```
 
+## Minimum Supported Rust Version
+Shaku currently supports the latest stable release of Rust, plus the previous
+version. This range will probably increase to the previous two versions by the
+time Shaku reaches 1.0.
+
+Latest stable version: 1.41.0
+
+Minimum supported version: 1.40.0
+
 ## Acknowledgements
 This library started off as "he_di" (later renamed to "shaku") under the
 guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
