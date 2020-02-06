@@ -60,4 +60,5 @@ workflows:
   build:
     jobs:
       - shaku
+      - shaku-msrv
       - shaku_rocket
