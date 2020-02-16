@@ -2,35 +2,29 @@
 
 use std::any::Any;
 
-use crate::parameter::ParameterMap;
+use crate::module::Module;
 use crate::ContainerBuildContext;
-use crate::Dependency;
 
 /// Components provide a service by implementing an interface. They may use
 /// other components as dependencies.
 ///
 /// This trait is normally derived, but if the `derive` feature is turned off
 /// then it will need to be implemented manually.
-pub trait Component: 'static {
+pub trait Component<M: Module>: 'static {
     /// The trait/interface which this component implements
     type Interface: Interface + ?Sized;
-
-    /// The other components which this component depends on.
-    fn dependencies() -> Vec<Dependency>;
 
     /// Use the build context and parameters to create the component. The
     /// created component must be inserted into the build context via
     /// [`ContainerBuildContext::insert`].
     ///
     /// [`ContainerBuildContext::insert`]: ../container/struct.ContainerBuildContext.html#method.insert
-    fn build(
-        build_context: &mut ContainerBuildContext,
-        params: &mut ParameterMap,
-    ) -> super::Result<()>;
+    fn build(context: &mut ContainerBuildContext<M>) -> Box<Self::Interface>;
 }
 
-pub(crate) type ComponentBuildFn =
-    Box<dyn FnOnce(&mut ContainerBuildContext, &mut ParameterMap) -> super::Result<()>>;
+pub trait HasComponent<I: Interface + ?Sized>: Module {
+    fn build(context: &mut ContainerBuildContext<Self>) -> Box<I>;
+}
 
 #[cfg(not(feature = "thread_safe"))]
 trait_alias!(

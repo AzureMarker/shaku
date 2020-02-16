@@ -1,11 +1,14 @@
 use std::any::type_name;
+use std::marker::PhantomData;
 use std::sync::Arc;
 
+use crate::component::HasComponent;
 use crate::container::ComponentMap;
-use crate::provider::{ProvidedInterface, ProviderFn};
-use crate::Error;
+use crate::module::Module;
+use crate::provider::{HasProvider, ProvidedInterface};
 use crate::Interface;
 use crate::Result;
+use crate::{ContainerBuildContext, Error};
 
 /// Resolves services registered during the build phase.
 ///
@@ -78,17 +81,20 @@ use crate::Result;
 ///
 /// See also the [module documentation](index.html) for more details.
 #[derive(Debug)]
-pub struct Container {
-    components: ComponentMap,
-    providers: ComponentMap,
+pub struct Container<M: Module> {
+    pub(in crate::container) components: ComponentMap,
+    pub(in crate::container) _module: PhantomData<M>,
 }
 
-impl Container {
-    pub(crate) fn new(components: ComponentMap, providers: ComponentMap) -> Self {
-        Container {
-            components,
-            providers,
-        }
+impl<M: Module> Default for Container<M> {
+    fn default() -> Self {
+        ContainerBuildContext::new().build()
+    }
+}
+
+impl<M: Module> Container<M> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Get a reference to the component registered with the interface `I`. The ownership of
@@ -117,16 +123,11 @@ impl Container {
     /// #
     /// let foo: Arc<dyn Foo> = container.resolve::<dyn Foo>().unwrap();
     /// ```
-    pub fn resolve<I: Interface + ?Sized>(&self) -> Result<Arc<I>> {
-        self.components
-            .get::<Arc<I>>()
-            .map(Arc::clone)
-            .ok_or_else(|| {
-                Error::ResolveError(format!(
-                    "no component {} registered in this container",
-                    type_name::<I>()
-                ))
-            })
+    pub fn resolve<I: Interface + ?Sized>(&self) -> Arc<I>
+    where
+        M: HasComponent<I>,
+    {
+        self.components.get::<Arc<I>>().map(Arc::clone).unwrap()
     }
 
     /// Create a service using the provider registered with the interface `I`.
@@ -158,15 +159,11 @@ impl Container {
     /// #
     /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>().unwrap();
     /// ```
-    pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> Result<Box<I>> {
-        let provider = self.providers.get::<ProviderFn<I>>().ok_or_else(|| {
-            Error::ResolveError(format!(
-                "no provider for {} registered in this container",
-                type_name::<I>()
-            ))
-        })?;
-
-        provider(self)
+    pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> Result<Box<I>>
+    where
+        M: HasProvider<I>,
+    {
+        M::provide(self)
     }
 
     /// Get a reference to the component registered with the interface `I`.
@@ -194,15 +191,11 @@ impl Container {
     /// #
     /// let foo: &dyn Foo = container.resolve_ref::<dyn Foo>().unwrap();
     /// ```
-    pub fn resolve_ref<I: Interface + ?Sized>(&self) -> Result<&I> {
-        let component = self.components.get::<Arc<I>>().ok_or_else(|| {
-            Error::ResolveError(format!(
-                "no component {} registered in this container",
-                type_name::<I>()
-            ))
-        })?;
-
-        Ok(Arc::as_ref(component))
+    pub fn resolve_ref<I: Interface + ?Sized>(&self) -> &I
+    where
+        M: HasComponent<I>,
+    {
+        self.components.get::<Arc<I>>().unwrap().as_ref()
     }
 
     /// Get a mutable reference to the component registered with the interface `I`.
@@ -235,13 +228,11 @@ impl Container {
     /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
     /// ```
     /// [Error::ResolveError]: enum.Error.html
-    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> Result<&mut I> {
-        let component = self.components.get_mut::<Arc<I>>().ok_or_else(|| {
-            Error::ResolveError(format!(
-                "no component {} registered in this container",
-                type_name::<I>()
-            ))
-        })?;
+    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> Result<&mut I>
+    where
+        M: HasComponent<I>,
+    {
+        let component = self.components.get_mut::<Arc<I>>().unwrap();
 
         Arc::get_mut(component).ok_or_else(|| {
             Error::ResolveError(format!(

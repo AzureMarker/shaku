@@ -78,18 +78,13 @@
 //! [`with_named_parameter`]: struct.ComponentRegistration.html#method.with_named_parameter
 //! [`with_typed_parameter`]: struct.ComponentRegistration.html#method.with_typed_parameter
 
-mod component_registration;
 #[allow(clippy::module_inception)]
 mod container;
 mod container_build_context;
-mod container_builder;
 mod dependency;
-mod provider_registration;
 
-pub use self::component_registration::ComponentRegistration;
 pub use self::container::Container;
 pub use self::container_build_context::ContainerBuildContext;
-pub use self::container_builder::ContainerBuilder;
 pub use self::dependency::Dependency;
 
 #[cfg(not(feature = "thread_safe"))]

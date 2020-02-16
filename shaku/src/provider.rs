@@ -402,7 +402,9 @@
 
 use std::any::Any;
 
-use crate::{Container, Dependency};
+use crate::module::Module;
+use crate::Container;
+use crate::Result;
 
 /// Like [`Component`]s, providers provide a service by implementing an
 /// interface. They may use other providers or components as dependencies.
@@ -414,22 +416,18 @@ use crate::{Container, Dependency};
 /// repository, service using a DB repository, etc).
 ///
 /// [`Component`]: ../component/trait.Component.html
-pub trait Provider: 'static {
+pub trait Provider<M: Module>: 'static {
     /// The trait/interface which this provider implements
     type Interface: ProvidedInterface + ?Sized;
 
-    /// The components/providers which this provider depends on.
-    fn dependencies() -> Vec<Dependency>;
-
     /// Provides the service, possibly resolving other components/providers
     /// to do so.
-    fn provide(container: &Container) -> super::Result<Box<Self::Interface>>;
+    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>>;
 }
 
-#[cfg(not(feature = "thread_safe"))]
-pub(crate) type ProviderFn<I> = Box<dyn (Fn(&Container) -> super::Result<Box<I>>)>;
-#[cfg(feature = "thread_safe")]
-pub(crate) type ProviderFn<I> = Box<dyn (Fn(&Container) -> super::Result<Box<I>>) + Send + Sync>;
+pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
+    fn provide(container: &Container<Self>) -> Result<Box<I>>;
+}
 
 #[cfg(not(feature = "thread_safe"))]
 trait_alias!(

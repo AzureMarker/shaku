@@ -358,7 +358,7 @@ mod error;
 
 pub mod component;
 pub mod container;
-pub mod parameter;
+pub mod module;
 pub mod provider;
 
 // Reexport derives
@@ -375,7 +375,6 @@ pub use crate::component::Component;
 pub use crate::component::Interface;
 pub use crate::container::Container;
 pub use crate::container::ContainerBuildContext;
-pub use crate::container::ContainerBuilder;
 pub use crate::container::Dependency;
 pub use crate::error::Error;
 pub use crate::provider::ProvidedInterface;
