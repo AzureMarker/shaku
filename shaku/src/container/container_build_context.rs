@@ -25,12 +25,24 @@ impl<M: Module> ContainerBuildContext<M> {
     }
 
     pub(crate) fn build(mut self) -> Container<M> {
-        M::build(&mut self);
+        M::build_components(&mut self);
 
         Container {
             components: self.resolved_map,
             _module: PhantomData,
         }
+    }
+
+    pub fn build_component<I: Interface + ?Sized>(&mut self)
+    where
+        M: HasComponent<I>,
+    {
+        if self.resolved_map.contains::<Arc<I>>() {
+            return;
+        }
+
+        let component = M::build(self);
+        self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
 
     /// Resolve a component. The component interface must be listed as a
@@ -47,7 +59,7 @@ impl<M: Module> ContainerBuildContext<M> {
             .map(Arc::clone)
             .unwrap_or_else(|| {
                 // Build the component if not already resolved
-                let component = <M as HasComponent<I>>::build(self);
+                let component = M::build(self);
                 let component = Arc::from(component);
                 self.resolved_map.insert::<Arc<I>>(Arc::clone(&component));
 
