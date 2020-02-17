@@ -2,8 +2,8 @@
 
 use std::any::Any;
 
-use crate::module::Module;
 use crate::ContainerBuildContext;
+use crate::Module;
 
 /// Components provide a service by implementing an interface. They may use
 /// other components as dependencies.
@@ -20,10 +20,6 @@ pub trait Component<M: Module>: 'static {
     ///
     /// [`ContainerBuildContext::insert`]: ../container/struct.ContainerBuildContext.html#method.insert
     fn build(context: &mut ContainerBuildContext<M>) -> Box<Self::Interface>;
-}
-
-pub trait HasComponent<I: Interface + ?Sized>: Module {
-    fn build(context: &mut ContainerBuildContext<Self>) -> Box<I>;
 }
 
 #[cfg(not(feature = "thread_safe"))]

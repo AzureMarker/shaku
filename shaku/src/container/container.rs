@@ -2,13 +2,13 @@ use std::any::type_name;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use crate::component::HasComponent;
 use crate::container::ComponentMap;
 use crate::module::Module;
-use crate::provider::{HasProvider, ProvidedInterface};
+use crate::HasComponent;
 use crate::Interface;
 use crate::Result;
 use crate::{ContainerBuildContext, Error};
+use crate::{HasProvider, ProvidedInterface};
 
 /// Resolves services registered during the build phase.
 ///

@@ -33,16 +33,10 @@ pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
     let provider_name = container.metadata.identifier;
     let interface = container.metadata.interface;
     let impl_block = quote! {
-        impl ::shaku::Provider for #provider_name {
+        impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Provider<M> for #provider_name {
             type Interface = dyn #interface;
 
-            fn dependencies() -> Vec<::shaku::Dependency> {
-                vec![
-                    #(#dependencies),*
-                ]
-            }
-
-            fn provide(container: &::shaku::Container) -> ::shaku::Result<Box<Self::Interface>> {
+            fn provide(container: &::shaku::Container<M>) -> ::shaku::Result<Box<Self::Interface>> {
                 Ok(Box::new(Self {
                     #(#properties),*
                 }))
@@ -63,7 +57,7 @@ fn create_property_assignment(property: &Property) -> Result<TokenStream, Error>
 
     match property.property_type {
         PropertyType::Component => Ok(quote! {
-            #property_name: container.resolve::<#property_ty>()?
+            #property_name: container.resolve::<#property_ty>()
         }),
         PropertyType::Provided => Ok(quote! {
             #property_name: container.provide::<#property_ty>()?

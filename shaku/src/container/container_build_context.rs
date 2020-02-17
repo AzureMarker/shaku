@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use crate::component::{HasComponent, Interface};
 use crate::container::ComponentMap;
 use crate::module::Module;
 use crate::Container;
+use crate::{HasComponent, Interface};
 
 /// Holds registration data, providers, and resolved components while building a [Container].
 /// This struct is used during [Component::build].

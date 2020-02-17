@@ -377,5 +377,8 @@ pub use crate::container::Container;
 pub use crate::container::ContainerBuildContext;
 pub use crate::container::Dependency;
 pub use crate::error::Error;
+pub use crate::module::HasComponent;
+pub use crate::module::HasProvider;
+pub use crate::module::Module;
 pub use crate::provider::ProvidedInterface;
 pub use crate::provider::Provider;

@@ -10,10 +10,10 @@ pub fn create_dependency(property: &Property) -> Option<TokenStream> {
     match property.property_type {
         PropertyType::Parameter => None,
         PropertyType::Component => Some(quote! {
-            ::shaku::Dependency::component::<#property_ty>()
+            ::shaku::HasComponent<#property_ty>
         }),
         PropertyType::Provided => Some(quote! {
-            ::shaku::Dependency::provider::<#property_ty>()
+            ::shaku::HasProvider<#property_ty>
         }),
     }
 }

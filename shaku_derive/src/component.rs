@@ -39,29 +39,17 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
     let component_name = container.metadata.identifier;
     let interface = container.metadata.interface;
     let impl_block = quote! {
-        impl ::shaku::Component for #component_name {
+        impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Component<M> for #component_name {
             type Interface = dyn #interface;
 
-            fn dependencies() -> Vec<::shaku::Dependency> {
-                vec![
-                    #(#dependencies),*
-                ]
-            }
-
-            fn build(
-                build_context: &mut ::shaku::ContainerBuildContext,
-                params: &mut ::shaku::parameter::ParameterMap,
-            ) -> ::shaku::Result<()> {
+            fn build(context: &mut ::shaku::ContainerBuildContext<M>) -> Box<Self::Interface> {
                 // Create the parameters
                 #parameters
 
-                // Insert the resolved component
-                let component = Box::new(Self {
+                // Create the component
+                Box::new(Self {
                     #(#properties),*
-                });
-                build_context.insert::<Self::Interface>(component);
-
-                Ok(())
+                })
             }
         }
     };
@@ -86,10 +74,6 @@ fn create_resolve_code(property: &Property) -> TokenStream {
     /*
     Building the following output:
     let __di_output = build_context.resolve::<IOutput>()?;
-    or
-    let __di_output = params.remove_with_name::<Arc<IOutput>>("output")
-        .or_else(|| params.remove_with_type::<Arc<IOutput>>())
-        .ok_or(::shaku::Error::ResolveError("unable to find component ..."))?;
     */
     let prefixed_property_name = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
     let property_type = &property.ty;
@@ -102,9 +86,11 @@ fn create_resolve_code(property: &Property) -> TokenStream {
     if property.is_component() {
         // Injected components => resolve
         tokens.append_all(quote! {
-            build_context.resolve::<#property_type>()?;
+            context.resolve::<#property_type>();
         });
     } else {
+        todo!("Remove non-component resolve code generation");
+
         // Other properties => lookup in the parameters with name and type
         let property_name = property.property_name.to_string();
         let error_msg = format!(

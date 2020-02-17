@@ -402,8 +402,8 @@
 
 use std::any::Any;
 
-use crate::module::Module;
 use crate::Container;
+use crate::Module;
 use crate::Result;
 
 /// Like [`Component`]s, providers provide a service by implementing an
@@ -423,10 +423,6 @@ pub trait Provider<M: Module>: 'static {
     /// Provides the service, possibly resolving other components/providers
     /// to do so.
     fn provide(container: &Container<M>) -> Result<Box<Self::Interface>>;
-}
-
-pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
-    fn provide(container: &Container<Self>) -> Result<Box<I>>;
 }
 
 #[cfg(not(feature = "thread_safe"))]
