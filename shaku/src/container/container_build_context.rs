@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use crate::container::ComponentMap;
+use crate::container::{ComponentMap, ParameterMap};
 use crate::module::Module;
 use crate::Container;
 use crate::{HasComponent, Interface};
@@ -13,36 +13,23 @@ use crate::{HasComponent, Interface};
 /// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext<M: Module> {
     resolved_map: ComponentMap,
+    param_map: ParameterMap,
     _module: PhantomData<M>,
 }
 
 impl<M: Module> ContainerBuildContext<M> {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(param_map: ParameterMap) -> Self {
         ContainerBuildContext {
             resolved_map: ComponentMap::new(),
+            param_map,
             _module: PhantomData,
         }
     }
 
     pub(crate) fn build(mut self) -> Container<M> {
-        M::build_components(&mut self);
-
         Container {
-            components: self.resolved_map,
-            _module: PhantomData,
+            module: M::build(&mut self),
         }
-    }
-
-    pub fn build_component<I: Interface + ?Sized>(&mut self)
-    where
-        M: HasComponent<I>,
-    {
-        if self.resolved_map.contains::<Arc<I>>() {
-            return;
-        }
-
-        let component = M::build(self);
-        self.resolved_map.insert::<Arc<I>>(Arc::from(component));
     }
 
     /// Resolve a component. The component interface must be listed as a
@@ -59,7 +46,11 @@ impl<M: Module> ContainerBuildContext<M> {
             .map(Arc::clone)
             .unwrap_or_else(|| {
                 // Build the component if not already resolved
-                let component = M::build(self);
+                let parameters = self
+                    .param_map
+                    .remove::<<M as HasComponent<I>>::Parameters>()
+                    .unwrap_or_default();
+                let component = <M as HasComponent<I>>::build(self, parameters);
                 let component = Arc::from(component);
                 self.resolved_map.insert::<Arc<I>>(Arc::clone(&component));
 

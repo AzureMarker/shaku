@@ -14,12 +14,17 @@ pub trait Component<M: Module>: 'static {
     /// The trait/interface which this component implements
     type Interface: Interface + ?Sized;
 
+    type Parameters: Default + 'static;
+
     /// Use the build context and parameters to create the component. The
     /// created component must be inserted into the build context via
     /// [`ContainerBuildContext::insert`].
     ///
     /// [`ContainerBuildContext::insert`]: ../container/struct.ContainerBuildContext.html#method.insert
-    fn build(context: &mut ContainerBuildContext<M>) -> Box<Self::Interface>;
+    fn build(
+        context: &mut ContainerBuildContext<M>,
+        params: Self::Parameters,
+    ) -> Box<Self::Interface>;
 }
 
 #[cfg(not(feature = "thread_safe"))]

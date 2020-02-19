@@ -1,13 +1,10 @@
 use std::any::type_name;
-use std::marker::PhantomData;
 use std::sync::Arc;
 
-use crate::container::ComponentMap;
-use crate::module::Module;
-use crate::HasComponent;
+use crate::module::{HasComponent, Module};
+use crate::Error;
 use crate::Interface;
 use crate::Result;
-use crate::{ContainerBuildContext, Error};
 use crate::{HasProvider, ProvidedInterface};
 
 /// Resolves services registered during the build phase.
@@ -82,21 +79,10 @@ use crate::{HasProvider, ProvidedInterface};
 /// See also the [module documentation](index.html) for more details.
 #[derive(Debug)]
 pub struct Container<M: Module> {
-    pub(in crate::container) components: ComponentMap,
-    pub(in crate::container) _module: PhantomData<M>,
-}
-
-impl<M: Module> Default for Container<M> {
-    fn default() -> Self {
-        ContainerBuildContext::new().build()
-    }
+    pub(crate) module: M,
 }
 
 impl<M: Module> Container<M> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Get a reference to the component registered with the interface `I`. The ownership of
     /// the component is shared via `Arc`.
     ///
@@ -127,7 +113,7 @@ impl<M: Module> Container<M> {
     where
         M: HasComponent<I>,
     {
-        self.components.get::<Arc<I>>().map(Arc::clone).unwrap()
+        Arc::clone(self.module.get_ref())
     }
 
     /// Create a service using the provider registered with the interface `I`.
@@ -195,7 +181,7 @@ impl<M: Module> Container<M> {
     where
         M: HasComponent<I>,
     {
-        self.components.get::<Arc<I>>().unwrap().as_ref()
+        Arc::as_ref(self.module.get_ref())
     }
 
     /// Get a mutable reference to the component registered with the interface `I`.
@@ -232,7 +218,7 @@ impl<M: Module> Container<M> {
     where
         M: HasComponent<I>,
     {
-        let component = self.components.get_mut::<Arc<I>>().unwrap();
+        let component = self.module.get_mut();
 
         Arc::get_mut(component).ok_or_else(|| {
             Error::ResolveError(format!(
