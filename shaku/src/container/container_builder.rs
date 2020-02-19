@@ -1,7 +1,8 @@
 use std::marker::PhantomData;
 
 use crate::container::ParameterMap;
-use crate::{Component, Container, ContainerBuildContext, Module};
+use crate::parameters::ComponentParameters;
+use crate::{Component, Container, ContainerBuildContext, HasComponent, Module};
 
 pub struct ContainerBuilder<M: Module> {
     param_map: ParameterMap,
@@ -22,8 +23,12 @@ impl<M: Module> ContainerBuilder<M> {
         Self::default()
     }
 
-    pub fn parameters<C: Component<M>>(&mut self, params: C::Parameters) -> &mut Self {
-        self.param_map.insert(params);
+    pub fn with_component_parameters<C: Component<M>>(&mut self, params: C::Parameters) -> &mut Self
+    where
+        M: HasComponent<C::Interface, Impl = C>,
+    {
+        self.param_map
+            .insert::<ComponentParameters<M, C>>(ComponentParameters { value: params });
         self
     }
 

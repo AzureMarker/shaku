@@ -2,8 +2,10 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use crate::container::{ComponentMap, ParameterMap};
-use crate::module::Module;
+use crate::parameters::ComponentParameters;
+use crate::Component;
 use crate::Container;
+use crate::Module;
 use crate::{HasComponent, Interface};
 
 /// Holds registration data, providers, and resolved components while building a [Container].
@@ -48,9 +50,9 @@ impl<M: Module> ContainerBuildContext<M> {
                 // Build the component if not already resolved
                 let parameters = self
                     .param_map
-                    .remove::<<M as HasComponent<I>>::Parameters>()
+                    .remove::<ComponentParameters<M, M::Impl>>()
                     .unwrap_or_default();
-                let component = <M as HasComponent<I>>::build(self, parameters);
+                let component = M::Impl::build(self, parameters.value);
                 let component = Arc::from(component);
                 self.resolved_map.insert::<Arc<I>>(Arc::clone(&component));
 

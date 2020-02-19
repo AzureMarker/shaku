@@ -69,14 +69,7 @@ impl Module for SampleModule {
     }
 }
 impl HasComponent<dyn SampleDependency> for SampleModule {
-    type Parameters = <SampleDependencyImpl as Component<Self>>::Parameters;
-
-    fn build(
-        context: &mut ContainerBuildContext<Self>,
-        params: Self::Parameters,
-    ) -> Box<dyn SampleDependency> {
-        SampleDependencyImpl::build(context, params)
-    }
+    type Impl = SampleDependencyImpl;
 
     fn get_ref(&self) -> &Arc<dyn SampleDependency> {
         &self.__di_SampleDependency
@@ -87,9 +80,7 @@ impl HasComponent<dyn SampleDependency> for SampleModule {
     }
 }
 impl HasProvider<dyn SampleService> for SampleModule {
-    fn provide(container: &Container<Self>) -> Result<Box<dyn SampleService>, Error> {
-        SampleServiceImpl::provide(container)
-    }
+    type Impl = SampleServiceImpl;
 }
 
 fn main() {
@@ -97,7 +88,7 @@ fn main() {
         value: "foo".to_string(),
     };
     let container: Container<SampleModule> = ContainerBuilder::new()
-        .parameters::<SampleDependencyImpl>(dependency_params)
+        .with_component_parameters::<SampleDependencyImpl>(dependency_params)
         .build();
 
     let dependency: &dyn SampleDependency = container.resolve_ref();

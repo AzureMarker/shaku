@@ -4,6 +4,7 @@ use std::sync::Arc;
 use crate::module::{HasComponent, Module};
 use crate::Error;
 use crate::Interface;
+use crate::Provider;
 use crate::Result;
 use crate::{HasProvider, ProvidedInterface};
 
@@ -149,7 +150,7 @@ impl<M: Module> Container<M> {
     where
         M: HasProvider<I>,
     {
-        M::provide(self)
+        M::Impl::provide(self)
     }
 
     /// Get a reference to the component registered with the interface `I`.
