@@ -1,6 +1,6 @@
 use shaku::{
-    Component, Container, ContainerBuilder, Dependency, Error, Interface, ProvidedInterface,
-    Provider,
+    module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+    ProvidedInterface, Provider,
 };
 use std::cell::RefCell;
 
@@ -37,15 +37,11 @@ impl ConnectionPool for DatabaseConnectionPool {
     }
 }
 
-impl Provider for DBConnection {
+impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
     type Interface = DBConnection;
 
-    fn dependencies() -> Vec<Dependency> {
-        vec![Dependency::component::<dyn ConnectionPool>()]
-    }
-
-    fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
-        let pool = container.resolve_ref::<dyn ConnectionPool>()?;
+    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Error> {
+        let pool = container.resolve_ref::<dyn ConnectionPool>();
 
         Ok(Box::new(pool.get()))
     }
@@ -82,14 +78,24 @@ impl Service for ServiceImpl {
 /// Send + !Sync components are able to be provided via Providers.
 #[test]
 fn can_provide_send_component() {
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<DatabaseConnectionPool>()
-        .with_typed_parameter::<usize>(42);
-    builder.register_provider::<DBConnection>();
-    builder.register_provider::<RepositoryImpl>();
-    builder.register_provider::<ServiceImpl>();
-    let container = builder.build().unwrap();
+    module! {
+        TestModule {
+            components = [
+                DatabaseConnectionPool
+            ],
+            providers = [
+                DBConnection,
+                RepositoryImpl,
+                ServiceImpl
+            ]
+        }
+    }
+
+    let container: Container<TestModule> = ContainerBuilder::new()
+        .with_component_parameters::<DatabaseConnectionPool>(DatabaseConnectionPoolParameters {
+            value: 42,
+        })
+        .build();
 
     let service = container.provide::<dyn Service>().unwrap();
     assert_eq!(service.get_double(), 84);
@@ -104,17 +110,24 @@ fn can_mock_database() {
 
     impl ConnectionPool for MockDatabase {
         fn get(&self) -> DBConnection {
-            // This would use an test database in real code
+            // This would use a test database in real code
             DBConnection(RefCell::new(3))
         }
     }
 
-    let mut builder = ContainerBuilder::new();
-    builder.register_type::<MockDatabase>();
-    builder.register_provider::<DBConnection>();
-    builder.register_provider::<RepositoryImpl>();
-    let container = builder.build().unwrap();
+    module! {
+        TestModule {
+            components = [
+                MockDatabase
+            ],
+            providers = [
+                DBConnection,
+                RepositoryImpl
+            ]
+        }
+    }
 
+    let container: Container<TestModule> = ContainerBuilder::new().build();
     let repository = container.provide::<dyn Repository>().unwrap();
     assert_eq!(repository.get(), 3);
 }
@@ -132,11 +145,17 @@ fn can_mock_repository() {
         }
     }
 
-    let mut builder = ContainerBuilder::new();
-    builder.register_provider::<MockRepository>();
-    builder.register_provider::<ServiceImpl>();
-    let container = builder.build().unwrap();
+    module! {
+        TestModule {
+            components = [],
+            providers = [
+                MockRepository,
+                ServiceImpl
+            ]
+        }
+    }
 
+    let container: Container<TestModule> = ContainerBuilder::new().build();
     let service = container.provide::<dyn Service>().unwrap();
     assert_eq!(service.get_double(), 6);
 }
