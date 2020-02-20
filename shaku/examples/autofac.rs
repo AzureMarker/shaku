@@ -1,4 +1,4 @@
-//! Examples based on AutoFac 'getting started' example
+//! Example based on the AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
 use std::sync::Arc;
@@ -55,8 +55,7 @@ module! {
     }
 }
 
-#[test]
-fn main_test() {
+fn main() {
     let container: Container<AutoFacModule> = ContainerBuilder::new()
         .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
             prefix: "PREFIX > ".to_string(),
