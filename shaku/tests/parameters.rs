@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use shaku::{Component, ContainerBuilder, Error as DIError, Interface};
+use shaku::{module, Component, Container, ContainerBuilder, Interface};
 
 trait Foo: Interface {
     fn foo(&self) -> String;
@@ -20,11 +20,7 @@ struct FooImpl {
 
 impl Foo for FooImpl {
     fn foo(&self) -> String {
-        format!(
-            "FooImpl {{ value = {}, bar = {} }}",
-            self.value,
-            self.bar.bar()
-        )
+        format!("Foo = '{}', Bar = '{}'", self.value, self.bar.bar())
     }
 }
 
@@ -40,44 +36,38 @@ struct BarImpl {
 
 impl Bar for BarImpl {
     fn bar(&self) -> String {
-        format!("BarImpl {{ bar_value = {} }}", self.bar_value)
+        self.bar_value.clone()
     }
+}
+
+module! {
+    TestModule {
+        components = [FooImpl, BarImpl],
+        providers = []
+    }
+}
+
+/// If a parameter is not provided, the default is used
+#[test]
+fn default_if_not_provided() {
+    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let foo: &dyn Foo = container.resolve_ref();
+
+    assert_eq!(foo.foo(), "Foo = '', Bar = ''");
 }
 
 /// When all parameters are provided, they are available to the components
 #[test]
 fn parameters_are_injected() {
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .with_named_parameter("value", "world is foo".to_string());
-    builder
-        .register_type::<BarImpl>()
-        .with_named_parameter("bar_value", "world is bar".to_string());
-    let container = builder.build().unwrap();
+    let container: Container<TestModule> = ContainerBuilder::new()
+        .with_component_parameters::<FooImpl>(FooImplParameters {
+            value: "foo value".to_string(),
+        })
+        .with_component_parameters::<BarImpl>(BarImplParameters {
+            bar_value: "bar value".to_string(),
+        })
+        .build();
 
-    let foo = container.resolve::<dyn Foo>().unwrap();
-    assert_eq!(
-        foo.foo(),
-        "FooImpl { value = world is foo, bar = BarImpl { bar_value = world is bar } }"
-    );
-}
-
-/// It is an error to be missing a parameter
-#[test]
-fn missing_parameters() {
-    let mut builder = ContainerBuilder::new();
-    builder.register_type::<FooImpl>();
-    builder
-        .register_type::<BarImpl>()
-        .with_named_parameter("bar_value", "world is bar".to_string());
-    let build_result = builder.build();
-
-    assert!(build_result.is_err());
-    assert_eq!(
-        build_result.unwrap_err(),
-        DIError::Registration(
-            "unable to find parameter with name or type for property value".to_string()
-        )
-    );
+    let foo = container.resolve::<dyn Foo>();
+    assert_eq!(foo.foo(), "Foo = 'foo value', Bar = 'bar value'");
 }
