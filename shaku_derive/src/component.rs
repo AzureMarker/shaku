@@ -8,7 +8,9 @@ use crate::debug::get_debug_level;
 use crate::structures::{Property, ServiceContainer};
 
 pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
-    let container = ServiceContainer::from_derive_input(input).unwrap();
+    let container = ServiceContainer::from_derive_input(input).unwrap_or_else(|error| {
+        panic!("{}", error);
+    });
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
@@ -103,7 +105,6 @@ fn create_parameters_property(property: &Property) -> Option<TokenStream> {
     })
 }
 
-// TODO: support supplying a default via #[shaku(default = ...)]
 fn create_parameters_default(property: &Property) -> Option<TokenStream> {
     if property.is_component() {
         return None;
@@ -111,7 +112,13 @@ fn create_parameters_default(property: &Property) -> Option<TokenStream> {
 
     let property_name = &property.property_name;
 
-    Some(quote! {
-        #property_name: Default::default()
-    })
+    if let Some(default_expr) = &property.default {
+        Some(quote! {
+            #property_name: #default_expr
+        })
+    } else {
+        Some(quote! {
+            #property_name: Default::default()
+        })
+    }
 }

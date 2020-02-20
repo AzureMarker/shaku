@@ -1,6 +1,6 @@
 //! Structures to hold useful data parsed from syn::DeriveInput
 
-use syn::{DeriveInput, Ident, Type};
+use syn::{DeriveInput, Expr, Ident, Type};
 
 use crate::error::Error;
 use crate::parser::Parser;
@@ -44,6 +44,7 @@ pub struct Property {
     /// Otherwise, the interface type (the type inside the Arc or Box).
     pub ty: Type,
     pub property_type: PropertyType,
+    pub default: Option<Expr>,
 }
 
 impl Property {

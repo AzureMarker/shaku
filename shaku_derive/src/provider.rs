@@ -9,7 +9,9 @@ use crate::error::Error;
 use crate::structures::{Property, PropertyType, ServiceContainer};
 
 pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
-    let container = ServiceContainer::from_derive_input(input).unwrap();
+    let container = ServiceContainer::from_derive_input(input).unwrap_or_else(|error| {
+        panic!("{}", error);
+    });
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
@@ -21,7 +23,9 @@ pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
         .iter()
         .map(create_property_assignment)
         .collect::<Result<_, _>>()
-        .unwrap();
+        .unwrap_or_else(|error| {
+            panic!("{}", error);
+        });
 
     let dependencies: Vec<TokenStream> = container
         .properties
