@@ -82,12 +82,10 @@
 mod container;
 mod container_build_context;
 mod container_builder;
-mod dependency;
 
 pub use self::container::Container;
 pub use self::container_build_context::ContainerBuildContext;
 pub use self::container_builder::ContainerBuilder;
-pub use self::dependency::Dependency;
 
 #[cfg(not(feature = "thread_safe"))]
 type AnyType = dyn anymap::any::Any;
