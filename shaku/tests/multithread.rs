@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use rand::Rng;
 
-use shaku::{Component, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, ContainerBuilder, Interface};
 
 trait Foo: Interface {
     fn get_value(&self) -> usize;
@@ -16,6 +16,7 @@ trait Foo: Interface {
 #[derive(Component)]
 #[shaku(interface = Foo)]
 struct FooImpl {
+    #[shaku(default = FOO_DEFAULT_VALUE)]
     value: usize,
 }
 
@@ -29,18 +30,21 @@ impl Foo for FooImpl {
     }
 }
 
-static NB_THREADS: usize = 10;
-static MAX_SLEEP_TIME: u64 = 2000;
+module! {
+    FooModule {
+        components = [FooImpl],
+        providers = []
+    }
+}
+
+const FOO_DEFAULT_VALUE: usize = 17;
+const NB_THREADS: usize = 10;
+const MAX_SLEEP_TIME: u64 = 2000;
 
 #[test]
 fn simple_multithreaded_resolve_ref() {
     // Build container
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .with_named_parameter("value", 17 as usize);
-
-    let container = builder.build().unwrap();
+    let container: Container<FooModule> = ContainerBuilder::new().build();
     let shared_container = Arc::new(Mutex::new(container));
 
     // Launch a few threads where each will try to resolve `Foo`
@@ -61,7 +65,7 @@ fn simple_multithreaded_resolve_ref() {
                     // Get a handle on the container
                     {
                         let container = shared_container.lock().unwrap();
-                        let foo = container.resolve_ref::<dyn Foo>().unwrap();
+                        let foo = container.resolve_ref::<dyn Foo>();
                         assert_eq!(foo.get_value(), 17);
                         println!(
                             "In thread {:?} > resolve ok > value = {}",
@@ -85,16 +89,10 @@ fn simple_multithreaded_resolve_ref() {
 
 #[test]
 fn simple_multithreaded_resolve_ref_n_mut() {
-    let first_value = 17 as usize;
     // Build container
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .with_named_parameter("value", first_value);
-
-    let container = builder.build().unwrap();
+    let container: Container<FooModule> = ContainerBuilder::new().build();
     let shared_container = Arc::new(Mutex::new(container));
-    let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(first_value));
+    let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
@@ -131,7 +129,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                                 foo.get_value()
                             );
                         } else {
-                            let foo = container.resolve_ref::<dyn Foo>().unwrap();
+                            let foo = container.resolve_ref::<dyn Foo>();
                             let data = latest_data.lock().unwrap();
 
                             println!(
@@ -158,16 +156,10 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
 #[test]
 fn simple_multithreaded_resolve_n_own() {
-    let first_value = 17 as usize;
     // Build container
-    let mut builder = ContainerBuilder::new();
-    builder
-        .register_type::<FooImpl>()
-        .with_named_parameter("value", first_value);
-
-    let container = builder.build().unwrap();
+    let container: Container<FooModule> = ContainerBuilder::new().build();
     let shared_container = Arc::new(Mutex::new(container));
-    let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(first_value));
+    let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
@@ -190,7 +182,7 @@ fn simple_multithreaded_resolve_n_own() {
                     // Resolve the container
                     if i == owner {
                         let container = shared_container.lock().unwrap();
-                        let foo = container.resolve::<dyn Foo>().unwrap();
+                        let foo = container.resolve::<dyn Foo>();
                         let data = latest_data.lock().unwrap();
                         println!(
                             "In thread {:?} > owner > resolve ok > value should be {}",
@@ -218,7 +210,7 @@ fn simple_multithreaded_resolve_n_own() {
                                     foo.get_value()
                                 );
                             } else {
-                                let foo = container.resolve_ref::<dyn Foo>().unwrap();
+                                let foo = container.resolve_ref::<dyn Foo>();
                                 let data = latest_data.lock().unwrap();
 
                                 println!(
