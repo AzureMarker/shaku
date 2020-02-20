@@ -1,0 +1,5 @@
+error[E0277]: the trait bound `TestModule: shaku::module::HasProvider<(dyn ServiceTrait + 'static)>` is not satisfied
+  --> $DIR/resolve_unregistered_provider.rs:21:29
+   |
+21 |     let service = container.provide::<dyn ServiceTrait>();
+   |                             ^^^^^^^ the trait `shaku::module::HasProvider<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
