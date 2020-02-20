@@ -1,11 +1,9 @@
 //! Implementation of the '#[derive(Component)]' procedural macro
 
 use proc_macro2::TokenStream;
-use quote::TokenStreamExt;
 use syn::DeriveInput;
 
 use crate::common_output::create_dependency;
-use crate::consts;
 use crate::debug::get_debug_level;
 use crate::structures::{Property, ServiceContainer};
 
@@ -17,16 +15,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
         println!("Container built from Component input: {:#?}", container);
     }
 
-    let parameters: TokenStream = container
+    let resolve_properties: Vec<TokenStream> = container
         .properties
         .iter()
-        .map(create_resolve_code)
-        .collect();
-
-    let properties: Vec<TokenStream> = container
-        .properties
-        .iter()
-        .map(create_property_assignment)
+        .map(create_resolve_property)
         .collect();
 
     let dependencies: Vec<TokenStream> = container
@@ -35,76 +27,91 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
         .filter_map(create_dependency)
         .collect();
 
+    let parameters_properties: Vec<TokenStream> = container
+        .properties
+        .iter()
+        .filter_map(create_parameters_property)
+        .collect();
+
+    let parameters_defaults: Vec<TokenStream> = container
+        .properties
+        .iter()
+        .filter_map(create_parameters_default)
+        .collect();
+
     // Component implementation
     let component_name = container.metadata.identifier;
+    let parameters_name = format_ident!("{}Parameters", component_name);
     let interface = container.metadata.interface;
-    let impl_block = quote! {
+    let output = quote! {
         impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Component<M> for #component_name {
             type Interface = dyn #interface;
+            type Parameters = #parameters_name;
 
-            fn build(context: &mut ::shaku::ContainerBuildContext<M>) -> Box<Self::Interface> {
-                // Create the parameters
-                #parameters
-
-                // Create the component
+            fn build(context: &mut ::shaku::ContainerBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
                 Box::new(Self {
-                    #(#properties),*
+                    #(#resolve_properties),*
                 })
+            }
+        }
+
+        struct #parameters_name {
+            #(#parameters_properties),*
+        }
+
+        impl ::std::default::Default for #parameters_name {
+            fn default() -> Self {
+                Self {
+                    #(#parameters_defaults),*
+                }
             }
         }
     };
 
     if debug_level > 0 {
-        println!("{}", impl_block);
+        println!("{}", output);
     }
 
-    impl_block
+    output
 }
 
-fn create_property_assignment(property: &Property) -> TokenStream {
+fn create_resolve_property(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
-    let value_ident = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
-
-    quote! {
-        #property_name: #value_ident
-    }
-}
-
-fn create_resolve_code(property: &Property) -> TokenStream {
-    /*
-    Building the following output:
-    let __di_output = build_context.resolve::<IOutput>()?;
-    */
-    let prefixed_property_name = format_ident!("{}{}", consts::TEMP_PREFIX, property.property_name);
     let property_type = &property.ty;
 
-    let mut tokens = TokenStream::new();
-    tokens.append_all(quote! {
-        let #prefixed_property_name =
-    });
-
     if property.is_component() {
-        // Injected components => resolve
-        tokens.append_all(quote! {
-            context.resolve::<#property_type>();
-        });
+        quote! {
+            #property_name: context.resolve::<#property_type>()
+        }
     } else {
-        todo!("Remove non-component resolve code generation");
+        quote! {
+            #property_name: params.#property_name
+        }
+    }
+}
 
-        // Other properties => lookup in the parameters with name and type
-        let property_name = property.property_name.to_string();
-        let error_msg = format!(
-            "unable to find parameter with name or type for property {}",
-            property_name
-        );
-
-        tokens.append_all(quote! {
-            params
-                .remove_with_name::<#property_type>(#property_name)
-                .or_else(|| params.remove_with_type::<#property_type>())
-                .ok_or(::shaku::Error::Registration(#error_msg.to_string()))?;
-        });
+fn create_parameters_property(property: &Property) -> Option<TokenStream> {
+    if property.is_component() {
+        return None;
     }
 
-    tokens
+    let property_name = &property.property_name;
+    let property_type = &property.ty;
+
+    Some(quote! {
+        #property_name: #property_type
+    })
+}
+
+// TODO: support supplying a default via #[shaku(default = ...)]
+fn create_parameters_default(property: &Property) -> Option<TokenStream> {
+    if property.is_component() {
+        return None;
+    }
+
+    let property_name = &property.property_name;
+
+    Some(quote! {
+        #property_name: Default::default()
+    })
 }
