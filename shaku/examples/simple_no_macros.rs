@@ -1,9 +1,10 @@
-//! A simple example of using shaku without derives.
-//! Or, put another way, this is what the derives would expand to.
+//! A simple example of using shaku without derives or macros.
+//! This is similar to what the derives and macros expand to.
 
-use shaku::{Component, Container, ContainerBuildContext, ContainerBuilder, Error, Provider};
-use shaku::{HasComponent, Interface, Module};
-use shaku::{HasProvider, ProvidedInterface};
+use shaku::{
+    Component, Container, ContainerBuildContext, ContainerBuilder, Error, HasComponent,
+    HasProvider, Interface, Module, ProvidedInterface, Provider,
+};
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -29,15 +30,9 @@ impl<M: Module> Component<M> for SampleDependencyImpl {
         })
     }
 }
+#[derive(Default)]
 struct SampleDependencyImplParameters {
     value: String,
-}
-impl Default for SampleDependencyImplParameters {
-    fn default() -> Self {
-        Self {
-            value: String::default(),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -57,14 +52,13 @@ impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServi
 
 // Module
 
-#[allow(non_snake_case)]
 struct SampleModule {
-    __di_SampleDependency: Arc<dyn SampleDependency>,
+    sample_dependency: Arc<dyn SampleDependency>,
 }
 impl Module for SampleModule {
     fn build(context: &mut ContainerBuildContext<Self>) -> Self {
         Self {
-            __di_SampleDependency: context.resolve::<dyn SampleDependency>(),
+            sample_dependency: context.resolve(),
         }
     }
 }
@@ -72,17 +66,18 @@ impl HasComponent<dyn SampleDependency> for SampleModule {
     type Impl = SampleDependencyImpl;
 
     fn get_ref(&self) -> &Arc<dyn SampleDependency> {
-        &self.__di_SampleDependency
+        &self.sample_dependency
     }
 
     fn get_mut(&mut self) -> &mut Arc<dyn SampleDependency> {
-        &mut self.__di_SampleDependency
+        &mut self.sample_dependency
     }
 }
 impl HasProvider<dyn SampleService> for SampleModule {
     type Impl = SampleServiceImpl;
 }
 
+//noinspection DuplicatedCode
 fn main() {
     let dependency_params = SampleDependencyImplParameters {
         value: "foo".to_string(),
