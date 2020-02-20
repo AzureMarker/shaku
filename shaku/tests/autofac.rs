@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use shaku::{Component, Interface};
+use shaku::{module, Component, Container, ContainerBuilder, Interface};
 
 trait IOutput: Interface {
     fn write(&self, content: String);
@@ -45,20 +45,29 @@ impl IDateWriter for TodayWriter {
     }
 }
 
+module! {
+    AutoFacModule {
+        components = [
+            ConsoleOutput,
+            TodayWriter
+        ],
+        providers = []
+    }
+}
+
 #[test]
 fn main_test() {
-    let mut builder = shaku::ContainerBuilder::new();
+    let container: Container<AutoFacModule> = ContainerBuilder::new()
+        .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
+            prefix: "PREFIX > ".to_string(),
+        })
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+            today: "June 19".to_string(),
+            year: 2020,
+        })
+        .build();
 
-    builder
-        .register_type::<ConsoleOutput>()
-        .with_named_parameter("prefix", "PREFIX > ".to_string());
-    builder
-        .register_type::<TodayWriter>()
-        .with_typed_parameter::<String>("June 19".to_string())
-        .with_typed_parameter::<usize>(2020);
-    let container = builder.build().unwrap();
-
-    let writer = container.resolve::<dyn IDateWriter>().unwrap();
+    let writer = container.resolve::<dyn IDateWriter>();
     writer.write_date();
     let date = writer.get_date();
     assert_eq!(date, "Today is June 19, 2020");
