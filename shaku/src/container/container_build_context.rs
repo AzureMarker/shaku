@@ -15,14 +15,16 @@ use crate::{HasComponent, Interface};
 /// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext<M: Module> {
     resolved_map: ComponentMap,
+    overrides_map: ComponentMap,
     param_map: ParameterMap,
     _module: PhantomData<M>,
 }
 
 impl<M: Module> ContainerBuildContext<M> {
-    pub(crate) fn new(param_map: ParameterMap) -> Self {
+    pub(crate) fn new(param_map: ParameterMap, overrides_map: ComponentMap) -> Self {
         ContainerBuildContext {
             resolved_map: ComponentMap::new(),
+            overrides_map,
             param_map,
             _module: PhantomData,
         }
@@ -43,8 +45,9 @@ impl<M: Module> ContainerBuildContext<M> {
     where
         M: HasComponent<I>,
     {
-        self.resolved_map
+        self.overrides_map
             .get::<Arc<I>>()
+            .or_else(|| self.resolved_map.get::<Arc<I>>())
             .map(Arc::clone)
             .unwrap_or_else(|| {
                 // Build the component if not already resolved
