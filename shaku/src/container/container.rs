@@ -4,10 +4,10 @@ use std::sync::Arc;
 use crate::container::ComponentMap;
 use crate::module::{HasComponent, Module};
 use crate::provider::ProviderFn;
-use crate::Error;
 use crate::Interface;
 use crate::Provider;
 use crate::Result;
+use crate::{ContainerBuilder, Error};
 use crate::{HasProvider, ProvidedInterface};
 
 /// Resolves services registered during the build phase.
@@ -84,6 +84,12 @@ use crate::{HasProvider, ProvidedInterface};
 pub struct Container<M: Module> {
     pub(crate) module: M,
     pub(crate) provider_overrides: ComponentMap,
+}
+
+impl<M: Module> Default for Container<M> {
+    fn default() -> Self {
+        ContainerBuilder::new().build()
+    }
 }
 
 impl<M: Module> Container<M> {

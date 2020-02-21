@@ -50,7 +50,7 @@ module! {
 /// If a parameter is not provided, the default is used
 #[test]
 fn default_if_not_provided() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let foo: &dyn Foo = container.resolve_ref();
 
     assert_eq!(foo.foo(), "Foo = '', Bar = ''");

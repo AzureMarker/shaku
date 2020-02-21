@@ -127,7 +127,7 @@ fn can_mock_database() {
         }
     }
 
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let repository = container.provide::<dyn Repository>().unwrap();
     assert_eq!(repository.get(), 3);
 }
@@ -155,7 +155,7 @@ fn can_mock_repository() {
         }
     }
 
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let service = container.provide::<dyn Service>().unwrap();
     assert_eq!(service.get_double(), 6);
 }

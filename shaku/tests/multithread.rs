@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use rand::Rng;
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, Interface};
 
 trait Foo: Interface {
     fn get_value(&self) -> usize;
@@ -44,7 +44,7 @@ const MAX_SLEEP_TIME: u64 = 2000;
 #[test]
 fn simple_multithreaded_resolve_ref() {
     // Build container
-    let container: Container<FooModule> = ContainerBuilder::new().build();
+    let container = Container::<FooModule>::default();
     let shared_container = Arc::new(Mutex::new(container));
 
     // Launch a few threads where each will try to resolve `Foo`
@@ -90,7 +90,7 @@ fn simple_multithreaded_resolve_ref() {
 #[test]
 fn simple_multithreaded_resolve_ref_n_mut() {
     // Build container
-    let container: Container<FooModule> = ContainerBuilder::new().build();
+    let container = Container::<FooModule>::default();
     let shared_container = Arc::new(Mutex::new(container));
     let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
@@ -157,7 +157,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 #[test]
 fn simple_multithreaded_resolve_n_own() {
     // Build container
-    let container: Container<FooModule> = ContainerBuilder::new().build();
+    let container = Container::<FooModule>::default();
     let shared_container = Arc::new(Mutex::new(container));
     let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 

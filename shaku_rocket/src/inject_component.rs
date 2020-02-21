@@ -46,7 +46,7 @@ use std::marker::PhantomData;
 /// }
 ///
 /// fn main() {
-///     let container: Container<HelloModule> = ContainerBuilder::new().build();
+///     let container = Container::<HelloModule>::new();
 ///
 /// # if false { // We don't actually want to launch the server in an example.
 ///     rocket::ignite()

@@ -1,6 +1,6 @@
 //! Requesting a provider which is not supported by the module will fail to compile
 
-use shaku::{module, Provider, Container, ContainerBuilder, ProvidedInterface};
+use shaku::{module, Container, ProvidedInterface, Provider};
 
 trait ServiceTrait: ProvidedInterface {}
 
@@ -17,6 +17,6 @@ module! {
 }
 
 fn main() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let service = container.provide::<dyn ServiceTrait>();
 }

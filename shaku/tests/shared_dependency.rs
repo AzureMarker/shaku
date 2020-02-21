@@ -3,7 +3,7 @@
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, Interface};
 
 trait IDependency: Interface + Debug {}
 
@@ -60,7 +60,7 @@ module! {
 /// A dependency can be referenced by two components at the same time
 #[test]
 fn components_can_share_dependency() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
 
     let dependency: &dyn IDependency = container.resolve_ref();
     let component1: &dyn IComponent1 = container.resolve_ref();

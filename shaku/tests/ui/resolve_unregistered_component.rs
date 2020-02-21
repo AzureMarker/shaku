@@ -1,6 +1,6 @@
 //! Requesting a component which is not supported by the module will fail to compile
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, Interface};
 
 trait ServiceTrait: Interface {}
 
@@ -17,6 +17,6 @@ module! {
 }
 
 fn main() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let service = container.resolve_ref::<dyn ServiceTrait>();
 }

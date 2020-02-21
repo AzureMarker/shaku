@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, Interface};
 
 trait ValueService: Interface {
     fn get_value(&self) -> usize;
@@ -33,7 +33,7 @@ module! {
 
 #[test]
 fn resolving_immutable_ref() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
     let service: &dyn ValueService = container.resolve_ref();
 
     assert_eq!(service.get_value(), 17);
@@ -41,7 +41,7 @@ fn resolving_immutable_ref() {
 
 #[test]
 fn resolving_mutable_ref() {
-    let mut container: Container<TestModule> = ContainerBuilder::new().build();
+    let mut container = Container::<TestModule>::default();
 
     {
         let service: &mut dyn ValueService = container.resolve_mut().unwrap();
@@ -57,7 +57,7 @@ fn resolving_mutable_ref() {
 
 #[test]
 fn resolving_ref_then_value() {
-    let container: Container<TestModule> = ContainerBuilder::new().build();
+    let container = Container::<TestModule>::default();
 
     {
         let service: &dyn ValueService = container.resolve_ref();
@@ -72,7 +72,7 @@ fn resolving_ref_then_value() {
 
 #[test]
 fn resolving_ref_then_mut_then_value() {
-    let mut container: Container<TestModule> = ContainerBuilder::new().build();
+    let mut container = Container::<TestModule>::default();
 
     {
         let service: &dyn ValueService = container.resolve_ref();
@@ -93,7 +93,7 @@ fn resolving_ref_then_mut_then_value() {
 
 #[test]
 fn resolving_value_then_ref() {
-    let mut container: Container<TestModule> = ContainerBuilder::new().build();
+    let mut container = Container::<TestModule>::default();
 
     {
         let service: Arc<dyn ValueService> = container.resolve();
