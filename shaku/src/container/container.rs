@@ -1,7 +1,9 @@
 use std::any::type_name;
 use std::sync::Arc;
 
+use crate::container::ComponentMap;
 use crate::module::{HasComponent, Module};
+use crate::provider::ProviderFn;
 use crate::Error;
 use crate::Interface;
 use crate::Provider;
@@ -81,6 +83,7 @@ use crate::{HasProvider, ProvidedInterface};
 #[derive(Debug)]
 pub struct Container<M: Module> {
     pub(crate) module: M,
+    pub(crate) provider_overrides: ComponentMap,
 }
 
 impl<M: Module> Container<M> {
@@ -150,7 +153,10 @@ impl<M: Module> Container<M> {
     where
         M: HasProvider<I>,
     {
-        M::Impl::provide(self)
+        self.provider_overrides
+            .get::<ProviderFn<M, I>>()
+            .map(|provider_fn| provider_fn(self))
+            .unwrap_or_else(|| M::Impl::provide(self))
     }
 
     /// Get a reference to the component registered with the interface `I`.

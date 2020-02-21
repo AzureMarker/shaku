@@ -426,6 +426,11 @@ pub trait Provider<M: Module>: 'static {
 }
 
 #[cfg(not(feature = "thread_safe"))]
+pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>)>;
+#[cfg(feature = "thread_safe")]
+pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>) + Send + Sync>;
+
+#[cfg(not(feature = "thread_safe"))]
 trait_alias!(
     /// Provided interfaces must be `'static` in order for the provider to be
     /// stored in the container (hence the `Any` requirement).

@@ -14,18 +14,24 @@ use crate::{HasComponent, Interface};
 /// [Container]: struct.Container.html
 /// [Component::build]: ../component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext<M: Module> {
-    resolved_map: ComponentMap,
-    overrides_map: ComponentMap,
-    param_map: ParameterMap,
+    resolved_components: ComponentMap,
+    component_overrides: ComponentMap,
+    provider_overrides: ComponentMap,
+    parameters: ParameterMap,
     _module: PhantomData<M>,
 }
 
 impl<M: Module> ContainerBuildContext<M> {
-    pub(crate) fn new(param_map: ParameterMap, overrides_map: ComponentMap) -> Self {
+    pub(crate) fn new(
+        parameters: ParameterMap,
+        component_overrides: ComponentMap,
+        provider_overrides: ComponentMap,
+    ) -> Self {
         ContainerBuildContext {
-            resolved_map: ComponentMap::new(),
-            overrides_map,
-            param_map,
+            resolved_components: ComponentMap::new(),
+            component_overrides,
+            provider_overrides,
+            parameters,
             _module: PhantomData,
         }
     }
@@ -33,6 +39,7 @@ impl<M: Module> ContainerBuildContext<M> {
     pub(crate) fn build(mut self) -> Container<M> {
         Container {
             module: M::build(&mut self),
+            provider_overrides: self.provider_overrides,
         }
     }
 
@@ -45,19 +52,20 @@ impl<M: Module> ContainerBuildContext<M> {
     where
         M: HasComponent<I>,
     {
-        self.overrides_map
+        self.component_overrides
             .get::<Arc<I>>()
-            .or_else(|| self.resolved_map.get::<Arc<I>>())
+            .or_else(|| self.resolved_components.get::<Arc<I>>())
             .map(Arc::clone)
             .unwrap_or_else(|| {
                 // Build the component if not already resolved
                 let parameters = self
-                    .param_map
+                    .parameters
                     .remove::<ComponentParameters<M, M::Impl>>()
                     .unwrap_or_default();
                 let component = M::Impl::build(self, parameters.value);
                 let component = Arc::from(component);
-                self.resolved_map.insert::<Arc<I>>(Arc::clone(&component));
+                self.resolved_components
+                    .insert::<Arc<I>>(Arc::clone(&component));
 
                 component
             })
