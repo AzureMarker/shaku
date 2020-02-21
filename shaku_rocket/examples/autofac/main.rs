@@ -3,28 +3,26 @@
 #[macro_use]
 extern crate rocket;
 
-use shaku::ContainerBuilder;
+use shaku::{Container, ContainerBuilder};
 use shaku_rocket::Inject;
 
-use crate::autofac::{ConsoleOutput, IDateWriter, TodayWriter};
+use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
 
 mod autofac;
 
 #[get("/")]
-fn index(writer: Inject<dyn IDateWriter>) -> String {
+fn index(writer: Inject<AutoFacModule, dyn IDateWriter>) -> String {
     writer.write_date();
     writer.get_date()
 }
 
 fn main() {
-    let mut builder = ContainerBuilder::new();
-
-    builder.register_type::<ConsoleOutput>();
-    builder
-        .register_type::<TodayWriter>()
-        .with_named_parameter("today", "June 19".to_string())
-        .with_typed_parameter::<usize>(2020);
-    let container = builder.build().unwrap();
+    let container: Container<AutoFacModule> = ContainerBuilder::new()
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+            today: "June 19".to_string(),
+            year: 2020,
+        })
+        .build();
 
     rocket::ignite()
         .manage(container)
