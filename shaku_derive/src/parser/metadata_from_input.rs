@@ -38,6 +38,7 @@ impl Parser<MetaData> for DeriveInput {
         Ok(MetaData {
             identifier: self.ident.clone(),
             interface: path_kv.value.get_ident().unwrap().clone(),
+            visibility: self.vis.clone(),
         })
     }
 }

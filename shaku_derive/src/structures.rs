@@ -1,6 +1,6 @@
 //! Structures to hold useful data parsed from syn::DeriveInput
 
-use syn::{DeriveInput, Expr, Ident, Type};
+use syn::{DeriveInput, Expr, Ident, Type, Visibility};
 
 use crate::error::Error;
 use crate::parser::Parser;
@@ -27,6 +27,7 @@ impl ServiceContainer {
 pub struct MetaData {
     pub identifier: Ident,
     pub interface: Ident,
+    pub visibility: Visibility,
 }
 
 #[derive(Copy, Clone, Debug)]

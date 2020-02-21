@@ -45,6 +45,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
     let component_name = container.metadata.identifier;
     let parameters_name = format_ident!("{}Parameters", component_name);
     let interface = container.metadata.interface;
+    let visibility = container.metadata.visibility;
     let output = quote! {
         impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Component<M> for #component_name {
             type Interface = dyn #interface;
@@ -57,8 +58,8 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
             }
         }
 
-        struct #parameters_name {
-            #(#parameters_properties),*
+        #visibility struct #parameters_name {
+            #(#visibility #parameters_properties),*
         }
 
         impl ::std::default::Default for #parameters_name {
