@@ -21,7 +21,7 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 #[macro_export]
 macro_rules! module {
     {
-        $module:ident {
+        $visibility:vis $module:ident {
             components = [
                 $($component:ident),* $(,)?
             ],
@@ -31,7 +31,7 @@ macro_rules! module {
         }
     } => {
         #[allow(non_snake_case)]
-        struct $module {
+        $visibility struct $module {
             $(
                 // It would be nice to prefix the property with something like
                 // "__di_", but macro_rules does not support concatenating
