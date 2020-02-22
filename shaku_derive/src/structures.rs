@@ -26,7 +26,7 @@ impl ServiceContainer {
 #[derive(Clone, Debug)]
 pub struct MetaData {
     pub identifier: Ident,
-    pub interface: Ident,
+    pub interface: Type,
     pub visibility: Visibility,
 }
 

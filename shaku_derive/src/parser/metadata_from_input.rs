@@ -2,7 +2,7 @@ use crate::consts;
 use crate::error::Error;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::MetaData;
-use syn::{DeriveInput, Path};
+use syn::{DeriveInput, Type};
 
 impl Parser<MetaData> for DeriveInput {
     fn parse_as(&self) -> Result<MetaData, Error> {
@@ -17,7 +17,7 @@ impl Parser<MetaData> for DeriveInput {
         }
 
         // Get the interface key/value
-        let path_kv: KeyValue<Path> = shaku_attribute.parse_args().map_err(|_| {
+        let path_kv: KeyValue<Type> = shaku_attribute.parse_args().map_err(|_| {
             Error::ParseError(format!(
                 "invalid attribute format > '{:?}' the name of the trait must be in name-value form. \
                 Example: #[{}({} = <your trait>)]",
@@ -37,7 +37,7 @@ impl Parser<MetaData> for DeriveInput {
 
         Ok(MetaData {
             identifier: self.ident.clone(),
-            interface: path_kv.value.get_ident().unwrap().clone(),
+            interface: path_kv.value.clone(),
             visibility: self.vis.clone(),
         })
     }
