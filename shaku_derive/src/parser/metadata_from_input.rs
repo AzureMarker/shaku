@@ -37,7 +37,7 @@ impl Parser<MetaData> for DeriveInput {
 
         Ok(MetaData {
             identifier: self.ident.clone(),
-            interface: path_kv.value.clone(),
+            interface: path_kv.value,
             visibility: self.vis.clone(),
         })
     }
