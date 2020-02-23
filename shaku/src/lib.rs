@@ -129,9 +129,9 @@
 //! the dependencies manually with [`ContainerBuildContext::resolve`].
 //!
 //! ## Create a Module
-//! Modules link together components and providers, and is core to providing shaku's compile time
-//! guarentees. A [`Module`] can be created manually or via the [`module`][module macro] macro (the `derive`
-//! feature is not necessary):
+//! Modules link together components and providers, and are core to providing shaku's compile time
+//! guarentees. A [`Module`] can be created manually or via the [`module`][module macro] macro (the
+//! `derive` feature is not necessary):
 //!
 //! ```
 //! # use shaku::{Component, Interface};
