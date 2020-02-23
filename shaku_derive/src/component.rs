@@ -5,12 +5,11 @@ use syn::DeriveInput;
 
 use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;
+use crate::error::Error;
 use crate::structures::{Property, ServiceContainer};
 
-pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
-    let container = ServiceContainer::from_derive_input(input).unwrap_or_else(|error| {
-        panic!("{}", error);
-    });
+pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error> {
+    let container = ServiceContainer::from_derive_input(input)?;
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
@@ -75,7 +74,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> TokenStream {
         println!("{}", output);
     }
 
-    output
+    Ok(output)
 }
 
 fn create_resolve_property(property: &Property) -> TokenStream {

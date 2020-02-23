@@ -8,10 +8,8 @@ use crate::debug::get_debug_level;
 use crate::error::Error;
 use crate::structures::{Property, PropertyType, ServiceContainer};
 
-pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
-    let container = ServiceContainer::from_derive_input(input).unwrap_or_else(|error| {
-        panic!("{}", error);
-    });
+pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error> {
+    let container = ServiceContainer::from_derive_input(input)?;
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
@@ -22,10 +20,7 @@ pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
         .properties
         .iter()
         .map(create_property_assignment)
-        .collect::<Result<_, _>>()
-        .unwrap_or_else(|error| {
-            panic!("{}", error);
-        });
+        .collect::<Result<_, _>>()?;
 
     let dependencies: Vec<TokenStream> = container
         .properties
@@ -52,7 +47,7 @@ pub fn expand_derive_provider(input: &DeriveInput) -> TokenStream {
         println!("{}", output);
     }
 
-    output
+    Ok(output)
 }
 
 fn create_property_assignment(property: &Property) -> Result<TokenStream, Error> {
