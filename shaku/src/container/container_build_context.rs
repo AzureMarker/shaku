@@ -8,11 +8,10 @@ use crate::Container;
 use crate::Module;
 use crate::{HasComponent, Interface};
 
-/// Holds registration data, providers, and resolved components while building a [Container].
-/// This struct is used during [Component::build].
+/// Builds a [Container]. This struct is used during [Component::build].
 ///
 /// [Container]: struct.Container.html
-/// [Component::build]: ../component/trait.Component.html#tymethod.build
+/// [Component::build]: component/trait.Component.html#tymethod.build
 pub struct ContainerBuildContext<M: Module> {
     resolved_components: ComponentMap,
     component_overrides: ComponentMap,
@@ -43,11 +42,7 @@ impl<M: Module> ContainerBuildContext<M> {
         }
     }
 
-    /// Resolve a component. The component interface must be listed as a
-    /// [`Dependency`] in [`Component::dependencies`].
-    ///
-    /// [`Dependency`]: struct.Dependency.html
-    /// [`Component::dependencies`]: ../component/trait.Component.html#tymethod.dependencies
+    /// Resolve a component.
     pub fn resolve<I: Interface + ?Sized>(&mut self) -> Arc<I>
     where
         M: HasComponent<I>,
