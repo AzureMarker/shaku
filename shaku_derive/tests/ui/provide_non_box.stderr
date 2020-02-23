@@ -1,0 +1,5 @@
+error: Error in dependency: Found non-Box type annotated with #[shaku(provide)]
+  --> $DIR/provide_non_box.rs:14:10
+   |
+14 | #[derive(Provider)]
+   |          ^^^^^^^^

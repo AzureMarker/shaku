@@ -1,0 +1,11 @@
+error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
+ --> $DIR/interface_not_name_value.rs:8:10
+  |
+8 | #[derive(Component)]
+  |          ^^^^^^^^^
+
+error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
+  --> $DIR/interface_not_name_value.rs:13:10
+   |
+13 | #[derive(Provider)]
+   |          ^^^^^^^^

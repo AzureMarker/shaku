@@ -1,0 +1,5 @@
+error: Error when parsing value: Parameters are not allowed in Providers
+ --> $DIR/provider_parameters.rs:7:10
+  |
+7 | #[derive(Provider)]
+  |          ^^^^^^^^

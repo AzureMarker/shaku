@@ -1,7 +1,0 @@
-error: proc-macro derive panicked
- --> $DIR/no_interface.rs:7:10
-  |
-7 | #[derive(Component)]
-  |          ^^^^^^^^^
-  |
-  = help: message: Parse Error: unable to find interface > please add a '#[shaku(interface = <your trait>)]'

@@ -1,0 +1,11 @@
+error: Struct properties must be named
+ --> $DIR/tuple_struct.rs:8:10
+  |
+8 | #[derive(Component)]
+  |          ^^^^^^^^^
+
+error: Struct properties must be named
+  --> $DIR/tuple_struct.rs:13:10
+   |
+13 | #[derive(Provider)]
+   |          ^^^^^^^^

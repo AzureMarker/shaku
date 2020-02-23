@@ -21,7 +21,7 @@ pub(self) fn get_shaku_attribute(attrs: &[Attribute]) -> Result<&Attribute, Erro
         .find(|a| a.path.is_ident(consts::ATTR_NAME))
         .ok_or_else(|| {
             Error::ParseError(format!(
-                "unable to find interface > please add a '#[{}({} = <your trait>)]'",
+                "Unable to find interface. Please add a '#[{}({} = <your trait>)]'",
                 consts::ATTR_NAME,
                 consts::INTERFACE_ATTR_NAME
             ))

@@ -12,9 +12,8 @@ impl Parser<MetaData> for DeriveInput {
         // Get the interface key/value
         let path_kv: KeyValue<Type> = shaku_attribute.parse_args().map_err(|_| {
             Error::ParseError(format!(
-                "invalid attribute format > '{:?}' the name of the trait must be in name-value form. \
+                "Invalid attribute format. The attribute must be in name-value form. \
                 Example: #[{}({} = <your trait>)]",
-                shaku_attribute,
                 consts::ATTR_NAME,
                 consts::INTERFACE_ATTR_NAME
             ))
@@ -22,7 +21,7 @@ impl Parser<MetaData> for DeriveInput {
 
         if path_kv.key != consts::INTERFACE_ATTR_NAME {
             return Err(Error::ParseError(format!(
-                "unable to find interface > please add a '#[{}({} = <your trait>)]'",
+                "Unable to find interface. Please add a '#[{}({} = <your trait>)]'",
                 consts::ATTR_NAME,
                 consts::INTERFACE_ATTR_NAME
             )));

@@ -1,0 +1,11 @@
+error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
+  --> $DIR/inject_non_arc.rs:14:10
+   |
+14 | #[derive(Component)]
+   |          ^^^^^^^^^
+
+error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
+  --> $DIR/inject_non_arc.rs:22:10
+   |
+22 | #[derive(Provider)]
+   |          ^^^^^^^^

@@ -1,0 +1,5 @@
+error: Error while parsing dependency: Cannot inject and provide the same property
+  --> $DIR/inject_and_provide_same_property.rs:14:10
+   |
+14 | #[derive(Provider)]
+   |          ^^^^^^^^

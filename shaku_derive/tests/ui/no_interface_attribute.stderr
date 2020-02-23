@@ -1,0 +1,11 @@
+error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)]'
+ --> $DIR/no_interface_attribute.rs:8:10
+  |
+8 | #[derive(Component)]
+  |          ^^^^^^^^^
+
+error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)]'
+  --> $DIR/no_interface_attribute.rs:12:10
+   |
+12 | #[derive(Provider)]
+   |          ^^^^^^^^
