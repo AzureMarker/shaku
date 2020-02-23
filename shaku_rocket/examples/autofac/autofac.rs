@@ -1,8 +1,15 @@
-//! Examples based on AutoFac 'getting started' example
+//! Example based on the AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
-use shaku::{Component, Interface};
+use shaku::{module, Component, Interface};
 use std::sync::Arc;
+
+module! {
+    pub AutoFacModule {
+        components = [ConsoleOutput, TodayWriter],
+        providers = []
+    }
+}
 
 pub trait IOutput: Interface {
     fn write(&self, content: String);

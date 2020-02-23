@@ -1,6 +1,9 @@
 use std::error::Error as StdError;
 use std::fmt::{self, Debug};
 
+/// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
+pub type Result<T> = std::result::Result<T, Error>;
+
 #[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum Error {

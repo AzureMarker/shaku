@@ -1,9 +1,9 @@
-//! Examples based on AutoFac 'getting started' example
+//! Example based on the AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
 use std::sync::Arc;
 
-use shaku::{Component, Interface};
+use shaku::{module, Component, Container, ContainerBuilder, Interface};
 
 trait IOutput: Interface {
     fn write(&self, content: String);
@@ -45,20 +45,28 @@ impl IDateWriter for TodayWriter {
     }
 }
 
-#[test]
-fn main_test() {
-    let mut builder = shaku::ContainerBuilder::new();
+module! {
+    AutoFacModule {
+        components = [
+            ConsoleOutput,
+            TodayWriter
+        ],
+        providers = []
+    }
+}
 
-    builder
-        .register_type::<ConsoleOutput>()
-        .with_named_parameter("prefix", "PREFIX > ".to_string());
-    builder
-        .register_type::<TodayWriter>()
-        .with_typed_parameter::<String>("June 19".to_string())
-        .with_typed_parameter::<usize>(2020);
-    let container = builder.build().unwrap();
+fn main() {
+    let container: Container<AutoFacModule> = ContainerBuilder::new()
+        .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
+            prefix: "PREFIX > ".to_string(),
+        })
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+            today: "June 19".to_string(),
+            year: 2020,
+        })
+        .build();
 
-    let writer = container.resolve::<dyn IDateWriter>().unwrap();
+    let writer = container.resolve::<dyn IDateWriter>();
     writer.write_date();
     let date = writer.get_date();
     assert_eq!(date, "Today is June 19, 2020");

@@ -1,10 +1,11 @@
 use std::ops::Deref;
 
+use crate::get_container_from_state;
 use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
-use rocket::{http::Status, Request, State};
-
-use shaku::{Container, ProvidedInterface};
+use rocket::{http::Status, Request};
+use shaku::{HasProvider, Module, ProvidedInterface};
+use std::marker::PhantomData;
 
 /// Used to create a provided service using a provider from a shaku `Container`.
 /// The container should be stored in Rocket's state. Use this struct as a
@@ -16,7 +17,7 @@ use shaku::{Container, ProvidedInterface};
 ///
 /// #[macro_use] extern crate rocket;
 ///
-/// use shaku::{ContainerBuilder, ProvidedInterface, Provider};
+/// use shaku::{module, Container, ContainerBuilder, ProvidedInterface, Provider};
 /// use shaku_rocket::InjectProvided;
 ///
 /// trait HelloWorld: ProvidedInterface {
@@ -33,15 +34,20 @@ use shaku::{Container, ProvidedInterface};
 ///     }
 /// }
 ///
+/// module! {
+///     HelloModule {
+///         components = [],
+///         providers = [HelloWorldImpl]
+///     }
+/// }
+///
 /// #[get("/")]
-/// fn hello(hello_world: InjectProvided<dyn HelloWorld>) -> String {
+/// fn hello(hello_world: InjectProvided<HelloModule, dyn HelloWorld>) -> String {
 ///     hello_world.greet()
 /// }
 ///
 /// fn main() {
-///     let mut builder = ContainerBuilder::new();
-///     builder.register_provider::<HelloWorldImpl>();
-///     let container = builder.build().unwrap();
+///     let container = Container::<HelloModule>::new();
 ///
 /// # if false { // We don't actually want to launch the server in an example.
 ///     rocket::ignite()
@@ -51,29 +57,34 @@ use shaku::{Container, ProvidedInterface};
 /// # }
 /// }
 /// ```
-pub struct InjectProvided<I: ProvidedInterface + ?Sized>(Box<I>);
+pub struct InjectProvided<M: Module + HasProvider<I> + Send + Sync, I: ProvidedInterface + ?Sized>(
+    Box<I>,
+    PhantomData<M>,
+);
 
-impl<'a, 'r, I: ProvidedInterface + ?Sized> FromRequest<'a, 'r> for InjectProvided<I> {
+impl<'a, 'r, M: Module + HasProvider<I> + Send + Sync, I: ProvidedInterface + ?Sized>
+    FromRequest<'a, 'r> for InjectProvided<M, I>
+{
     type Error = String;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        let container: State<'r, Container> = request
-            .guard::<State<Container>>()
-            .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))?;
+        let container = get_container_from_state::<M>(request)?;
         let component = container
             .inner()
             .provide::<I>()
             .map_err(|e| e.to_string())
             .into_outcome(Status::InternalServerError)?;
 
-        Outcome::Success(InjectProvided(component))
+        Outcome::Success(InjectProvided(component, PhantomData))
     }
 }
 
-impl<I: ProvidedInterface + ?Sized> Deref for InjectProvided<I> {
+impl<M: Module + HasProvider<I> + Send + Sync, I: ProvidedInterface + ?Sized> Deref
+    for InjectProvided<M, I>
+{
     type Target = I;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        self.0.deref()
     }
 }

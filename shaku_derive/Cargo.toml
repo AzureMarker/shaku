@@ -1,6 +1,6 @@
 [package]
 name = "shaku_derive"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Code generation for the shaku dependency injection framework"
 repository = "https://github.com/Mcat12/shaku"
@@ -17,4 +17,4 @@ syn = { version = "1.0", features = ["extra-traits"] }
 proc-macro2 = "1.0"
 
 [dev-dependencies]
-shaku = "~0.1.0"
+shaku = "~0.2.0"

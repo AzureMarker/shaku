@@ -1,8 +1,8 @@
-use syn::{Attribute, Field, GenericArgument, Path, PathArguments, Type};
+use syn::{Attribute, Expr, Field, GenericArgument, Path, PathArguments, Type};
 
 use crate::consts;
 use crate::error::Error;
-use crate::parser::Parser;
+use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::{Property, PropertyType};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
@@ -26,11 +26,25 @@ impl Parser<Property> for Field {
 
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
+                let property_default =
+                    get_shaku_attribute(&self.attrs)
+                        .ok()
+                        .and_then(|attr: &Attribute| {
+                            let inner = attr.parse_args::<KeyValue<Expr>>().ok()?;
+
+                            if inner.key == consts::DEFAULT_ATTR_NAME {
+                                Some(inner.value)
+                            } else {
+                                None
+                            }
+                        });
+
                 return Ok(Property {
                     property_name,
                     ty: self.ty.clone(),
                     property_type: PropertyType::Parameter,
-                })
+                    default: property_default,
+                });
             }
             (false, true) => PropertyType::Provided,
             (true, false) => PropertyType::Component,
@@ -85,6 +99,7 @@ impl Parser<Property> for Field {
                     property_name,
                     ty: (*interface_type).clone(),
                     property_type,
+                    default: None,
                 })
             }
 
