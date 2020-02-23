@@ -23,7 +23,7 @@ use crate::Result;
 /// ## The example
 /// This guide will use the example of a service which depends on a repository, which in turn uses
 /// a database connection from a connection pool. The service is used in an API (not shown) which
-/// wants to have per-request database connections. Here's the base code:
+/// wants to have per-request pooled database connections. Here's the base code:
 ///
 /// ```
 /// use std::cell::RefCell;
@@ -84,10 +84,10 @@ use crate::Result;
 /// ```
 ///
 /// ## Inherit "ProvidedInterface" for the interface traits
-/// Provided services have less restrictions on their thread-safety. Specifically, they don't
-/// require `Sync` (only `Send`) when the `thread_safe` feature is enabled. This accommodates things
-/// like Diesel's `Connection` types. For this reason, the regular [`Interface`] trait cannot be
-/// used for provided services. [`ProvidedInterface`] is used instead.
+/// Provided services have less restrictions on their thread-safety compared to components.
+/// Specifically, they don't require `Sync` (only `Send`) when the `thread_safe` feature is enabled.
+/// This accommodates things like Diesel's `Connection` types. For this reason, the regular
+/// [`Interface`] trait cannot be used for provided services. [`ProvidedInterface`] is used instead.
 ///
 /// ```
 /// # use std::cell::RefCell;
@@ -114,9 +114,9 @@ use crate::Result;
 /// }
 /// ```
 ///
-/// ## Mark structs as Provider
+/// ## Implement Provider
 /// Just like [`Component`], [`Provider`] has a derive macro available. It functions similarly, but
-/// allows `#[shaku(provides)]` in addition to the regular `#[shaku(inject)]` attribute.
+/// allows `#[shaku(provide)]` in addition to the regular `#[shaku(inject)]` attribute.
 ///
 /// ```
 /// # use shaku::{Component, Interface, ProvidedInterface};
@@ -143,6 +143,7 @@ use crate::Result;
 /// #[derive(Component)]
 /// #[shaku(interface = ConnectionPool)]
 /// struct DatabaseConnectionPool {
+///     #[shaku(default = 42)]
 ///     value: usize,
 /// }
 ///
@@ -176,17 +177,13 @@ use crate::Result;
 /// #
 /// # struct DBConnection(RefCell<usize>);
 /// #
-/// use shaku::{Container, Dependency, Provider, Error};
+/// use shaku::{Container, HasComponent, Module, Provider, Error};
 ///
-/// impl Provider for DBConnection {
+/// impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 ///     type Interface = DBConnection;
 ///
-///     fn dependencies() -> Vec<Dependency> {
-///         vec![Dependency::component::<dyn ConnectionPool>()]
-///     }
-///
-///     fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
-///         let pool = container.resolve_ref::<dyn ConnectionPool>()?;
+///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+///         let pool = container.resolve_ref::<dyn ConnectionPool>();
 ///         Ok(Box::new(pool.get()))
 ///     }
 /// }
@@ -197,70 +194,12 @@ use crate::Result;
 /// services, you should use traits for decoupling, but sometimes you just need to pass around a
 /// concrete data structure or connection type.
 ///
-/// ## Register providers
-/// Registering providers is just like registering services, except they cannot use parameters. So,
-/// it's even simpler!
-///
-/// ```
-/// # use shaku::{Component, Container, Dependency, Error, Interface, ProvidedInterface, Provider};
-/// # use std::cell::RefCell;
-/// #
-/// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
-/// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
-/// # trait Service: ProvidedInterface { fn get_double(&self) -> usize; }
-/// #
-/// # struct DBConnection(RefCell<usize>);
-/// # #[derive(Component)]
-/// # #[shaku(interface = ConnectionPool)]
-/// # struct DatabaseConnectionPool { value: usize }
-/// # #[derive(Provider)]
-/// # #[shaku(interface = Repository)]
-/// # struct RepositoryImpl { #[shaku(provide)] db: Box<DBConnection> }
-/// # #[derive(Provider)]
-/// # #[shaku(interface = Service)]
-/// # struct ServiceImpl { #[shaku(provide)] repo: Box<dyn Repository> }
-/// #
-/// # impl Provider for DBConnection {
-/// #     type Interface = DBConnection;
-/// #     fn dependencies() -> Vec<Dependency> { vec![Dependency::component::<dyn ConnectionPool>()] }
-/// #     fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
-/// #         let pool = container.resolve_ref::<dyn ConnectionPool>()?;
-/// #         Ok(Box::new(pool.get()))
-/// #     }
-/// # }
-/// #
-/// # impl ConnectionPool for DatabaseConnectionPool {
-/// #     fn get(&self) -> DBConnection { DBConnection(RefCell::new(self.value)) }
-/// # }
-/// # impl Repository for RepositoryImpl {
-/// #     fn get(&self) -> usize { *(*self.db).0.borrow() }
-/// # }
-/// # impl Service for ServiceImpl {
-/// #     fn get_double(&self) -> usize { self.repo.get() * 2 }
-/// # }
-/// #
-/// use shaku::ContainerBuilder;
-///
-/// let mut builder = ContainerBuilder::new();
-/// builder
-///     .register_type::<DatabaseConnectionPool>()
-///     .with_typed_parameter::<usize>(42);
-/// builder.register_provider::<DBConnection>();
-/// builder.register_provider::<RepositoryImpl>();
-/// builder.register_provider::<ServiceImpl>();
-///
-/// let container = builder.build().unwrap();
-/// ```
-///
-/// ## Resolve provided services
-/// Providers are resolved through a single method (yes, still simpler than components!):
-/// [`Container::provide`]. This creates the service using the `Provider` implementation and returns
-/// it wrapped in `Box`.
+/// ## Associate with module
+/// Associating providers with a module is just like associating a service:
 ///
 /// ```
 /// # use shaku::{
-/// #     Component, Container, ContainerBuilder, Dependency, Error, Interface, ProvidedInterface,
-/// #     Provider
+/// #     Component, Container, Error, HasComponent, Interface, Module, ProvidedInterface, Provider
 /// # };
 /// # use std::cell::RefCell;
 /// #
@@ -279,11 +218,10 @@ use crate::Result;
 /// # #[shaku(interface = Service)]
 /// # struct ServiceImpl { #[shaku(provide)] repo: Box<dyn Repository> }
 /// #
-/// # impl Provider for DBConnection {
+/// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 /// #     type Interface = DBConnection;
-/// #     fn dependencies() -> Vec<Dependency> { vec![Dependency::component::<dyn ConnectionPool>()] }
-/// #     fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
-/// #         let pool = container.resolve_ref::<dyn ConnectionPool>()?;
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
 /// #         Ok(Box::new(pool.get()))
 /// #     }
 /// # }
@@ -298,16 +236,70 @@ use crate::Result;
 /// #     fn get_double(&self) -> usize { self.repo.get() * 2 }
 /// # }
 /// #
-/// # let mut builder = ContainerBuilder::new();
-/// # builder
-/// #     .register_type::<DatabaseConnectionPool>()
-/// #     .with_typed_parameter::<usize>(42);
-/// # builder.register_provider::<DBConnection>();
-/// # builder.register_provider::<RepositoryImpl>();
-/// # builder.register_provider::<ServiceImpl>();
-/// # let container = builder.build().unwrap();
+/// use shaku::module;
+///
+/// module! {
+///     ExampleModule {
+///         components = [DatabaseConnectionPool],
+///         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+///     }
+/// }
+/// ```
+///
+/// ## Resolve provided services
+/// Providers are resolved through a single method: [`Container::provide`]. This creates the service
+/// using the `Provider` implementation and returns it wrapped in `Box`.
+///
+/// ```
+/// # use shaku::{
+/// #     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+/// #     ProvidedInterface, Provider
+/// # };
+/// # use std::cell::RefCell;
 /// #
+/// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
+/// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
+/// # trait Service: ProvidedInterface { fn get_double(&self) -> usize; }
+/// #
+/// # struct DBConnection(RefCell<usize>);
+/// # #[derive(Component)]
+/// # #[shaku(interface = ConnectionPool)]
+/// # struct DatabaseConnectionPool { #[shaku(default = 42)] value: usize }
+/// # #[derive(Provider)]
+/// # #[shaku(interface = Repository)]
+/// # struct RepositoryImpl { #[shaku(provide)] db: Box<DBConnection> }
+/// # #[derive(Provider)]
+/// # #[shaku(interface = Service)]
+/// # struct ServiceImpl { #[shaku(provide)] repo: Box<dyn Repository> }
+/// #
+/// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
+/// #     type Interface = DBConnection;
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
+/// #         Ok(Box::new(pool.get()))
+/// #     }
+/// # }
+/// #
+/// # impl ConnectionPool for DatabaseConnectionPool {
+/// #     fn get(&self) -> DBConnection { DBConnection(RefCell::new(self.value)) }
+/// # }
+/// # impl Repository for RepositoryImpl {
+/// #     fn get(&self) -> usize { *(*self.db).0.borrow() }
+/// # }
+/// # impl Service for ServiceImpl {
+/// #     fn get_double(&self) -> usize { self.repo.get() * 2 }
+/// # }
+/// #
+/// # module! {
+/// #     ExampleModule {
+/// #         components = [DatabaseConnectionPool],
+/// #         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+/// #     }
+/// # }
+/// #
+/// let container = Container::<ExampleModule>::default();
 /// let service: Box<dyn Service> = container.provide().unwrap();
+///
 /// assert_eq!(service.get_double(), 84)
 /// ```
 ///
@@ -317,8 +309,8 @@ use crate::Result;
 /// ## The full example
 /// ```
 /// use shaku::{
-///     Component, Container, ContainerBuilder, Dependency, Error, Interface, ProvidedInterface,
-///     Provider
+///     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+///     ProvidedInterface, Provider
 /// };
 /// use std::cell::RefCell;
 ///
@@ -343,6 +335,7 @@ use crate::Result;
 /// #[derive(Component)]
 /// #[shaku(interface = ConnectionPool)]
 /// struct DatabaseConnectionPool {
+///     #[shaku(default = 42)]
 ///     value: usize,
 /// }
 ///
@@ -362,15 +355,11 @@ use crate::Result;
 ///
 /// // Trait implementations
 ///
-/// impl Provider for DBConnection {
+/// impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 ///     type Interface = DBConnection;
 ///
-///     fn dependencies() -> Vec<Dependency> {
-///         vec![Dependency::component::<dyn ConnectionPool>()]
-///     }
-///
-///     fn provide(container: &Container) -> Result<Box<DBConnection>, Error> {
-///         let pool = container.resolve_ref::<dyn ConnectionPool>()?;
+///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+///         let pool = container.resolve_ref::<dyn ConnectionPool>();
 ///         Ok(Box::new(pool.get()))
 ///     }
 /// }
@@ -393,17 +382,18 @@ use crate::Result;
 ///     }
 /// }
 ///
-/// let mut builder = ContainerBuilder::new();
-/// builder
-///     .register_type::<DatabaseConnectionPool>()
-///     .with_typed_parameter::<usize>(42);
-/// builder.register_provider::<DBConnection>();
-/// builder.register_provider::<RepositoryImpl>();
-/// builder.register_provider::<ServiceImpl>();
+/// // Module
 ///
-/// let container = builder.build().unwrap();
+/// module! {
+///     ExampleModule {
+///         components = [DatabaseConnectionPool],
+///         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+///     }
+/// }
 ///
+/// let container = Container::<ExampleModule>::default();
 /// let service: Box<dyn Service> = container.provide().unwrap();
+///
 /// assert_eq!(service.get_double(), 84)
 /// ```
 ///
@@ -421,8 +411,18 @@ pub trait Provider<M: Module>: 'static {
     fn provide(container: &Container<M>) -> Result<Box<Self::Interface>>;
 }
 
+/// The type signature of [`Provider::provide`]. This is used when overriding a
+/// provider via [`ContainerBuilder::with_provider_override`]
+///
+/// [`Provider::provide`]: trait.Provider.html#tymethod.provide
+/// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
 #[cfg(not(feature = "thread_safe"))]
 pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>)>;
+/// The type signature of [`Provider::provide`]. This is used when overriding a
+/// provider via [`ContainerBuilder::with_provider_override`]
+///
+/// [`Provider::provide`]: trait.Provider.html#tymethod.provide
+/// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
 #[cfg(feature = "thread_safe")]
 pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>) + Send + Sync>;
 
