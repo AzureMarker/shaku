@@ -1,13 +1,12 @@
-use std::any::type_name;
 use std::sync::Arc;
 
 use crate::container::ComponentMap;
 use crate::module::{HasComponent, Module};
 use crate::provider::ProviderFn;
+use crate::ContainerBuilder;
 use crate::Interface;
 use crate::Provider;
 use crate::Result;
-use crate::{ContainerBuilder, Error};
 use crate::{HasProvider, ProvidedInterface};
 
 /// Resolves services associated with a [`Module`]. A `Container` is built by a
@@ -138,12 +137,9 @@ impl<M: Module> Container<M> {
 
     /// Get a mutable reference to the component registered with the interface `I`.
     ///
-    /// # Errors
     /// If the component is jointly owned (an `Arc<I>` reference to the component exists outside of
-    /// this container), then [Error::ResolveError] will be returned as it is unsafe to take a
+    /// this container), then `None` will be returned as it is unsafe to take a
     /// mutable reference without exclusive ownership of the component.
-    ///
-    /// [Error::ResolveError]: enum.Error.html
     ///
     /// # Example
     /// ```
@@ -168,17 +164,10 @@ impl<M: Module> Container<M> {
     /// #
     /// let foo: &mut dyn Foo = container.resolve_mut::<dyn Foo>().unwrap();
     /// ```
-    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> Result<&mut I>
+    pub fn resolve_mut<I: Interface + ?Sized>(&mut self) -> Option<&mut I>
     where
         M: HasComponent<I>,
     {
-        let component = self.module.get_mut();
-
-        Arc::get_mut(component).ok_or_else(|| {
-            Error::ResolveError(format!(
-                "Unable to get a mutable reference of component {}, there are existing Arc references",
-                type_name::<I>()
-            ))
-        })
+        Arc::get_mut(self.module.get_mut())
     }
 }
