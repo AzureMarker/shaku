@@ -303,8 +303,75 @@ use crate::Result;
 /// assert_eq!(service.get_double(), 84)
 /// ```
 ///
-/// That's pretty much it! Just remember that components cannot depend on providers, but providers
-/// can depend on both components and other providers.
+/// ## Overriding providers
+/// Like components, you can override the implementation of a provider during the container build.
+/// Overriding a provider is done by passing a [`Provider::provide`]-like function to
+/// [`with_provider_override`].
+///
+/// ```
+/// # use shaku::{
+/// #     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+/// #     ProvidedInterface, Provider
+/// # };
+/// # use std::cell::RefCell;
+/// #
+/// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
+/// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
+/// # trait Service: ProvidedInterface { fn get_double(&self) -> usize; }
+/// #
+/// # struct DBConnection(RefCell<usize>);
+/// # #[derive(Component)]
+/// # #[shaku(interface = ConnectionPool)]
+/// # struct DatabaseConnectionPool { #[shaku(default = 42)] value: usize }
+/// # #[derive(Provider)]
+/// # #[shaku(interface = Repository)]
+/// # struct RepositoryImpl { #[shaku(provide)] db: Box<DBConnection> }
+/// # #[derive(Provider)]
+/// # #[shaku(interface = Service)]
+/// # struct ServiceImpl { #[shaku(provide)] repo: Box<dyn Repository> }
+/// #
+/// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
+/// #     type Interface = DBConnection;
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
+/// #         Ok(Box::new(pool.get()))
+/// #     }
+/// # }
+/// #
+/// # impl ConnectionPool for DatabaseConnectionPool {
+/// #     fn get(&self) -> DBConnection { DBConnection(RefCell::new(self.value)) }
+/// # }
+/// # impl Repository for RepositoryImpl {
+/// #     fn get(&self) -> usize { *(*self.db).0.borrow() }
+/// # }
+/// # impl Service for ServiceImpl {
+/// #     fn get_double(&self) -> usize { self.repo.get() * 2 }
+/// # }
+/// #
+/// # module! {
+/// #     ExampleModule {
+/// #         components = [DatabaseConnectionPool],
+/// #         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+/// #     }
+/// # }
+/// #
+/// #[derive(Provider)]
+/// #[shaku(interface = Repository)]
+/// struct InMemoryRepository;
+///
+/// impl Repository for InMemoryRepository {
+///     fn get(&self) -> usize {
+///         7
+///     }
+/// }
+///
+/// let container: Container<ExampleModule> = ContainerBuilder::new()
+///     .with_provider_override::<dyn Repository>(Box::new(InMemoryRepository::provide))
+///     .build();
+/// let service: Box<dyn Service> = container.provide().unwrap();
+///
+/// assert_eq!(service.get_double(), 14)
+/// ```
 ///
 /// ## The full example
 /// ```
@@ -402,6 +469,8 @@ use crate::Result;
 /// [`Component`]: trait.Component.html
 /// [`Provider`]: trait.Provider.html
 /// [`Container::provide`]: struct.Container.html#method.provide
+/// [`Provider::provide`]: trait.Provider.html#tymethod.provide
+/// [`with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
 pub trait Provider<M: Module>: 'static {
     /// The trait/interface which this provider implements
     type Interface: ProvidedInterface + ?Sized;
