@@ -14,13 +14,15 @@ pub trait Component<M: Module>: 'static {
     /// The trait/interface which this component implements
     type Interface: Interface + ?Sized;
 
+    /// The parameters this component requires. If none are required, use `()`.
     type Parameters: Default + 'static;
 
-    /// Use the build context and parameters to create the component. The
-    /// created component must be inserted into the build context via
-    /// [`ContainerBuildContext::insert`].
+    /// Use the build context and parameters to create the component. Other
+    /// components can be resolved by adding a [`HasComponent`] bound to the
+    /// `M` generic, then calling [`ContainerBuildContext::resolve`].
     ///
-    /// [`ContainerBuildContext::insert`]: struct.ContainerBuildContext.html#method.insert
+    /// [`HasComponent`]: trait.HasComponent.html
+    /// [`ContainerBuildContext::resolve`]: struct.ContainerBuildContext.html#method.resolve
     fn build(
         context: &mut ContainerBuildContext<M>,
         params: Self::Parameters,
