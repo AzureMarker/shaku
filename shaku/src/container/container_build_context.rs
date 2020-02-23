@@ -1,3 +1,6 @@
+use std::any::{type_name, TypeId};
+use std::collections::VecDeque;
+use std::fmt::{self, Debug};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -17,7 +20,23 @@ pub struct ContainerBuildContext<M: Module> {
     component_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     parameters: ParameterMap,
+    resolve_chain: VecDeque<ResolveStep>,
     _module: PhantomData<M>,
+}
+
+/// Tracks the current resolution chain. Used to detect circular dependencies.
+#[derive(PartialEq)]
+struct ResolveStep {
+    component_type_name: &'static str,
+    component_type_id: TypeId,
+    interface_type_name: &'static str,
+    interface_type_id: TypeId,
+}
+
+impl Debug for ResolveStep {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.component_type_name)
+    }
 }
 
 impl<M: Module> ContainerBuildContext<M> {
@@ -31,6 +50,7 @@ impl<M: Module> ContainerBuildContext<M> {
             component_overrides,
             provider_overrides,
             parameters,
+            resolve_chain: VecDeque::new(),
             _module: PhantomData,
         }
     }
@@ -52,7 +72,25 @@ impl<M: Module> ContainerBuildContext<M> {
             .or_else(|| self.resolved_components.get::<Arc<I>>())
             .map(Arc::clone)
             .unwrap_or_else(|| {
-                // Build the component if not already resolved
+                let step = ResolveStep {
+                    component_type_name: type_name::<M::Impl>(),
+                    component_type_id: TypeId::of::<M::Impl>(),
+                    interface_type_name: type_name::<I>(),
+                    interface_type_id: TypeId::of::<I>(),
+                };
+
+                // Check for a circular dependency
+                if self.resolve_chain.contains(&step) {
+                    panic!(
+                        "Circular dependency detected while resolving {}. Resolution chain: {:?}",
+                        step.interface_type_name, self.resolve_chain
+                    );
+                }
+
+                // Add this component to the chain
+                self.resolve_chain.push_back(step);
+
+                // Build the component
                 let parameters = self
                     .parameters
                     .remove::<ComponentParameters<M, M::Impl>>()
@@ -61,6 +99,9 @@ impl<M: Module> ContainerBuildContext<M> {
                 let component = Arc::from(component);
                 self.resolved_components
                     .insert::<Arc<I>>(Arc::clone(&component));
+
+                // Resolution was successful, pop the component off the chain
+                self.resolve_chain.pop_back();
 
                 component
             })

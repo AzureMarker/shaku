@@ -58,6 +58,14 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 
 /// Create a [`Module`] which is associated with some components and providers.
 ///
+/// Note that this macro will detect circular dependencies at compile time. The
+/// error that is thrown will be something like
+/// "overflow evaluating the requirement `Component2: shaku::component::Component<TestModule>`".
+///
+/// It is still possible to compile with a circular dependency if the module is
+/// manually implemented in a certain way. In that case, there will be a panic
+/// during container creation with more details.
+///
 /// # Example
 /// ```
 /// use shaku::{module, Component, Interface};

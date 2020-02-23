@@ -1,0 +1,125 @@
+error[E0275]: overflow evaluating the requirement `Component2: shaku::component::Component<TestModule>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component1`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component2Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component1`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component1Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component2`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component2Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component1`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component2Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component1`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component2Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component1`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component1Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component2`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component1Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component2`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
+
+error[E0275]: overflow evaluating the requirement `TestModule: shaku::module::HasComponent<(dyn Component1Trait + 'static)>`
+  --> $DIR/circular_dependency_compile_time.rs:28:1
+   |
+28 | / module! {
+29 | |     TestModule {
+30 | |         components = [Component1, Component2],
+31 | |         providers = []
+32 | |     }
+33 | | }
+   | |_^
+   |
+   = note: required because of the requirements on the impl of `shaku::component::Component<TestModule>` for `Component2`
+   = note: this error originates in a macro outside of the current crate (in Nightly builds, run with -Z external-macro-backtrace for more info)
