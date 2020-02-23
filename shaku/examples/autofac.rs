@@ -1,9 +1,8 @@
 //! Example based on the AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
-use std::sync::Arc;
-
 use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use std::sync::Arc;
 
 trait IOutput: Interface {
     fn write(&self, content: String);

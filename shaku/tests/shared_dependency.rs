@@ -1,9 +1,8 @@
 //! Tests related to sharing dependencies between components
 
+use shaku::{module, Component, Container, Interface};
 use std::fmt::Debug;
 use std::sync::Arc;
-
-use shaku::{module, Component, Container, Interface};
 
 trait IDependency: Interface + Debug {}
 

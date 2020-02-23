@@ -3,10 +3,9 @@
 #[macro_use]
 extern crate rocket;
 
+use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
 use shaku::{Container, ContainerBuilder};
 use shaku_rocket::Inject;
-
-use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
 
 mod autofac;
 

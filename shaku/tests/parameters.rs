@@ -2,9 +2,8 @@
 
 #![allow(clippy::blacklisted_name)]
 
-use std::sync::Arc;
-
 use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use std::sync::Arc;
 
 trait Foo: Interface {
     fn foo(&self) -> String;

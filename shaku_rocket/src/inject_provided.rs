@@ -1,11 +1,10 @@
-use std::ops::Deref;
-
 use crate::get_container_from_state;
 use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
 use rocket::{http::Status, Request};
 use shaku::{HasProvider, Module, ProvidedInterface};
 use std::marker::PhantomData;
+use std::ops::Deref;
 
 /// Used to create a provided service using a provider from a shaku `Container`.
 /// The container should be stored in Rocket's state. Use this struct as a

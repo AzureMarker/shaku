@@ -1,12 +1,11 @@
 //! Implementation of the '#[derive(Provider)]' procedural macro
 
-use proc_macro2::TokenStream;
-use syn::DeriveInput;
-
 use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;
 use crate::error::Error;
 use crate::structures::{Property, PropertyType, ServiceContainer};
+use proc_macro2::TokenStream;
+use syn::DeriveInput;
 
 pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error> {
     let container = ServiceContainer::from_derive_input(input)?;

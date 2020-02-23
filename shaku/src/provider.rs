@@ -1,9 +1,8 @@
 //! This module contains trait definitions for provided services and interfaces
 
-use std::any::Any;
-
 use crate::Container;
 use crate::Module;
+use std::any::Any;
 use std::error::Error;
 
 /// Like [`Component`]s, providers provide a service by implementing an interface.

@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use std::sync::Arc;
-
 use shaku::{Component, Interface};
+use std::sync::Arc;
 
 #[derive(Component)]
 #[shaku(interface = Foo)]

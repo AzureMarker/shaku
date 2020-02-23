@@ -1,6 +1,5 @@
-use std::sync::Arc;
-
 use shaku::{module, Component, Container, Interface};
+use std::sync::Arc;
 
 trait ValueService: Interface {
     fn get_value(&self) -> usize;

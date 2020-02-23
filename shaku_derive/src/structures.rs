@@ -1,9 +1,8 @@
 //! Structures to hold useful data parsed from syn::DeriveInput
 
-use syn::{DeriveInput, Expr, Ident, Type, Visibility};
-
 use crate::error::Error;
 use crate::parser::Parser;
+use syn::{DeriveInput, Expr, Ident, Type, Visibility};
 
 /// The main data structure, representing the data required to implement
 /// Component or Provider.

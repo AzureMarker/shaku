@@ -1,12 +1,10 @@
 #![allow(clippy::blacklisted_name, clippy::mutex_atomic)]
 
+use rand::Rng;
+use shaku::{module, Component, Container, Interface};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-
-use rand::Rng;
-
-use shaku::{module, Component, Container, Interface};
 
 trait Foo: Interface {
     fn get_value(&self) -> usize;

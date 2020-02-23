@@ -1,6 +1,5 @@
-use std::sync::Arc;
-
 use crate::{Component, ContainerBuildContext, Interface, ProvidedInterface, Provider};
+use std::sync::Arc;
 
 /// A module represents a group of services. By implementing traits such as
 /// [`HasComponent`] on a module, service dependencies are checked at compile

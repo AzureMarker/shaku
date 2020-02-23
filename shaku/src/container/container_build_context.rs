@@ -1,15 +1,14 @@
-use std::any::{type_name, TypeId};
-use std::collections::VecDeque;
-use std::fmt::{self, Debug};
-use std::marker::PhantomData;
-use std::sync::Arc;
-
 use crate::container::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
 use crate::Component;
 use crate::Container;
 use crate::Module;
 use crate::{HasComponent, Interface};
+use std::any::{type_name, TypeId};
+use std::collections::VecDeque;
+use std::fmt::{self, Debug};
+use std::marker::PhantomData;
+use std::sync::Arc;
 
 /// Builds a [`Container`]. This struct is used during [`Component::build`].
 ///

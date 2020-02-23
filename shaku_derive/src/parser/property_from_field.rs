@@ -1,9 +1,8 @@
-use syn::{Attribute, Expr, Field, GenericArgument, Path, PathArguments, Type};
-
 use crate::consts;
 use crate::error::Error;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::{Property, PropertyType};
+use syn::{Attribute, Expr, Field, GenericArgument, Path, PathArguments, Type};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {

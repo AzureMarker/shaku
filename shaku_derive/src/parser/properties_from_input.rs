@@ -1,8 +1,7 @@
-use syn::{Data, DeriveInput, Field};
-
 use crate::error::Error;
 use crate::parser::Parser;
 use crate::structures::Property;
+use syn::{Data, DeriveInput, Field};
 
 impl Parser<Vec<Property>> for DeriveInput {
     fn parse_as(&self) -> Result<Vec<Property>, Error> {

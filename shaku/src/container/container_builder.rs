@@ -1,11 +1,10 @@
-use std::marker::PhantomData;
-use std::mem::replace;
-
 use crate::component::Interface;
 use crate::container::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
 use crate::provider::{ProvidedInterface, ProviderFn};
 use crate::{Component, Container, ContainerBuildContext, HasComponent, HasProvider, Module};
+use std::marker::PhantomData;
+use std::mem::replace;
 use std::sync::Arc;
 
 /// Builds a [`Container`]. Component parameters can be set, and both components and providers

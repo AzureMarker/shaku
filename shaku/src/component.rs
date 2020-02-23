@@ -1,9 +1,8 @@
 //! This module contains trait definitions for components and interfaces
 
-use std::any::Any;
-
 use crate::ContainerBuildContext;
 use crate::Module;
+use std::any::Any;
 
 /// Components provide a service by implementing an interface. They may use
 /// other components as dependencies.

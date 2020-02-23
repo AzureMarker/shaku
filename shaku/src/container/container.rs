@@ -1,6 +1,3 @@
-use std::error::Error;
-use std::sync::Arc;
-
 use crate::container::ComponentMap;
 use crate::module::{HasComponent, Module};
 use crate::provider::ProviderFn;
@@ -8,6 +5,8 @@ use crate::ContainerBuilder;
 use crate::Interface;
 use crate::Provider;
 use crate::{HasProvider, ProvidedInterface};
+use std::error::Error;
+use std::sync::Arc;
 
 /// Resolves services associated with a [`Module`]. A `Container` is built by a
 /// [`ContainerBuilder`], or through the shortcut [`Container::default`]

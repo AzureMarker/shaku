@@ -1,10 +1,9 @@
-use std::ops::Deref;
-
 use crate::get_container_from_state;
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
 use shaku::{HasComponent, Interface, Module};
 use std::marker::PhantomData;
+use std::ops::Deref;
 
 /// Used to retrieve a reference to a component from a shaku `Container`.
 /// The container should be stored in Rocket's state. Use this struct as a

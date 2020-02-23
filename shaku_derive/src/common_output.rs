@@ -1,8 +1,7 @@
 //! Functions which create common tokenstream outputs
 
-use proc_macro2::TokenStream;
-
 use crate::structures::{Property, PropertyType};
+use proc_macro2::TokenStream;
 
 pub fn create_dependency(property: &Property) -> Option<TokenStream> {
     let property_ty = &property.ty;
