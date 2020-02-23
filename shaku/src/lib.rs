@@ -216,6 +216,7 @@
 //! use shaku::{Container, ContainerBuilder};
 //!
 //! let container: Container<MyModule> = ContainerBuilder::new().build();
+//! // Alternatively, let container = Container::<MyModule>::default();
 //! ```
 //!
 //! ### Passing parameters
