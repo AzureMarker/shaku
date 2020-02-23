@@ -8,6 +8,10 @@ use crate::provider::{ProvidedInterface, ProviderFn};
 use crate::{Component, Container, ContainerBuildContext, HasComponent, HasProvider, Module};
 use std::sync::Arc;
 
+/// Builds a [`Container`]. Component parameters can be set, and both components and providers
+/// implementations can be overridden.
+///
+/// [`Container`]: struct.Container.html
 pub struct ContainerBuilder<M: Module> {
     parameters: ParameterMap,
     component_overrides: ComponentMap,
@@ -31,6 +35,8 @@ impl<M: Module> ContainerBuilder<M> {
         Self::default()
     }
 
+    /// Set the parameters of the specified component. If the parameters are not
+    /// manually set, the defaults will be used.
     pub fn with_component_parameters<C: Component<M>>(&mut self, params: C::Parameters) -> &mut Self
     where
         M: HasComponent<C::Interface, Impl = C>,
@@ -40,6 +46,7 @@ impl<M: Module> ContainerBuilder<M> {
         self
     }
 
+    /// Override a component implementation.
     pub fn with_component_override<I: Interface + ?Sized>(&mut self, component: Box<I>) -> &mut Self
     where
         M: HasComponent<I>,
@@ -49,6 +56,7 @@ impl<M: Module> ContainerBuilder<M> {
         self
     }
 
+    /// Override a provider implementation.
     pub fn with_provider_override<I: ProvidedInterface + ?Sized>(
         &mut self,
         provider_fn: ProviderFn<M, I>,
@@ -60,6 +68,7 @@ impl<M: Module> ContainerBuilder<M> {
         self
     }
 
+    /// Build the container.
     pub fn build(&mut self) -> Container<M> {
         let parameters = replace(&mut self.parameters, ParameterMap::new());
         let component_overrides = replace(&mut self.component_overrides, ComponentMap::new());
