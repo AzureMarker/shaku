@@ -13,9 +13,9 @@ use crate::{HasProvider, ProvidedInterface};
 /// Resolves services associated with a [`Module`]. A `Container` is built by a
 /// [`ContainerBuilder`], or through the shortcut [`Container::default`]
 ///
-/// [`Module`]: module/trait.Module.html
+/// [`Module`]: trait.Module.html
 /// [`ContainerBuilder`]: struct.ContainerBuilder.html
-/// [`Container::default`]: #method.default
+/// [`Container::default`]: struct.Container.html#method.default
 pub struct Container<M: Module> {
     pub(crate) module: M,
     pub(crate) provider_overrides: ComponentMap,
@@ -66,8 +66,10 @@ impl<M: Module> Container<M> {
     /// Each call will create a new instance of the service.
     ///
     /// # Errors
-    /// Returns a [Error::ResolveError](enum.Error.html) if the provider failed
-    /// while creating the service.
+    /// Returns a [Error::ResolveError] if the provider failed while creating
+    /// the service.
+    ///
+    /// [Error::ResolveError]: enum.Error.html
     ///
     /// # Examples
     /// ```

@@ -8,10 +8,10 @@ use crate::Container;
 use crate::Module;
 use crate::{HasComponent, Interface};
 
-/// Builds a [Container]. This struct is used during [Component::build].
+/// Builds a [`Container`]. This struct is used during [`Component::build`].
 ///
-/// [Container]: struct.Container.html
-/// [Component::build]: component/trait.Component.html#tymethod.build
+/// [`Container`]: struct.Container.html
+/// [`Component::build`]: trait.Component.html#tymethod.build
 pub struct ContainerBuildContext<M: Module> {
     resolved_components: ComponentMap,
     component_overrides: ComponentMap,

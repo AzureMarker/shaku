@@ -5,7 +5,7 @@
 //! # Getting started
 //! Note: This getting started guide focuses on components, which live for the lifetime of the
 //! application (or, technically, the container). After reading this getting started guide, check
-//! out the [`provider`] module to learn how to create services with shorter lifetimes.
+//! out [`Provider`] to learn how to create services with shorter lifetimes.
 //!
 //! ## Structure your application
 //! Start with your application's structs and traits. Use `Arc<dyn T>` for
@@ -447,13 +447,13 @@
 //! - `derive`: Uses the `shaku_derive` crate to provide proc-macro derives of `Component` and
 //!   `Provider`.
 //!
-//! [`provider`]: provider/index.html
-//! [`Interface`]: component/trait.Interface.html
-//! [`Component`]: component/trait.Component.html
+//! [`Provider`]: trait.Provider.html
+//! [`Interface`]: trait.Interface.html
+//! [`Component`]: trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
-//! [`HasComponent`]: module/trait.HasComponent.html
+//! [`HasComponent`]: trait.HasComponent.html
 //! [`ContainerBuildContext::resolve`]: struct.ContainerBuildContext.html#method.resolve
-//! [`Module`]: module/trait.Module.html
+//! [`Module`]: trait.Module.html
 //! [module macro]: macro.module.html
 //! [`ContainerBuilder`]: struct.ContainerBuilder.html
 //! [`Container`]: struct.Container.html
@@ -465,30 +465,15 @@
 // Modules
 #[macro_use]
 mod trait_alias;
+mod component;
 mod container;
 mod error;
+mod module;
 mod parameters;
-
-pub mod component;
-pub mod module;
-pub mod provider;
+mod provider;
 
 // Reexport derives
 #[cfg(feature = "derive")]
 pub use {shaku_derive::Component, shaku_derive::Provider};
 
-/// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
-pub type Result<T> = std::result::Result<T, Error>;
-
-// Shortcut to main types / traits
-pub use crate::component::Component;
-pub use crate::component::Interface;
-pub use crate::container::Container;
-pub use crate::container::ContainerBuildContext;
-pub use crate::container::ContainerBuilder;
-pub use crate::error::Error;
-pub use crate::module::HasComponent;
-pub use crate::module::HasProvider;
-pub use crate::module::Module;
-pub use crate::provider::ProvidedInterface;
-pub use crate::provider::Provider;
+pub use crate::{component::*, container::*, error::*, module::*, provider::*};

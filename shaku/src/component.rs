@@ -20,7 +20,7 @@ pub trait Component<M: Module>: 'static {
     /// created component must be inserted into the build context via
     /// [`ContainerBuildContext::insert`].
     ///
-    /// [`ContainerBuildContext::insert`]: ../struct.ContainerBuildContext.html#method.insert
+    /// [`ContainerBuildContext::insert`]: struct.ContainerBuildContext.html#method.insert
     fn build(
         context: &mut ContainerBuildContext<M>,
         params: Self::Parameters,
