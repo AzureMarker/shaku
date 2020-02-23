@@ -11,17 +11,7 @@ pub enum Error {
     ResolveError(String),
 }
 
-impl StdError for Error {
-    fn description(&self) -> &str {
-        match self {
-            Error::ResolveError(msg) => msg,
-        }
-    }
-
-    fn cause(&self) -> Option<&dyn StdError> {
-        None
-    }
-}
+impl StdError for Error {}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
