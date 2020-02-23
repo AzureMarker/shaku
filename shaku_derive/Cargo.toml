@@ -18,3 +18,4 @@ proc-macro2 = "1.0"
 
 [dev-dependencies]
 shaku = "~0.2.0"
+trybuild = "1.0"
