@@ -1,5 +1,5 @@
-//! Shaku is a dependency injection library. It can be used directly or through integration with
-//! application frameworks such as [Rocket](https://rocket.rs) (see
+//! Shaku is a compile time dependency injection library. It can be used directly or through
+//! integration with application frameworks such as [Rocket](https://rocket.rs) (see
 //! [`shaku_rocket`](https://crates.io/crates/shaku_rocket)).
 //!
 //! # Getting started
@@ -63,8 +63,8 @@
 //! }
 //! ```
 //!
-//! ## Mark structs as Component
-//! A component is a struct that implements an interface trait. In our example, we have 2
+//! ## Implement Component
+//! A component is a struct that implements an [`Interface`] trait. In our example, we have 2
 //! components:
 //!
 //! - `TodayWriter` of type `IDateWriter`
@@ -76,14 +76,10 @@
 //! ```
 //! # use shaku::Interface;
 //! #
-//! # trait IOutput: Interface {
-//! #     fn write(&self, content: String);
-//! # }
+//! # trait IOutput: Interface { fn write(&self, content: String); }
 //! #
 //! # impl IOutput for ConsoleOutput {
-//! #     fn write(&self, content: String) {
-//! #         println!("{}", content);
-//! #     }
+//! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! use shaku::Component;
@@ -108,13 +104,8 @@
 //! # use shaku::Interface;
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface {
-//! #     fn write(&self, content: String);
-//! # }
-//! #
-//! # trait IDateWriter: Interface {
-//! #     fn write_date(&self);
-//! # }
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
 //! #
 //! # impl IDateWriter for TodayWriter {
 //! #     fn write_date(&self) {
@@ -134,108 +125,120 @@
 //! }
 //! ```
 //!
-//! If you don't use the derive macro, return [`Dependency`] objects in [`Component::dependencies`]
-//! and inject them manually in [`Component::build`].
+//! If you don't use the derive macro, add [`HasComponent`] bounds to your module generic and inject
+//! the dependencies manually with [`ContainerBuildContext::resolve`].
 //!
-//! ## Register components
-//! At application startup, create a [`ContainerBuilder`] and register your components with it. It
-//! will create a [`Container`] which you can use to resolve components.
+//! ## Create a Module
+//! Modules link together components and providers, and is core to providing shaku's compile time
+//! guarentees. A [`Module`] can be created manually or via the [`module`][module macro] macro (the `derive`
+//! feature is not necessary):
 //!
 //! ```
 //! # use shaku::{Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface {
-//! #     fn write(&self, content: String);
-//! # }
-//! #
-//! # impl IOutput for ConsoleOutput {
-//! #     fn write(&self, content: String) {
-//! #         println!("{}", content);
-//! #     }
-//! # }
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
 //! # #[shaku(interface = IOutput)]
 //! # struct ConsoleOutput;
+//! # impl IOutput for ConsoleOutput {
+//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # }
 //! #
-//! use shaku::ContainerBuilder;
+//! # #[derive(Component)]
+//! # #[shaku(interface = IDateWriter)]
+//! # struct TodayWriter {
+//! #     #[shaku(inject)]
+//! #     output: Arc<dyn IOutput>,
+//! #     today: String,
+//! #     year: usize,
+//! # }
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
+//! # }
+//! #
+//! use shaku::module;
 //!
-//! let mut builder = ContainerBuilder::new();
-//! builder.register_type::<ConsoleOutput>();
+//! module! {
+//!     MyModule {
+//!         components = [ConsoleOutput, TodayWriter],
+//!         providers = []
+//!     }
+//! }
+//! ```
 //!
-//! let container = builder.build().unwrap();
+//! This module implements `HasComponent<dyn IOutput>` and `HasComponent<dyn IDateWriter>` using the
+//! provided component implementations.
+//!
+//! ## Build a Container
+//! At application startup, create a [`Container`] using a [`ContainerBuilder`]. You can use this
+//! container to resolve the module's services.
+//!
+//! ```
+//! # use shaku::{module, Component, Interface};
+//! # use std::sync::Arc;
+//! #
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IOutput)]
+//! # struct ConsoleOutput;
+//! # impl IOutput for ConsoleOutput {
+//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IDateWriter)]
+//! # struct TodayWriter {
+//! #     #[shaku(inject)]
+//! #     output: Arc<dyn IOutput>,
+//! #     today: String,
+//! #     year: usize,
+//! # }
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
+//! # }
+//! #
+//! # module! {
+//! #     MyModule {
+//! #         components = [ConsoleOutput, TodayWriter],
+//! #         providers = []
+//! #     }
+//! # }
+//! #
+//! use shaku::{Container, ContainerBuilder};
+//!
+//! let container: Container<MyModule> = ContainerBuilder::new().build();
 //! ```
 //!
 //! ### Passing parameters
-//! In many cases you need to pass parameters to a component. This can be done when
-//! registering a component into a [`ContainerBuilder`].
+//! In many cases you need to pass parameters to a component. This can be done during container
+//! creation. Each component has an associated parameters type, and the derive generates a
+//! `*Parameters` struct for you (named after the component struct). Use this struct to pass in the
+//! parameters.
 //!
-//! You can register parameters either using their property name or their property type. In the
-//! latter case, you need to ensure that the type is unique.
-//!
-//! Passing parameters is done using [`with_named_parameter`] and [`with_typed_parameter`]\:
+//! Note that if you don't pass in parameters, the parameters' default values will be used. You can
+//! override the default value by annotating the property with `#[shaku(default = ...)]`.
 //!
 //! ```
-//! # use shaku::{Component, ContainerBuilder, Interface};
+//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface {
-//! #     fn write(&self, content: String);
-//! # }
-//! #
-//! # trait IDateWriter: Interface {
-//! #     fn write_date(&self);
-//! # }
-//! #
-//! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
-//! # struct TodayWriter {
-//! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
-//! #     today: String,
-//! #     year: usize,
-//! # }
-//! #
-//! # impl IDateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
-//! #     }
-//! # }
-//! #
-//! # let mut builder = ContainerBuilder::new();
-//! builder
-//!     .register_type::<TodayWriter>()
-//!     .with_named_parameter("today", "Jan 26".to_string())
-//!     .with_typed_parameter::<usize>(2020);
-//! ```
-//!
-//! ## Resolve components
-//! During application execution, you’ll need to make use of the components you registered. You do
-//! this by resolving them from a [`Container`] with one of `resolve` methods.
-//!
-//! Here's how we can print the date in our exmaple:
-//!
-//! ```
-//! # use shaku::{Component, ContainerBuilder, Interface};
-//! # use std::sync::Arc;
-//! #
-//! # trait IOutput: Interface {
-//! #     fn write(&self, content: String);
-//! # }
-//! #
-//! # trait IDateWriter: Interface {
-//! #     fn write_date(&self);
-//! # }
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
 //! # #[shaku(interface = IOutput)]
 //! # struct ConsoleOutput;
-//! #
 //! # impl IOutput for ConsoleOutput {
-//! #     fn write(&self, content: String) {
-//! #         println!("{}", content);
-//! #     }
+//! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
@@ -246,41 +249,142 @@
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! #
 //! # impl IDateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
-//! # let mut builder = ContainerBuilder::new();
-//! # builder.register_type::<ConsoleOutput>();
-//! # builder
-//! #     .register_type::<TodayWriter>()
-//! #     .with_named_parameter("today", "Jan 26".to_string())
-//! #     .with_typed_parameter::<usize>(2020);
-//! # let container = builder.build().unwrap();
+//! # module! {
+//! #     MyModule {
+//! #         components = [ConsoleOutput, TodayWriter],
+//! #         providers = []
+//! #     }
+//! # }
 //! #
-//! let writer: &dyn IDateWriter = container.resolve_ref().unwrap();
-//! writer.write_date();
+//! let container: Container<MyModule> = ContainerBuilder::new()
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!         today: "Jan 26".to_string(),
+//!         year: 2020
+//!     })
+//!     .build();
 //! ```
 //!
-//! Now when you run your program...
+//! ## Resolve components
+//! Once you created the [`Container`], you can resolve the components.
 //!
-//! - The components and their parameters will be registered in the [`ContainerBuilder`].
-//! - `builder.build()` will create the registered components in order of dependency
-//!   (first `ConsoleOutput`, then `TodayWriter`). These components will be stored in the
-//!   [`Container`].
-//! - The `resolve_ref()` method asks the [`Container`] for an `IDateWriter`.
-//! - The [`Container`] sees that `IDateWriter` maps to `TodayWriter`, and it returns the component.
+//! ```
+//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! # use std::sync::Arc;
+//! #
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IOutput)]
+//! # struct ConsoleOutput;
+//! # impl IOutput for ConsoleOutput {
+//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IDateWriter)]
+//! # struct TodayWriter {
+//! #     #[shaku(inject)]
+//! #     output: Arc<dyn IOutput>,
+//! #     today: String,
+//! #     year: usize,
+//! # }
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
+//! # }
+//! #
+//! # module! {
+//! #     MyModule {
+//! #         components = [ConsoleOutput, TodayWriter],
+//! #         providers = []
+//! #     }
+//! # }
+//! #
+//! # let container: Container<MyModule> = ContainerBuilder::new()
+//! #     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//! #         today: "Jan 26".to_string(),
+//! #         year: 2020
+//! #     })
+//! #     .build();
+//! #
+//! let writer: &dyn IDateWriter = container.resolve_ref();
+//! writer.write_date(); // Prints "Today is Jan 26, 2020"
+//! ```
 //!
-//! Later, if we wanted our application to write output in a different way, we would just have to
-//! implement a different `IOutput` and then change the registration at app startup. We won’t have
-//! to change any other code. Yay, inversion of control!
+//! ## Overriding components
+//! Although shaku is a compile time DI library, you can override the implementation of a service
+//! during the container build. This can be useful during testing, for example using an in-memory
+//! database while doing integration tests. For components, simply pass in a struct instance which
+//! implements the interface you want to override to [`with_component_override`]\:
+//!
+//! ```
+//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! # use std::sync::Arc;
+//! #
+//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IOutput)]
+//! # struct ConsoleOutput;
+//! # impl IOutput for ConsoleOutput {
+//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # }
+//! #
+//! # #[derive(Component)]
+//! # #[shaku(interface = IDateWriter)]
+//! # struct TodayWriter {
+//! #     #[shaku(inject)]
+//! #     output: Arc<dyn IOutput>,
+//! #     today: String,
+//! #     year: usize,
+//! # }
+//! # impl IDateWriter for TodayWriter {
+//! #     fn write_date(&self) {
+//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! #     }
+//! # }
+//! #
+//! # module! {
+//! #     MyModule {
+//! #         components = [ConsoleOutput, TodayWriter],
+//! #         providers = []
+//! #     }
+//! # }
+//! #
+//! #[derive(Component)]
+//! #[shaku(interface = IOutput)]
+//! struct FakeOutput;
+//!
+//! impl IOutput for FakeOutput {
+//!     fn write(&self, _content: String) {
+//!         // We don't want to actually log stuff during tests
+//!     }
+//! }
+//!
+//! let container: Container<MyModule> = ContainerBuilder::new()
+//!     .with_component_override::<dyn IOutput>(Box::new(FakeOutput))
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!         today: "Jan 26".to_string(),
+//!         year: 2020
+//!     })
+//!     .build();
+//!
+//! let writer: &dyn IDateWriter = container.resolve_ref();
+//! writer.write_date(); // Nothing will be printed
+//! ```
 //!
 //! ## The full example
 //! ```
-//! use shaku::{Component, ContainerBuilder, Interface};
+//! use shaku::{module, Component, Container, ContainerBuilder, Interface};
 //! use std::sync::Arc;
 //!
 //! trait IOutput: Interface {
@@ -316,15 +420,21 @@
 //!     }
 //! }
 //!
-//! let mut builder = ContainerBuilder::new();
-//! builder.register_type::<ConsoleOutput>();
-//! builder
-//!     .register_type::<TodayWriter>()
-//!     .with_named_parameter("today", "Jan 26".to_string())
-//!     .with_typed_parameter::<usize>(2020);
-//! let container = builder.build().unwrap();
+//! module! {
+//!     MyModule {
+//!         components = [ConsoleOutput, TodayWriter],
+//!         providers = []
+//!     }
+//! }
 //!
-//! let writer: &dyn IDateWriter = container.resolve_ref().unwrap();
+//! let container: Container<MyModule> = ContainerBuilder::new()
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!         today: "Jan 26".to_string(),
+//!         year: 2020
+//!     })
+//!     .build();
+//!
+//! let writer: &dyn IDateWriter = container.resolve_ref();
 //! writer.write_date();
 //! ```
 //!
@@ -340,13 +450,13 @@
 //! [`Interface`]: component/trait.Interface.html
 //! [`Component`]: component/trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
-//! [`Dependency`]: container/struct.Dependency.html
-//! [`Component::dependencies`]: component/trait.Component.html#tymethod.dependencies
-//! [`Component::build`]: component/trait.Component.html#tymethod.build
+//! [`HasComponent`]: module/trait.HasComponent.html
+//! [`ContainerBuildContext::resolve`]: container/struct.ContainerBuildContext.html#method.resolve
+//! [`Module`]: module/trait.Module.html
+//! [module macro]: macro.module.html
 //! [`ContainerBuilder`]: container/struct.ContainerBuilder.html
 //! [`Container`]: container/struct.Container.html
-//! [`with_named_parameter`]: container/struct.ComponentRegistration.html#method.with_named_parameter
-//! [`with_typed_parameter`]: container/struct.ComponentRegistration.html#method.with_typed_parameter
+//! [`with_component_override`]: container/struct.ContainerBuilder.html#method.with_component_override
 
 // Linting
 #![deny(unused_must_use)]
