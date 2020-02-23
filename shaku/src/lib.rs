@@ -459,9 +459,6 @@
 //! [`Container`]: struct.Container.html
 //! [`with_component_override`]: struct.ContainerBuilder.html#method.with_component_override
 
-// Linting
-#![deny(unused_must_use)]
-
 // Modules
 #[macro_use]
 mod trait_alias;
@@ -476,4 +473,5 @@ mod provider;
 #[cfg(feature = "derive")]
 pub use {shaku_derive::Component, shaku_derive::Provider};
 
+// Expose a flat module structure
 pub use crate::{component::*, container::*, error::*, module::*, provider::*};
