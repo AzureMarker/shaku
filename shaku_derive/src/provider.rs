@@ -35,7 +35,9 @@ pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error>
         impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Provider<M> for #provider_name {
             type Interface = dyn #interface;
 
-            fn provide(container: &::shaku::Container<M>) -> ::shaku::Result<Box<Self::Interface>> {
+            fn provide(
+                container: &::shaku::Container<M>
+            ) -> ::std::result::Result<Box<Self::Interface>, Box<dyn ::std::error::Error + 'static>> {
                 Ok(Box::new(Self {
                     #(#resolve_properties),*
                 }))

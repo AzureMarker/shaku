@@ -1,8 +1,9 @@
 use shaku::{
-    module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+    module, Component, Container, ContainerBuilder, HasComponent, Interface, Module,
     ProvidedInterface, Provider,
 };
 use std::cell::RefCell;
+use std::error::Error;
 
 trait ConnectionPool: Interface {
     fn get(&self) -> DBConnection;
@@ -40,7 +41,7 @@ impl ConnectionPool for DatabaseConnectionPool {
 impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
     type Interface = DBConnection;
 
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Error> {
+    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>> {
         let pool = container.resolve_ref::<dyn ConnectionPool>();
 
         Ok(Box::new(pool.get()))

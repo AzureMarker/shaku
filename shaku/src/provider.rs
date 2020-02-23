@@ -4,7 +4,7 @@ use std::any::Any;
 
 use crate::Container;
 use crate::Module;
-use crate::Result;
+use std::error::Error;
 
 /// Like [`Component`]s, providers provide a service by implementing an interface.
 ///
@@ -177,12 +177,13 @@ use crate::Result;
 /// #
 /// # struct DBConnection(RefCell<usize>);
 /// #
-/// use shaku::{Container, HasComponent, Module, Provider, Error};
+/// use shaku::{Container, HasComponent, Module, Provider};
+/// use std::error::Error;
 ///
 /// impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 ///     type Interface = DBConnection;
 ///
-///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Box<dyn Error + 'static>> {
 ///         let pool = container.resolve_ref::<dyn ConnectionPool>();
 ///         Ok(Box::new(pool.get()))
 ///     }
@@ -199,9 +200,10 @@ use crate::Result;
 ///
 /// ```
 /// # use shaku::{
-/// #     Component, Container, Error, HasComponent, Interface, Module, ProvidedInterface, Provider
+/// #     Component, Container, HasComponent, Interface, Module, ProvidedInterface, Provider
 /// # };
 /// # use std::cell::RefCell;
+/// # use std::error::Error;
 /// #
 /// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
 /// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
@@ -220,7 +222,7 @@ use crate::Result;
 /// #
 /// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 /// #     type Interface = DBConnection;
-/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Box<dyn Error + 'static>> {
 /// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
 /// #         Ok(Box::new(pool.get()))
 /// #     }
@@ -252,10 +254,11 @@ use crate::Result;
 ///
 /// ```
 /// # use shaku::{
-/// #     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+/// #     module, Component, Container, ContainerBuilder, HasComponent, Interface, Module,
 /// #     ProvidedInterface, Provider
 /// # };
 /// # use std::cell::RefCell;
+/// # use std::error::Error;
 /// #
 /// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
 /// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
@@ -274,7 +277,7 @@ use crate::Result;
 /// #
 /// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 /// #     type Interface = DBConnection;
-/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Box<dyn Error + 'static>> {
 /// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
 /// #         Ok(Box::new(pool.get()))
 /// #     }
@@ -310,10 +313,11 @@ use crate::Result;
 ///
 /// ```
 /// # use shaku::{
-/// #     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+/// #     module, Component, Container, ContainerBuilder, HasComponent, Interface, Module,
 /// #     ProvidedInterface, Provider
 /// # };
 /// # use std::cell::RefCell;
+/// # use std::error::Error;
 /// #
 /// # trait ConnectionPool: Interface { fn get(&self) -> DBConnection; }
 /// # trait Repository: ProvidedInterface { fn get(&self) -> usize; }
@@ -332,7 +336,7 @@ use crate::Result;
 /// #
 /// # impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 /// #     type Interface = DBConnection;
-/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+/// #     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Box<dyn Error + 'static>> {
 /// #         let pool = container.resolve_ref::<dyn ConnectionPool>();
 /// #         Ok(Box::new(pool.get()))
 /// #     }
@@ -376,10 +380,11 @@ use crate::Result;
 /// ## The full example
 /// ```
 /// use shaku::{
-///     module, Component, Container, ContainerBuilder, Error, HasComponent, Interface, Module,
+///     module, Component, Container, ContainerBuilder, HasComponent, Interface, Module,
 ///     ProvidedInterface, Provider
 /// };
 /// use std::cell::RefCell;
+/// use std::error::Error;
 ///
 /// // Traits
 ///
@@ -425,7 +430,7 @@ use crate::Result;
 /// impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
 ///     type Interface = DBConnection;
 ///
-///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Error> {
+///     fn provide(container: &Container<M>) -> Result<Box<DBConnection>, Box<dyn Error + 'static>> {
 ///         let pool = container.resolve_ref::<dyn ConnectionPool>();
 ///         Ok(Box::new(pool.get()))
 ///     }
@@ -477,7 +482,7 @@ pub trait Provider<M: Module>: 'static {
 
     /// Provides the service, possibly resolving other components/providers
     /// to do so.
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>>;
+    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>>;
 }
 
 /// The type signature of [`Provider::provide`]. This is used when overriding a
@@ -486,14 +491,16 @@ pub trait Provider<M: Module>: 'static {
 /// [`Provider::provide`]: trait.Provider.html#tymethod.provide
 /// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
 #[cfg(not(feature = "thread_safe"))]
-pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>)>;
+pub type ProviderFn<M, I> =
+    Box<dyn (Fn(&Container<M>) -> Result<Box<I>, Box<dyn Error + 'static>>)>;
 /// The type signature of [`Provider::provide`]. This is used when overriding a
 /// provider via [`ContainerBuilder::with_provider_override`]
 ///
 /// [`Provider::provide`]: trait.Provider.html#tymethod.provide
 /// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
 #[cfg(feature = "thread_safe")]
-pub type ProviderFn<M, I> = Box<dyn (Fn(&Container<M>) -> super::Result<Box<I>>) + Send + Sync>;
+pub type ProviderFn<M, I> =
+    Box<dyn (Fn(&Container<M>) -> Result<Box<I>, Box<dyn Error + 'static>>) + Send + Sync>;
 
 #[cfg(not(feature = "thread_safe"))]
 trait_alias!(

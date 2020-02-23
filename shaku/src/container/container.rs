@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::sync::Arc;
 
 use crate::container::ComponentMap;
@@ -6,7 +7,6 @@ use crate::provider::ProviderFn;
 use crate::ContainerBuilder;
 use crate::Interface;
 use crate::Provider;
-use crate::Result;
 use crate::{HasProvider, ProvidedInterface};
 
 /// Resolves services associated with a [`Module`]. A `Container` is built by a
@@ -93,7 +93,7 @@ impl<M: Module> Container<M> {
     /// #
     /// let foo: Box<dyn Foo> = container.provide::<dyn Foo>().unwrap();
     /// ```
-    pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> Result<Box<I>>
+    pub fn provide<I: ProvidedInterface + ?Sized>(&self) -> Result<Box<I>, Box<dyn Error + 'static>>
     where
         M: HasProvider<I>,
     {

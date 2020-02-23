@@ -2,9 +2,10 @@
 //! This is similar to what the derives and macros expand to.
 
 use shaku::{
-    Component, Container, ContainerBuildContext, ContainerBuilder, Error, HasComponent,
-    HasProvider, Interface, Module, ProvidedInterface, Provider,
+    Component, Container, ContainerBuildContext, ContainerBuilder, HasComponent, HasProvider,
+    Interface, Module, ProvidedInterface, Provider,
 };
+use std::error::Error;
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -43,7 +44,7 @@ impl SampleService for SampleServiceImpl {}
 impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServiceImpl {
     type Interface = dyn SampleService;
 
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Error> {
+    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>> {
         Ok(Box::new(Self {
             dependency: container.resolve(),
         }))

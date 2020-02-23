@@ -464,7 +464,6 @@
 mod trait_alias;
 mod component;
 mod container;
-mod error;
 mod module;
 mod parameters;
 mod provider;
@@ -474,4 +473,4 @@ mod provider;
 pub use {shaku_derive::Component, shaku_derive::Provider};
 
 // Expose a flat module structure
-pub use crate::{component::*, container::*, error::*, module::*, provider::*};
+pub use crate::{component::*, container::*, module::*, provider::*};
