@@ -36,6 +36,17 @@ fn annotated_uses_given_default() {
     assert_eq!(parameters.value_two, 10);
 }
 
+/// A parameter with `#[shaku(default = ...)]` can still be overridden
+#[test]
+fn override_annotated_default() {
+    let parameters = MyComponentParameters {
+        value_two: 3,
+        ..Default::default()
+    };
+
+    assert_eq!(parameters.value_two, 3);
+}
+
 /// A parameter which does not implement `Default` will still work if a default value is given via
 /// attribute. This also indirectly tests expression support.
 #[test]
