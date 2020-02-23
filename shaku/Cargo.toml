@@ -2,7 +2,7 @@
 name = "shaku"
 version = "0.2.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
-description = "Dependency Injection for Rust"
+description = "Compile Time Dependency Injection for Rust"
 repository = "https://github.com/Mcat12/shaku"
 readme = "../README.md"
 keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
