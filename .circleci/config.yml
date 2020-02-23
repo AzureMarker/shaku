@@ -65,7 +65,6 @@ jobs:
     steps:
       - checkout:
           path: ~/project
-      - remove-rust-toolchain
       - style-check
       - lint-check
       - code-check
