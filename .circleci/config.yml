@@ -26,10 +26,14 @@ commands:
           name: "Cargo Check"
           command: cargo check
   test:
+    parameters:
+      test-args:
+        type: string
+        default: ""
     steps:
       - run:
           name: "Test"
-          command: cargo test
+          command: cargo test << parameters.test-args >>
 jobs:
   shaku:
     docker:
@@ -50,7 +54,10 @@ jobs:
       - remove-rust-toolchain
       - install-tools
       - code-check
-      - test
+      - test:
+          # The circular dependency test has slightly different output on 1.38.0
+          # FIXME: Remove this once we update past 1.38.0
+          test-args: "-- --skip compile_fail"
   shaku_rocket:
     docker:
       - image: rustlang/rust:nightly
