@@ -464,11 +464,11 @@
 // Modules
 #[macro_use]
 mod trait_alias;
+mod container;
 mod error;
 mod parameters;
 
 pub mod component;
-pub mod container;
 pub mod module;
 pub mod provider;
 
