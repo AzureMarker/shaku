@@ -5,7 +5,6 @@ extern crate proc_macro;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use std::error::Error as StdError;
 
 mod common_output;
 mod component;
@@ -23,7 +22,7 @@ pub fn component(input: TokenStream) -> TokenStream {
     match component::expand_derive_component(&input) {
         Ok(tokenstream) => tokenstream,
         Err(error) => {
-            let msg = error.description();
+            let msg = error.to_string();
             quote! {
                 compile_error!(#msg);
             }
@@ -39,7 +38,7 @@ pub fn provider(input: TokenStream) -> TokenStream {
     match provider::expand_derive_provider(&input) {
         Ok(tokenstream) => tokenstream,
         Err(error) => {
-            let msg = error.description();
+            let msg = error.to_string();
             quote! {
                 compile_error!(#msg);
             }
