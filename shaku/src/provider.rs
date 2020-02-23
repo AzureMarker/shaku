@@ -398,7 +398,7 @@
 //! [`ProvidedInterface`]: trait.ProvidedInterface.html
 //! [`Component`]: ../component/trait.Component.html
 //! [`Provider`]: trait.Provider.html
-//! [`Container::provide`]: ../container/struct.Container.html#method.provide
+//! [`Container::provide`]: ../struct.Container.html#method.provide
 
 use std::any::Any;
 

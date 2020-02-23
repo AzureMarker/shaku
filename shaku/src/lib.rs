@@ -452,12 +452,12 @@
 //! [`Component`]: component/trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
 //! [`HasComponent`]: module/trait.HasComponent.html
-//! [`ContainerBuildContext::resolve`]: container/struct.ContainerBuildContext.html#method.resolve
+//! [`ContainerBuildContext::resolve`]: struct.ContainerBuildContext.html#method.resolve
 //! [`Module`]: module/trait.Module.html
 //! [module macro]: macro.module.html
-//! [`ContainerBuilder`]: container/struct.ContainerBuilder.html
-//! [`Container`]: container/struct.Container.html
-//! [`with_component_override`]: container/struct.ContainerBuilder.html#method.with_component_override
+//! [`ContainerBuilder`]: struct.ContainerBuilder.html
+//! [`Container`]: struct.Container.html
+//! [`with_component_override`]: struct.ContainerBuilder.html#method.with_component_override
 
 // Linting
 #![deny(unused_must_use)]
@@ -475,9 +475,7 @@ pub mod provider;
 
 // Reexport derives
 #[cfg(feature = "derive")]
-pub use shaku_derive::Component;
-#[cfg(feature = "derive")]
-pub use shaku_derive::Provider;
+pub use {shaku_derive::Component, shaku_derive::Provider};
 
 /// Alias for a `Result` with the error type [shaku::Error](enum.Error.html)
 pub type Result<T> = std::result::Result<T, Error>;
