@@ -4,12 +4,12 @@
 
 # Shaku
 
-Shaku is a Rust dependency injection library. See the [docs] for more details,
-including a getting started guide.
+Shaku is a compile time dependency injection Rust library. See the [docs] for
+more details, including a getting started guide.
 
 ## Example
 ```rust
-use shaku::{Component, ContainerBuilder, Interface};
+use shaku::{module, Component, Container, ContainerBuilder, Interface};
 use std::sync::Arc;
 
 trait IOutput: Interface {
@@ -45,16 +45,22 @@ impl IDateWriter for TodayWriter {
     }
 }
 
-fn main() {
-    let mut builder = ContainerBuilder::new();
-    builder.register_type::<ConsoleOutput>();
-    builder
-        .register_type::<TodayWriter>()
-        .with_named_parameter("today", "Jan 26".to_string())
-        .with_typed_parameter::<usize>(2020);
-    let container = builder.build().unwrap();
+module! {
+    MyModule {
+        components = [ConsoleOutput, TodayWriter],
+        providers = []
+    }
+}
 
-    let writer: &dyn IDateWriter = container.resolve_ref().unwrap();
+fn main() {
+    let container: Container<MyModule> = ContainerBuilder::new()
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+            today: "Jan 26".to_string(),
+            year: 2020
+        })
+        .build();
+
+    let writer: &dyn IDateWriter = container.resolve_ref();
     writer.write_date();
 }
 ```
