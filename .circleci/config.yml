@@ -38,7 +38,7 @@ jobs:
       - test
   shaku-msrv:
     docker:
-      - image: rust:1.40.0
+      - image: rust:1.38.0
     steps:
       - checkout
       - install-tools

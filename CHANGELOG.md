@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   involves a lot of internal changes, although upgrading should be
   straightforward (add a Module type via the module macro and update
   ContainerBuilder usage).
+- Minimum supported Rust version changed to 1.38.0 (from 1.40.0)
 
 ## [0.1.0] - 2020-02-06
 ### Added
