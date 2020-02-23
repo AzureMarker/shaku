@@ -1,5 +1,10 @@
 version: 2.1
 commands:
+  remove-rust-toolchain:
+    steps:
+      - run:
+          name: "Remove rust-toolchain"
+          command: rm rust-toolchain
   install-tools:
     steps:
       - run:
@@ -31,6 +36,7 @@ jobs:
       - image: rust:1.41.0
     steps:
       - checkout
+      - remove-rust-toolchain
       - install-tools
       - style-check
       - lint-check
@@ -41,6 +47,7 @@ jobs:
       - image: rust:1.38.0
     steps:
       - checkout
+      - remove-rust-toolchain
       - install-tools
       - code-check
       - test
@@ -51,6 +58,7 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - remove-rust-toolchain
       - style-check
       - lint-check
       - code-check
