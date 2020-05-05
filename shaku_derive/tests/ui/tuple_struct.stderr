@@ -3,9 +3,13 @@ error: Struct properties must be named
   |
 8 | #[derive(Component)]
   |          ^^^^^^^^^
+  |
+  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Struct properties must be named
   --> $DIR/tuple_struct.rs:13:10
    |
 13 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

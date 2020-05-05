@@ -3,9 +3,13 @@ error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
    |
 14 | #[derive(Component)]
    |          ^^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
   --> $DIR/inject_non_arc.rs:22:10
    |
 22 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

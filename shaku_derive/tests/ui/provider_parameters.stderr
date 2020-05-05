@@ -3,3 +3,5 @@ error: Error when parsing value: Parameters are not allowed in Providers
   |
 7 | #[derive(Provider)]
   |          ^^^^^^^^
+  |
+  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

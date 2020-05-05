@@ -3,9 +3,13 @@ error: Invalid attribute format. The attribute must be in name-value form. Examp
   |
 8 | #[derive(Component)]
   |          ^^^^^^^^^
+  |
+  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
   --> $DIR/interface_not_name_value.rs:13:10
    |
 13 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

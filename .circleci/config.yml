@@ -37,7 +37,7 @@ commands:
 jobs:
   shaku:
     docker:
-      - image: rust:1.41.0
+      - image: rust:1.43.0
     steps:
       - checkout
       - remove-rust-toolchain
@@ -55,8 +55,7 @@ jobs:
       - install-tools
       - code-check
       - test:
-          # The circular dependency test has slightly different output on 1.38.0
-          # FIXME: Remove this once we update past 1.38.0
+          # Multiple compiler messages are different in 1.38.0
           test-args: "-- --skip compile_fail"
   shaku_rocket:
     docker:

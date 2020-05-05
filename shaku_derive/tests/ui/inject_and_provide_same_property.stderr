@@ -3,3 +3,5 @@ error: Error while parsing dependency: Cannot inject and provide the same proper
    |
 14 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

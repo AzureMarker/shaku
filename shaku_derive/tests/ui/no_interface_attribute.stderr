@@ -3,9 +3,13 @@ error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)
   |
 8 | #[derive(Component)]
   |          ^^^^^^^^^
+  |
+  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)]'
   --> $DIR/no_interface_attribute.rs:12:10
    |
 12 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

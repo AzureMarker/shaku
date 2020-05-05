@@ -3,3 +3,5 @@ error: Error in dependency: Found non-Box type annotated with #[shaku(provide)]
    |
 14 | #[derive(Provider)]
    |          ^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
