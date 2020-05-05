@@ -93,9 +93,9 @@ fn can_provide_send_component() {
     }
 
     let container: Container<TestModule> = ContainerBuilder::new()
-        .with_component_parameters::<TestModule, DatabaseConnectionPool>(
-            DatabaseConnectionPoolParameters { value: 42 },
-        )
+        .with_component_parameters::<DatabaseConnectionPool>(DatabaseConnectionPoolParameters {
+            value: 42,
+        })
         .build();
 
     let service = container.provide::<dyn Service>().unwrap();

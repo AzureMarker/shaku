@@ -114,7 +114,7 @@ impl<M: Module> ContainerBuildContext<M> {
                 // Build the component
                 let parameters = self
                     .parameters
-                    .remove::<ComponentParameters<M, M::Impl>>()
+                    .remove::<ComponentParameters<M::Impl, <M::Impl as Component<M>>::Parameters>>()
                     .unwrap_or_default();
                 let component = M::Impl::build(self, parameters.value);
                 let component = Arc::from(component);

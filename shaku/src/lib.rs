@@ -264,7 +264,7 @@
 //! # }
 //! #
 //! let container: Container<MyModule> = ContainerBuilder::new()
-//!     .with_component_parameters::<MyModule, TodayWriter>(TodayWriterParameters {
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
@@ -310,7 +310,7 @@
 //! # }
 //! #
 //! # let container: Container<MyModule> = ContainerBuilder::new()
-//! #     .with_component_parameters::<MyModule, TodayWriter>(TodayWriterParameters {
+//! #     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //! #         today: "Jan 26".to_string(),
 //! #         year: 2020
 //! #     })
@@ -373,7 +373,7 @@
 //!
 //! let container: Container<MyModule> = ContainerBuilder::new()
 //!     .with_component_override::<dyn IOutput>(Box::new(FakeOutput))
-//!     .with_component_parameters::<MyModule, TodayWriter>(TodayWriterParameters {
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
@@ -429,7 +429,7 @@
 //! }
 //!
 //! let container: Container<MyModule> = ContainerBuilder::new()
-//!     .with_component_parameters::<MyModule, TodayWriter>(TodayWriterParameters {
+//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })

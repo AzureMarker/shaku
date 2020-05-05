@@ -56,10 +56,10 @@ module! {
 
 fn main() {
     let container: Container<AutoFacModule> = ContainerBuilder::new()
-        .with_component_parameters::<AutoFacModule, ConsoleOutput>(ConsoleOutputParameters {
+        .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
             prefix: "PREFIX > ".to_string(),
         })
-        .with_component_parameters::<AutoFacModule, TodayWriter>(TodayWriterParameters {
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
             today: "June 19".to_string(),
             year: 2020,
         })

@@ -17,7 +17,7 @@ fn index(writer: Inject<AutoFacModule, dyn IDateWriter>) -> String {
 
 fn main() {
     let container: Container<AutoFacModule> = ContainerBuilder::new()
-        .with_component_parameters::<AutoFacModule, TodayWriter>(TodayWriterParameters {
+        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
             today: "June 19".to_string(),
             year: 2020,
         })

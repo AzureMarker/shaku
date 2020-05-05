@@ -34,17 +34,14 @@ impl<M: Module> ContainerBuilder<M> {
         Self::default()
     }
 
-    /// Set the parameters of the specified component for the specified module.
-    /// If the parameters are not manually set, the defaults will be used.
-    pub fn with_component_parameters<
-        N: Module + HasComponent<C::Interface, Impl = C>,
-        C: Component<N>,
-    >(
-        &mut self,
-        params: C::Parameters,
-    ) -> &mut Self {
+    /// Set the parameters of the specified component. If the parameters are not
+    /// manually set, the defaults will be used.
+    pub fn with_component_parameters<C: Component<M>>(&mut self, params: C::Parameters) -> &mut Self
+    where
+        M: HasComponent<C::Interface, Impl = C>,
+    {
         self.parameters
-            .insert::<ComponentParameters<N, C>>(ComponentParameters { value: params });
+            .insert(ComponentParameters::<C, C::Parameters>::new(params));
         self
     }
 
