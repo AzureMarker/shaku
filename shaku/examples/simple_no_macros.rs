@@ -1,5 +1,6 @@
 //! A simple example of using shaku without derives or macros.
-//! This is similar to what the derives and macros expand to.
+//! This is similar to what the derives and macros in the simple_with_macros
+//! example expand to.
 
 use shaku::{
     Component, Container, ContainerBuildContext, ContainerBuilder, HasComponent, HasProvider,
@@ -84,7 +85,7 @@ fn main() {
         value: "foo".to_string(),
     };
     let container: Container<SampleModule> = ContainerBuilder::new()
-        .with_component_parameters::<SampleDependencyImpl>(dependency_params)
+        .with_component_parameters::<SampleModule, SampleDependencyImpl>(dependency_params)
         .build();
 
     let dependency: &dyn SampleDependency = container.resolve_ref();

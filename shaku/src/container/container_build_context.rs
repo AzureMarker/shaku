@@ -8,6 +8,7 @@ use std::any::{type_name, TypeId};
 use std::collections::VecDeque;
 use std::fmt::{self, Debug};
 use std::marker::PhantomData;
+use std::mem::replace;
 use std::sync::Arc;
 
 /// Builds a [`Container`]. This struct is used during [`Component::build`].
@@ -59,6 +60,27 @@ impl<M: Module> ContainerBuildContext<M> {
             module: M::build(&mut self),
             provider_overrides: self.provider_overrides,
         }
+    }
+
+    pub fn build_submodule<N: Module>(&mut self) -> N {
+        let mut context = ContainerBuildContext {
+            resolved_components: replace(&mut self.resolved_components, ComponentMap::new()),
+            component_overrides: replace(&mut self.component_overrides, ComponentMap::new()),
+            provider_overrides: replace(&mut self.provider_overrides, ComponentMap::new()),
+            parameters: replace(&mut self.parameters, ParameterMap::new()),
+            resolve_chain: replace(&mut self.resolve_chain, VecDeque::new()),
+            _module: PhantomData::<N>,
+        };
+
+        let result = N::build(&mut context);
+
+        self.resolved_components = context.resolved_components;
+        self.component_overrides = context.component_overrides;
+        self.provider_overrides = context.provider_overrides;
+        self.parameters = context.parameters;
+        self.resolve_chain = context.resolve_chain;
+
+        result
     }
 
     /// Resolve a component.

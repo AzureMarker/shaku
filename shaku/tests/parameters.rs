@@ -59,10 +59,10 @@ fn default_if_not_provided() {
 #[test]
 fn parameters_are_injected() {
     let container: Container<TestModule> = ContainerBuilder::new()
-        .with_component_parameters::<FooImpl>(FooImplParameters {
+        .with_component_parameters::<TestModule, FooImpl>(FooImplParameters {
             value: "foo value".to_string(),
         })
-        .with_component_parameters::<BarImpl>(BarImplParameters {
+        .with_component_parameters::<TestModule, BarImpl>(BarImplParameters {
             bar_value: "bar value".to_string(),
         })
         .build();

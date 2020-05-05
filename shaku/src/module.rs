@@ -95,7 +95,19 @@ macro_rules! module {
             ],
             providers = [
                 $($provider:ident),* $(,)?
+            ]
+            $(, $(
+            submodules = [
+                $($submodule:ident {
+                    components = [
+                        $($sub_component:ident),* $(,)?
+                    ],
+                    providers = [
+                        $($sub_provider:ident),* $(,)?
+                    ] $(,)?
+                }),* $(,)?
             ] $(,)?
+            )?)?
         }
     } => {
         #[allow(non_snake_case)]
@@ -106,13 +118,21 @@ macro_rules! module {
                 // idents on stable.
                 $component: ::std::sync::Arc<<$component as $crate::Component<Self>>::Interface>
             ),*
+            $($($(
+                $submodule: $submodule
+            ),*)?)?
         }
 
         impl $crate::Module for $module {
             fn build(context: &mut $crate::ContainerBuildContext<Self>) -> Self {
-                Self { $(
+                Self {
+                $(
                     $component: context.resolve::<<$component as $crate::Component<Self>>::Interface>()
-                ),* }
+                ),*
+                $($($(
+                    $submodule: context.build_submodule::<$submodule>()
+                ),*)?)?
+                }
             }
         }
 
@@ -135,5 +155,26 @@ macro_rules! module {
             type Impl = $provider;
         }
         )*
+
+        $($($($(
+        impl $crate::HasComponent<$sub_component> for $module {
+            type Impl = <$submodule as $crate::HasComponent<$sub_component>>::Impl;
+
+            fn get_ref(&self) -> &::std::sync::Arc<$sub_component> {
+                self.$submodule.get_ref()
+            }
+
+            fn get_mut(&mut self) -> &mut ::std::sync::Arc<$sub_component> {
+                self.$submodule.get_mut()
+            }
+        }
+        )*)*)?)?
+
+        $($($($(
+        impl $crate::HasProvider<$sub_provider> for $module
+        {
+            type Impl = <$submodule as $crate::HasProvider<$sub_provider>>::Impl;
+        }
+        )*)*)?)?
     };
 }
