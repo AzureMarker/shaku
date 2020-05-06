@@ -59,8 +59,8 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 ///
 /// ## Submodules
 /// A module can use components/providers from other modules by explicitly
-/// listing the interfaces from each submodule they want to use. See the second
-/// example below.
+/// listing the interfaces from each submodule they want to use. See
+/// `MySecondModule` in the example below.
 ///
 /// ## Circular dependencies
 /// Note that this macro will detect circular dependencies at compile time. The
@@ -89,37 +89,17 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 ///         providers = []
 ///     }
 /// }
-/// ```
 ///
-/// This example shows how to use submodules:
-/// ```
-/// # use shaku::{module, Component, Interface};
-/// #
-/// # trait MyComponent: Interface {}
-/// # #[derive(Component)]
-/// # #[shaku(interface = MyComponent)]
-/// # struct MyComponentImpl;
-/// # impl MyComponent for MyComponentImpl {}
-/// #
-/// # module! {
-/// #     MyModule {
-/// #         components = [MyComponentImpl],
-/// #         providers = []
-/// #     }
-/// # }
-/// #
 /// // MySecondModule implements HasComponent<dyn MyComponent> by using
 /// // MyModule's implementation.
 /// module! {
 ///     MySecondModule {
 ///         components = [],
 ///         providers = [],
-///         submodules = [
-///             MyModule {
-///                 components = [MyComponent],
-///                 providers = []
-///             }
-///         ]
+///         use MyModule {
+///             components = [MyComponent],
+///             providers = []
+///         }
 ///     }
 /// }
 /// ```
@@ -135,18 +115,14 @@ macro_rules! module {
             providers = [
                 $($provider:ident),* $(,)?
             ]
-            $(, $(
-            submodules = [
-                $($submodule:ident {
-                    components = [
-                        $($sub_component:ident),* $(,)?
-                    ],
-                    providers = [
-                        $($sub_provider:ident),* $(,)?
-                    ] $(,)?
-                }),* $(,)?
-            ] $(,)?
-            )?)?
+            $(, $(use $submodule:ident {
+                components = [
+                    $($sub_component:ident),* $(,)?
+                ],
+                providers = [
+                    $($sub_provider:ident),* $(,)?
+                ] $(,)?
+            }),* $(,)? )?
         }
     } => {
         #[allow(non_snake_case)]
@@ -157,9 +133,9 @@ macro_rules! module {
                 // idents on stable.
                 $component: ::std::sync::Arc<<$component as $crate::Component<Self>>::Interface>
             ),*
-            $($($(
+            $($(
                 $submodule: $submodule
-            ),*)?)?
+            ),*)?
         }
 
         impl $crate::Module for $module {
@@ -168,9 +144,9 @@ macro_rules! module {
                 $(
                     $component: context.resolve::<<$component as $crate::Component<Self>>::Interface>()
                 ),*
-                $($($(
+                $($(
                     $submodule: context.build_submodule::<$submodule>()
-                ),*)?)?
+                ),*)?
                 }
             }
         }
@@ -195,7 +171,7 @@ macro_rules! module {
         }
         )*
 
-        $($($($(
+        $($($(
         impl $crate::HasComponent<$sub_component> for $module {
             type Impl = <$submodule as $crate::HasComponent<$sub_component>>::Impl;
 
@@ -207,13 +183,13 @@ macro_rules! module {
                 self.$submodule.get_mut()
             }
         }
-        )*)*)?)?
+        )*)*)?
 
-        $($($($(
+        $($($(
         impl $crate::HasProvider<$sub_provider> for $module
         {
             type Impl = <$submodule as $crate::HasProvider<$sub_provider>>::Impl;
         }
-        )*)*)?)?
+        )*)*)?
     };
 }

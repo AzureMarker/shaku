@@ -33,8 +33,7 @@ impl Service for ServiceImpl {}
 module! {
     BaseModule {
         components = [ComponentDependencyImpl],
-        providers = [ProviderDependencyImpl],
-        submodules = []
+        providers = [ProviderDependencyImpl]
     }
 }
 
@@ -43,10 +42,10 @@ module! {
         components = [],
         providers = [],
         // Re-export BaseModule
-        submodules = [BaseModule {
+        use BaseModule {
             components = [ComponentDependency],
             providers = [ProviderDependency]
-        }]
+        }
     }
 }
 
@@ -56,10 +55,10 @@ module! {
         // ServiceImpl requires two dependencies which are transitively sourced
         // via MiddleModule
         providers = [ServiceImpl],
-        submodules = [MiddleModule {
+        use MiddleModule {
             components = [ComponentDependency],
             providers = [ProviderDependency]
-        }]
+        }
     }
 }
 
