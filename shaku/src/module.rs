@@ -57,6 +57,12 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 
 /// Create a [`Module`] which is associated with some components and providers.
 ///
+/// ## Submodules
+/// A module can use components/providers from other modules by explicitly
+/// listing the interfaces from each submodule they want to use. See the second
+/// example below.
+///
+/// ## Circular dependencies
 /// Note that this macro will detect circular dependencies at compile time. The
 /// error that is thrown will be something like
 /// "overflow evaluating the requirement `Component2: shaku::component::Component<TestModule>`".
@@ -65,7 +71,7 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 /// manually implemented in a certain way. In that case, there will be a panic
 /// during container creation with more details.
 ///
-/// # Example
+/// # Examples
 /// ```
 /// use shaku::{module, Component, Interface};
 ///
@@ -81,6 +87,39 @@ pub trait HasProvider<I: ProvidedInterface + ?Sized>: Module {
 ///     MyModule {
 ///         components = [MyComponentImpl],
 ///         providers = []
+///     }
+/// }
+/// ```
+///
+/// This example shows how to use submodules:
+/// ```
+/// # use shaku::{module, Component, Interface};
+/// #
+/// # trait MyComponent: Interface {}
+/// # #[derive(Component)]
+/// # #[shaku(interface = MyComponent)]
+/// # struct MyComponentImpl;
+/// # impl MyComponent for MyComponentImpl {}
+/// #
+/// # module! {
+/// #     MyModule {
+/// #         components = [MyComponentImpl],
+/// #         providers = []
+/// #     }
+/// # }
+/// #
+/// // MySecondModule implements HasComponent<dyn MyComponent> by using
+/// // MyModule's implementation.
+/// module! {
+///     MySecondModule {
+///         components = [],
+///         providers = [],
+///         submodules = [
+///             MyModule {
+///                 components = [MyComponent],
+///                 providers = []
+///             }
+///         ]
 ///     }
 /// }
 /// ```
