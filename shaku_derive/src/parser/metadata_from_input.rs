@@ -7,10 +7,16 @@ use syn::{DeriveInput, Type};
 impl Parser<MetaData> for DeriveInput {
     fn parse_as(&self) -> Result<MetaData, Error> {
         // Find the shaku(interface = ?) attribute
-        let shaku_attribute = get_shaku_attribute(&self.attrs)?;
+        let shaku_attribute = get_shaku_attribute(&self.attrs).ok_or_else(|| {
+            Error::ParseError(format!(
+                "Unable to find interface. Please add a '#[{}({} = <your trait>)]'",
+                consts::ATTR_NAME,
+                consts::INTERFACE_ATTR_NAME
+            ))
+        })?;
 
         // Get the interface key/value
-        let path_kv: KeyValue<Type> = shaku_attribute.parse_args().map_err(|_| {
+        let interface_kv: KeyValue<Type> = shaku_attribute.parse_args().map_err(|_| {
             Error::ParseError(format!(
                 "Invalid attribute format. The attribute must be in name-value form. \
                 Example: #[{}({} = <your trait>)]",
@@ -19,7 +25,7 @@ impl Parser<MetaData> for DeriveInput {
             ))
         })?;
 
-        if path_kv.key != consts::INTERFACE_ATTR_NAME {
+        if interface_kv.key != consts::INTERFACE_ATTR_NAME {
             return Err(Error::ParseError(format!(
                 "Unable to find interface. Please add a '#[{}({} = <your trait>)]'",
                 consts::ATTR_NAME,
@@ -29,7 +35,7 @@ impl Parser<MetaData> for DeriveInput {
 
         Ok(MetaData {
             identifier: self.ident.clone(),
-            interface: path_kv.value,
+            interface: interface_kv.value,
             visibility: self.vis.clone(),
         })
     }

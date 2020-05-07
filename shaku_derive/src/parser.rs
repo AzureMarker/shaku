@@ -15,15 +15,7 @@ pub trait Parser<T: Sized> {
     fn parse_as(&self) -> Result<T, Error>;
 }
 
-pub(self) fn get_shaku_attribute(attrs: &[Attribute]) -> Result<&Attribute, Error> {
-    attrs
-        .iter()
-        .find(|a| a.path.is_ident(consts::ATTR_NAME))
-        .ok_or_else(|| {
-            Error::ParseError(format!(
-                "Unable to find interface. Please add a '#[{}({} = <your trait>)]'",
-                consts::ATTR_NAME,
-                consts::INTERFACE_ATTR_NAME
-            ))
-        })
+/// Find the #[shaku(...)] attribute
+pub(self) fn get_shaku_attribute(attrs: &[Attribute]) -> Option<&Attribute> {
+    attrs.iter().find(|a| a.path.is_ident(consts::ATTR_NAME))
 }

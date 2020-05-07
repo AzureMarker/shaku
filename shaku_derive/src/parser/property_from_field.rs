@@ -26,17 +26,15 @@ impl Parser<Property> for Field {
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
                 let property_default =
-                    get_shaku_attribute(&self.attrs)
-                        .ok()
-                        .and_then(|attr: &Attribute| {
-                            let inner = attr.parse_args::<KeyValue<Expr>>().ok()?;
+                    get_shaku_attribute(&self.attrs).and_then(|attr: &Attribute| {
+                        let inner = attr.parse_args::<KeyValue<Expr>>().ok()?;
 
-                            if inner.key == consts::DEFAULT_ATTR_NAME {
-                                Some(inner.value)
-                            } else {
-                                None
-                            }
-                        });
+                        if inner.key == consts::DEFAULT_ATTR_NAME {
+                            Some(inner.value)
+                        } else {
+                            None
+                        }
+                    });
 
                 return Ok(Property {
                     property_name,
