@@ -13,7 +13,7 @@ proc-macro = true
 
 [dependencies]
 quote = "1.0"
-syn = { version = "1.0", features = ["extra-traits"] }
+syn = { version = "1.0", features = ["extra-traits", "full"] }
 proc-macro2 = "1.0"
 
 [dev-dependencies]
