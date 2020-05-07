@@ -17,7 +17,7 @@ use shaku::{Container, Module};
 
 fn get_container_from_state<'r, M: Module + Send + Sync>(
     request: &Request<'r>,
-) -> Outcome<State<'r, Container<M>>, String> {
+) -> Outcome<State<'r, Container<'static, M>>, String> {
     request
         .guard()
         .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))

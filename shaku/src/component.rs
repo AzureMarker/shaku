@@ -1,7 +1,7 @@
 //! This module contains trait definitions for components and interfaces
 
-use crate::ContainerBuildContext;
 use crate::Module;
+use crate::ModuleBuildContext;
 use std::any::Any;
 
 /// Components provide a service by implementing an interface. They may use
@@ -18,14 +18,12 @@ pub trait Component<M: Module>: 'static {
 
     /// Use the build context and parameters to create the component. Other
     /// components can be resolved by adding a [`HasComponent`] bound to the
-    /// `M` generic, then calling [`ContainerBuildContext::resolve`].
+    /// `M` generic, then calling [`M::resolve`].
     ///
     /// [`HasComponent`]: trait.HasComponent.html
-    /// [`ContainerBuildContext::resolve`]: struct.ContainerBuildContext.html#method.resolve
-    fn build(
-        context: &mut ContainerBuildContext<M>,
-        params: Self::Parameters,
-    ) -> Box<Self::Interface>;
+    /// [`M::resolve`]: trait.HasComponent.html#tymethod.resolve
+    fn build(context: &mut ModuleBuildContext<M>, params: Self::Parameters)
+        -> Box<Self::Interface>;
 }
 
 #[cfg(not(feature = "thread_safe"))]

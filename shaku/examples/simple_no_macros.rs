@@ -3,8 +3,8 @@
 //! example expand to.
 
 use shaku::{
-    Component, Container, ContainerBuildContext, ContainerBuilder, HasComponent, HasProvider,
-    Interface, Module, ProvidedInterface, Provider,
+    Component, Container, ContainerBuilder, HasComponent, HasProvider, Interface, Module,
+    ModuleBuildContext, ProvidedInterface, Provider,
 };
 use std::error::Error;
 use std::fmt::Debug;
@@ -26,7 +26,7 @@ impl<M: Module> Component<M> for SampleDependencyImpl {
     type Interface = dyn SampleDependency;
     type Parameters = SampleDependencyImplParameters;
 
-    fn build(_: &mut ContainerBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
+    fn build(_: &mut ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
         Box::new(Self {
             value: params.value,
         })
@@ -58,14 +58,16 @@ struct SampleModule {
     sample_dependency: Arc<dyn SampleDependency>,
 }
 impl Module for SampleModule {
-    fn build(context: &mut ContainerBuildContext<Self>) -> Self {
+    fn build(context: &mut ModuleBuildContext<Self>) -> Self {
         Self {
-            sample_dependency: context.resolve(),
+            sample_dependency: Self::resolve(context),
         }
     }
 }
 impl HasComponent<dyn SampleDependency> for SampleModule {
-    type Impl = SampleDependencyImpl;
+    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SampleDependency> {
+        context.resolve::<SampleDependencyImpl>()
+    }
 
     fn get_ref(&self) -> &Arc<dyn SampleDependency> {
         &self.sample_dependency
@@ -76,7 +78,11 @@ impl HasComponent<dyn SampleDependency> for SampleModule {
     }
 }
 impl HasProvider<dyn SampleService> for SampleModule {
-    type Impl = SampleServiceImpl;
+    fn provide(
+        container: &Container<Self>,
+    ) -> Result<Box<dyn SampleService>, Box<dyn Error + 'static>> {
+        SampleServiceImpl::provide(container)
+    }
 }
 
 //noinspection DuplicatedCode

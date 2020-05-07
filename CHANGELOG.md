@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Support submodules. Modules can now wrap other modules and use services from
   them. Modules can have multiple submodules.
+- Add "submodule containers" (a type of `Container`) to support submodules.
+  Normally these will only be used in `HasProvider` implementations.
+
+## Changed
+- Renamed `ContainerBuildContext` to `ModuleBuildContext` and modified some
+  function signatures to support submodules.
+- `Container` now has a lifetime parameter to support submodule containers.
+  Normally this lifetime is eluded, so you shouldn't need to change your code.
 
 ## [0.2.0] - 2020-02-23
 ### Breaking Changes

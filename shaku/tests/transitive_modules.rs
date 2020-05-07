@@ -41,6 +41,7 @@ module! {
     MiddleModule {
         components = [],
         providers = [],
+
         // Re-export BaseModule
         use BaseModule {
             components = [ComponentDependency],
@@ -55,6 +56,7 @@ module! {
         // ServiceImpl requires two dependencies which are transitively sourced
         // via MiddleModule
         providers = [ServiceImpl],
+
         use MiddleModule {
             components = [ComponentDependency],
             providers = [ProviderDependency]

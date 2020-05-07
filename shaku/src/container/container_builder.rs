@@ -1,8 +1,9 @@
 use crate::component::Interface;
+use crate::container::container::ContainerData;
 use crate::container::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
 use crate::provider::{ProvidedInterface, ProviderFn};
-use crate::{Component, Container, ContainerBuildContext, HasComponent, HasProvider, Module};
+use crate::{Component, Container, HasComponent, HasProvider, Module, ModuleBuildContext};
 use std::marker::PhantomData;
 use std::mem::replace;
 use std::sync::Arc;
@@ -38,7 +39,7 @@ impl<M: Module> ContainerBuilder<M> {
     /// manually set, the defaults will be used.
     pub fn with_component_parameters<C: Component<M>>(&mut self, params: C::Parameters) -> &mut Self
     where
-        M: HasComponent<C::Interface, Impl = C>,
+        M: HasComponent<C::Interface>,
     {
         self.parameters
             .insert(ComponentParameters::<C, C::Parameters>::new(params));
@@ -68,11 +69,18 @@ impl<M: Module> ContainerBuilder<M> {
     }
 
     /// Build the container.
-    pub fn build(&mut self) -> Container<M> {
+    pub fn build(&mut self) -> Container<'static, M> {
         let parameters = replace(&mut self.parameters, ParameterMap::new());
         let component_overrides = replace(&mut self.component_overrides, ComponentMap::new());
         let provider_overrides = replace(&mut self.provider_overrides, ComponentMap::new());
 
-        ContainerBuildContext::new(parameters, component_overrides, provider_overrides).build()
+        let module = ModuleBuildContext::new(parameters, component_overrides).build();
+
+        Container {
+            inner: ContainerData::Root {
+                module,
+                provider_overrides,
+            },
+        }
     }
 }

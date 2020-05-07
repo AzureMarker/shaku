@@ -1,7 +1,7 @@
 //! Runtime detection of circular dependencies (when not using the module macro). The module macro
 //! can detect cycles at compile time. See `ui/circular_dependency_compile_time.rs`.
 
-use shaku::{Component, Container, Interface};
+use shaku::{Component, Container, HasComponent, Interface, ModuleBuildContext};
 use std::sync::Arc;
 
 trait Component1Trait: Interface {}
@@ -30,15 +30,17 @@ struct TestModule {
     component2: Arc<dyn Component2Trait>,
 }
 impl shaku::Module for TestModule {
-    fn build(context: &mut shaku::ContainerBuildContext<Self>) -> Self {
+    fn build(context: &mut shaku::ModuleBuildContext<Self>) -> Self {
         Self {
-            component1: context.resolve::<dyn Component1Trait>(),
-            component2: context.resolve::<dyn Component2Trait>(),
+            component1: Self::resolve(context),
+            component2: Self::resolve(context),
         }
     }
 }
 impl shaku::HasComponent<dyn Component1Trait> for TestModule {
-    type Impl = Component1;
+    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component1Trait> {
+        context.resolve::<Component1>()
+    }
 
     fn get_ref(&self) -> &Arc<dyn Component1Trait> {
         &self.component1
@@ -49,7 +51,9 @@ impl shaku::HasComponent<dyn Component1Trait> for TestModule {
     }
 }
 impl shaku::HasComponent<dyn Component2Trait> for TestModule {
-    type Impl = Component2;
+    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component2Trait> {
+        context.resolve::<Component2>()
+    }
 
     fn get_ref(&self) -> &Arc<dyn Component2Trait> {
         &self.component2

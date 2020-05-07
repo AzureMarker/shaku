@@ -1,23 +1,20 @@
 use crate::container::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
 use crate::Component;
-use crate::Container;
 use crate::Module;
-use crate::{HasComponent, Interface};
 use std::any::{type_name, TypeId};
 use std::fmt::{self, Debug};
 use std::marker::PhantomData;
 use std::mem::replace;
 use std::sync::Arc;
 
-/// Builds a [`Container`]. This struct is used during [`Component::build`].
+/// Builds a [`Module`] and its associated components. Build context, such as
+/// parameters and resolved components, are stored in this struct.
 ///
-/// [`Container`]: struct.Container.html
-/// [`Component::build`]: trait.Component.html#tymethod.build
-pub struct ContainerBuildContext<M: Module> {
+/// [`Module`]: trait.Module.html
+pub struct ModuleBuildContext<M: Module> {
     resolved_components: ComponentMap,
     component_overrides: ComponentMap,
-    provider_overrides: ComponentMap,
     parameters: ParameterMap,
     resolve_chain: Vec<ResolveStep>,
     _module: PhantomData<M>,
@@ -38,65 +35,59 @@ impl Debug for ResolveStep {
     }
 }
 
-impl<M: Module> ContainerBuildContext<M> {
-    pub(crate) fn new(
-        parameters: ParameterMap,
-        component_overrides: ComponentMap,
-        provider_overrides: ComponentMap,
-    ) -> Self {
-        ContainerBuildContext {
+impl<M: Module> ModuleBuildContext<M> {
+    /// Create the build context
+    pub(crate) fn new(parameters: ParameterMap, component_overrides: ComponentMap) -> Self {
+        ModuleBuildContext {
             resolved_components: ComponentMap::new(),
             component_overrides,
-            provider_overrides,
             parameters,
             resolve_chain: Vec::new(),
             _module: PhantomData,
         }
     }
 
-    pub(crate) fn build(mut self) -> Container<M> {
-        Container {
-            module: M::build(&mut self),
-            provider_overrides: self.provider_overrides,
-        }
+    /// Build the module
+    pub(crate) fn build(mut self) -> M {
+        M::build(&mut self)
     }
 
-    pub fn build_submodule<N: Module>(&mut self) -> N {
-        let mut context = ContainerBuildContext {
+    /// Perform an action in the context of a submodule and return the result
+    pub fn as_submodule<N: Module, R, F: FnOnce(&mut ModuleBuildContext<N>) -> R>(
+        &mut self,
+        action: F,
+    ) -> R {
+        let mut context = ModuleBuildContext {
             resolved_components: replace(&mut self.resolved_components, ComponentMap::new()),
             component_overrides: replace(&mut self.component_overrides, ComponentMap::new()),
-            provider_overrides: replace(&mut self.provider_overrides, ComponentMap::new()),
             parameters: replace(&mut self.parameters, ParameterMap::new()),
             resolve_chain: replace(&mut self.resolve_chain, Vec::new()),
             _module: PhantomData::<N>,
         };
 
-        let result = N::build(&mut context);
+        let result = action(&mut context);
 
         self.resolved_components = context.resolved_components;
         self.component_overrides = context.component_overrides;
-        self.provider_overrides = context.provider_overrides;
         self.parameters = context.parameters;
         self.resolve_chain = context.resolve_chain;
 
         result
     }
 
-    /// Resolve a component.
-    pub fn resolve<I: Interface + ?Sized>(&mut self) -> Arc<I>
-    where
-        M: HasComponent<I>,
-    {
+    /// Resolve a component by building it if it is not already resolved or
+    /// overridden.
+    pub fn resolve<C: Component<M>>(&mut self) -> Arc<C::Interface> {
         self.component_overrides
-            .get::<Arc<I>>()
-            .or_else(|| self.resolved_components.get::<Arc<I>>())
+            .get::<Arc<C::Interface>>()
+            .or_else(|| self.resolved_components.get::<Arc<C::Interface>>())
             .map(Arc::clone)
             .unwrap_or_else(|| {
                 let step = ResolveStep {
-                    component_type_name: type_name::<M::Impl>(),
-                    component_type_id: TypeId::of::<M::Impl>(),
-                    interface_type_name: type_name::<I>(),
-                    interface_type_id: TypeId::of::<I>(),
+                    component_type_name: type_name::<C>(),
+                    component_type_id: TypeId::of::<C>(),
+                    interface_type_name: type_name::<C::Interface>(),
+                    interface_type_id: TypeId::of::<C::Interface>(),
                 };
 
                 // Check for a circular dependency
@@ -113,12 +104,12 @@ impl<M: Module> ContainerBuildContext<M> {
                 // Build the component
                 let parameters = self
                     .parameters
-                    .remove::<ComponentParameters<M::Impl, <M::Impl as Component<M>>::Parameters>>()
+                    .remove::<ComponentParameters<C, C::Parameters>>()
                     .unwrap_or_default();
-                let component = M::Impl::build(self, parameters.value);
+                let component = C::build(self, parameters.value);
                 let component = Arc::from(component);
                 self.resolved_components
-                    .insert::<Arc<I>>(Arc::clone(&component));
+                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
 
                 // Resolution was successful, pop the component off the chain
                 self.resolve_chain.pop();

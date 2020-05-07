@@ -49,7 +49,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
             type Interface = dyn #interface;
             type Parameters = #parameters_name;
 
-            fn build(context: &mut ::shaku::ContainerBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
+            fn build(context: &mut ::shaku::ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
                 Box::new(Self {
                     #(#resolve_properties),*
                 })
@@ -78,11 +78,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
 
 fn create_resolve_property(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
-    let property_type = &property.ty;
 
     if property.is_component() {
         quote! {
-            #property_name: context.resolve::<#property_type>()
+            #property_name: M::resolve(context)
         }
     } else {
         quote! {

@@ -126,12 +126,12 @@
 //! ```
 //!
 //! If you don't use the derive macro, add [`HasComponent`] bounds to your module generic and inject
-//! the dependencies manually with [`ContainerBuildContext::resolve`].
+//! the dependencies manually with [`HasComponent::resolve`].
 //!
 //! ## Create a Module
 //! Modules link together components and providers, and are core to providing shaku's compile time
-//! guarentees. A [`Module`] can be created manually or via the [`module`][module macro] macro (the
-//! `derive` feature is not necessary):
+//! guarentees. A [`Module`] can be created manually or via the [`module`] macro (the `derive`
+//! feature is not necessary):
 //!
 //! ```
 //! # use shaku::{Component, Interface};
@@ -452,9 +452,9 @@
 //! [`Component`]: trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
 //! [`HasComponent`]: trait.HasComponent.html
-//! [`ContainerBuildContext::resolve`]: struct.ContainerBuildContext.html#method.resolve
+//! [`HasComponent::resolve`]: trait.HasComponent.html#tymethod.resolve
 //! [`Module`]: trait.Module.html
-//! [module macro]: macro.module.html
+//! [`module`]: macro.module.html
 //! [`ContainerBuilder`]: struct.ContainerBuilder.html
 //! [`Container`]: struct.Container.html
 //! [`with_component_override`]: struct.ContainerBuilder.html#method.with_component_override

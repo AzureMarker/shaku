@@ -48,6 +48,7 @@ module! {
     TestModule {
         components = [],
         providers = [ServiceImpl],
+
         use ComponentModule {
             components = [ComponentDependency],
             providers = []
