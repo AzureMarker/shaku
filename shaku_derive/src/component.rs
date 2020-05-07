@@ -79,7 +79,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
 fn create_resolve_property(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
 
-    if property.is_component() {
+    if property.is_service() {
         quote! {
             #property_name: M::resolve(context)
         }
@@ -91,7 +91,7 @@ fn create_resolve_property(property: &Property) -> TokenStream {
 }
 
 fn create_parameters_property(property: &Property) -> Option<TokenStream> {
-    if property.is_component() {
+    if property.is_service() {
         return None;
     }
 
@@ -104,7 +104,7 @@ fn create_parameters_property(property: &Property) -> Option<TokenStream> {
 }
 
 fn create_parameters_default(property: &Property) -> Option<TokenStream> {
-    if property.is_component() {
+    if property.is_service() {
         return None;
     }
 

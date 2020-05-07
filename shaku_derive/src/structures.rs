@@ -48,7 +48,7 @@ pub struct Property {
 }
 
 impl Property {
-    pub fn is_component(&self) -> bool {
+    pub fn is_service(&self) -> bool {
         match self.property_type {
             PropertyType::Component | PropertyType::Provided => true,
             PropertyType::Parameter => false,
