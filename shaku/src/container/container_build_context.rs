@@ -5,7 +5,6 @@ use crate::Container;
 use crate::Module;
 use crate::{HasComponent, Interface};
 use std::any::{type_name, TypeId};
-use std::collections::VecDeque;
 use std::fmt::{self, Debug};
 use std::marker::PhantomData;
 use std::mem::replace;
@@ -20,7 +19,7 @@ pub struct ContainerBuildContext<M: Module> {
     component_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     parameters: ParameterMap,
-    resolve_chain: VecDeque<ResolveStep>,
+    resolve_chain: Vec<ResolveStep>,
     _module: PhantomData<M>,
 }
 
@@ -50,7 +49,7 @@ impl<M: Module> ContainerBuildContext<M> {
             component_overrides,
             provider_overrides,
             parameters,
-            resolve_chain: VecDeque::new(),
+            resolve_chain: Vec::new(),
             _module: PhantomData,
         }
     }
@@ -68,7 +67,7 @@ impl<M: Module> ContainerBuildContext<M> {
             component_overrides: replace(&mut self.component_overrides, ComponentMap::new()),
             provider_overrides: replace(&mut self.provider_overrides, ComponentMap::new()),
             parameters: replace(&mut self.parameters, ParameterMap::new()),
-            resolve_chain: replace(&mut self.resolve_chain, VecDeque::new()),
+            resolve_chain: replace(&mut self.resolve_chain, Vec::new()),
             _module: PhantomData::<N>,
         };
 
@@ -109,7 +108,7 @@ impl<M: Module> ContainerBuildContext<M> {
                 }
 
                 // Add this component to the chain
-                self.resolve_chain.push_back(step);
+                self.resolve_chain.push(step);
 
                 // Build the component
                 let parameters = self
@@ -122,7 +121,7 @@ impl<M: Module> ContainerBuildContext<M> {
                     .insert::<Arc<I>>(Arc::clone(&component));
 
                 // Resolution was successful, pop the component off the chain
-                self.resolve_chain.pop_back();
+                self.resolve_chain.pop();
 
                 component
             })
