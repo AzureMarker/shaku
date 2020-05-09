@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   function signatures to support submodules.
 - `Container` now has a lifetime parameter to support submodule containers.
   Normally this lifetime is eluded, so you shouldn't need to change your code.
+- Moved getting started guides to dedicated module.
 
 ## [0.2.0] - 2020-02-23
 ### Breaking Changes
