@@ -1,6 +1,6 @@
 [package]
 name = "shaku"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Compile Time Dependency Injection for Rust"
 repository = "https://github.com/Mcat12/shaku"
@@ -10,7 +10,7 @@ license = "MIT/Apache-2.0"
 edition = "2018"
 
 [dependencies]
-shaku_derive = { version = "~0.2.0", optional = true }
+shaku_derive = { version = "~0.3.0", optional = true }
 anymap = "0.12.1"
 
 [dev-dependencies]
