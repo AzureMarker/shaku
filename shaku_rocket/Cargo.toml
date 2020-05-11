@@ -1,6 +1,6 @@
 [package]
 name = "shaku_rocket"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Integration between shaku and Rocket"
 repository = "https://github.com/Mcat12/shaku"
@@ -9,9 +9,5 @@ license = "MIT/Apache-2.0"
 edition = "2018"
 
 [dependencies]
-shaku = "~0.3.0"
+shaku = { version = "~0.3.1", path = "../shaku" }
 rocket = "0.4"
-
-[patch.crates-io]
-shaku = { path = "../shaku" }
-shaku_derive = { path = "../shaku_derive" }

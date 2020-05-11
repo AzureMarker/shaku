@@ -6,7 +6,3 @@ members = [
 # shaku_rocket is excluded because it uses the nightly compiler.
 # It must be separately compiled (cargo check/build/test).
 exclude = ["shaku_rocket"]
-
-[patch.crates-io]
-shaku = { path = "shaku" }
-shaku_derive = { path = "shaku_derive" }

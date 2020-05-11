@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2020-05-11
+### Fixed
+- Fix "no function or associated item named ..." errors when using the
+  `module` macro to generate a module and certain traits are not in scope.
+
 ## [0.3.0] - 2020-05-09
 ### Added
 - Support submodules. Modules can now wrap other modules and use services from
@@ -37,7 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/Mcat12/shaku/releases/tag/v0.3.1
 [0.3.0]: https://github.com/Mcat12/shaku/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Mcat12/shaku/releases/tag/v0.2.0
 [0.1.0]: https://github.com/Mcat12/shaku/releases/tag/v0.1.0
