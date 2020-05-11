@@ -165,7 +165,7 @@ macro_rules! module {
                     >>::resolve(context),
                 )*
                 $($(
-                    $submodule: context.as_submodule($submodule::build),
+                    $submodule: context.as_submodule(<$submodule as $crate::Module>::build),
                 )*)?
                 }
             }
@@ -195,7 +195,7 @@ macro_rules! module {
                 ::std::boxed::Box<<$provider as $crate::Provider<Self>>::Interface>,
                 ::std::boxed::Box<dyn ::std::error::Error + 'static>
             > {
-                $provider::provide(container)
+                <$provider as $crate::Provider<Self>>::provide(container)
             }
         }
         )*
@@ -213,7 +213,7 @@ macro_rules! module {
             fn resolve(
                 context: &mut $crate::ModuleBuildContext<Self>
             ) -> ::std::sync::Arc<$sub_component> {
-                context.as_submodule($submodule::resolve)
+                context.as_submodule(<$submodule as $crate::HasComponent<$sub_component>>::resolve)
             }
 
             fn get_ref(&self) -> &::std::sync::Arc<$sub_component> {
