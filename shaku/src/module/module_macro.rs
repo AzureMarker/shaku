@@ -26,7 +26,7 @@
 ///
 /// # Examples
 /// ```
-/// use shaku::{module, Component, Interface, HasComponent, ModuleInterface};
+/// use shaku::{module, Component, Interface, HasComponent};
 ///
 /// trait MyComponent: Interface {}
 /// trait MyModule: HasComponent<dyn MyComponent> {}
@@ -45,8 +45,7 @@
 /// }
 ///
 /// // MySecondModule implements HasComponent<dyn MyComponent> by using
-/// // MyModule's implementation. It also implements Module and
-/// // HasSubmodule<MyModule>.
+/// // MyModule's implementation.
 /// module! {
 ///     MySecondModule {
 ///         components = [],
