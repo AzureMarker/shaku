@@ -1,11 +1,11 @@
 //! Services imported from a submodule can have hidden dependencies
 
-use shaku::{module, Component, Interface, ProvidedInterface, Provider};
+use shaku::{module, Component, Interface, Provider};
 use std::sync::Arc;
 
 trait ComponentDependency: Interface {}
 trait ComponentService: Interface {}
-trait ProviderService: ProvidedInterface {}
+trait ProviderService {}
 
 #[derive(Component)]
 #[shaku(interface = ComponentDependency)]

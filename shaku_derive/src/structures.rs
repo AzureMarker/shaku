@@ -7,14 +7,14 @@ use syn::{DeriveInput, Expr, Ident, Type, Visibility};
 /// The main data structure, representing the data required to implement
 /// Component or Provider.
 #[derive(Clone, Debug)]
-pub struct ServiceContainer {
+pub struct ServiceData {
     pub metadata: MetaData,
     pub properties: Vec<Property>,
 }
 
-impl ServiceContainer {
+impl ServiceData {
     pub fn from_derive_input(input: &DeriveInput) -> Result<Self, Error> {
-        Ok(ServiceContainer {
+        Ok(ServiceData {
             metadata: input.parse_as()?,
             properties: input.parse_as()?,
         })

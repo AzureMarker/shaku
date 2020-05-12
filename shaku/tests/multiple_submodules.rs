@@ -1,44 +1,46 @@
 //! A module can have multiple submodules
 
-use shaku::{module, Component, Interface, ProvidedInterface, Provider};
+use shaku::{module, Component, HasComponent, HasProvider, Interface, Provider};
+use std::fmt::Debug;
 use std::sync::Arc;
 
-trait ComponentDependency: Interface {}
-trait ProviderDependency: ProvidedInterface {}
-trait Service: ProvidedInterface {}
+trait ComponentDependency: Interface + Debug {}
+trait ProviderDependency: Debug {}
+trait Service: Debug {}
 
-#[derive(Component)]
+trait ComponentModule: HasComponent<dyn ComponentDependency> {}
+trait ProviderModule: HasProvider<dyn ProviderDependency> {}
+
+#[derive(Component, Debug)]
 #[shaku(interface = ComponentDependency)]
 struct ComponentDependencyImpl;
 impl ComponentDependency for ComponentDependencyImpl {}
 
-#[derive(Provider)]
+#[derive(Provider, Debug)]
 #[shaku(interface = ProviderDependency)]
 struct ProviderDependencyImpl;
 impl ProviderDependency for ProviderDependencyImpl {}
 
-#[derive(Provider)]
+#[derive(Provider, Debug)]
 #[shaku(interface = Service)]
 struct ServiceImpl {
     #[shaku(inject)]
-    #[allow(dead_code)]
     component_dependency: Arc<dyn ComponentDependency>,
 
     #[shaku(provide)]
-    #[allow(dead_code)]
-    dependency: Box<dyn ProviderDependency>,
+    provider_dependency: Box<dyn ProviderDependency>,
 }
 impl Service for ServiceImpl {}
 
 module! {
-    ComponentModule {
+    ComponentModuleImpl: ComponentModule {
         components = [ComponentDependencyImpl],
         providers = []
     }
 }
 
 module! {
-    ProviderModule {
+    ProviderModuleImpl: ProviderModule {
         components = [],
         providers = [ProviderDependencyImpl]
     }
@@ -61,4 +63,14 @@ module! {
 }
 
 #[test]
-fn compile_ok() {}
+fn multiple_submodules() {
+    let component_module = Arc::new(ComponentModuleImpl::builder().build());
+    let provider_module = Arc::new(ProviderModuleImpl::builder().build());
+    let test_module = TestModule::builder(component_module, provider_module).build();
+    let service: Box<dyn Service> = test_module.provide().unwrap();
+
+    assert_eq!(
+        format!("{:?}", service), 
+        "ServiceImpl { component_dependency: ComponentDependencyImpl, provider_dependency: ProviderDependencyImpl }"
+    );
+}

@@ -1,11 +1,11 @@
 //! A service can depend on transitively-sourced dependencies
 
-use shaku::{module, Component, Interface, ProvidedInterface, Provider};
+use shaku::{module, Component, Interface, Provider};
 use std::sync::Arc;
 
 trait ComponentDependency: Interface {}
-trait ProviderDependency: ProvidedInterface {}
-trait Service: ProvidedInterface {}
+trait ProviderDependency {}
+trait Service {}
 
 #[derive(Component)]
 #[shaku(interface = ComponentDependency)]

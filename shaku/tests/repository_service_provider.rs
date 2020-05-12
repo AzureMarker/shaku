@@ -1,7 +1,4 @@
-use shaku::{
-    module, Component, Container, ContainerBuilder, HasComponent, Interface, Module,
-    ProvidedInterface, Provider,
-};
+use shaku::{module, Component, HasComponent, HasProvider, Interface, Module, Provider};
 use std::cell::RefCell;
 use std::error::Error;
 
@@ -9,15 +6,11 @@ trait ConnectionPool: Interface {
     fn get(&self) -> DBConnection;
 }
 
-// This trait is marked with ProvidedInterface instead of Interface because it
-// may not be Sync (DB connection).
-trait Repository: ProvidedInterface {
+trait Repository {
     fn get(&self) -> usize;
 }
 
-// This trait is marked with ProvidedInterface instead of Interface because it
-// may not be Sync (the Repository it uses may use a !Sync DB connection).
-trait Service: ProvidedInterface {
+trait Service {
     fn get_double(&self) -> usize;
 }
 
@@ -41,8 +34,8 @@ impl ConnectionPool for DatabaseConnectionPool {
 impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
     type Interface = DBConnection;
 
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>> {
-        let pool = container.resolve_ref::<dyn ConnectionPool>();
+    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
+        let pool: &dyn ConnectionPool = module.resolve_ref();
 
         Ok(Box::new(pool.get()))
     }
@@ -92,13 +85,13 @@ fn can_provide_send_component() {
         }
     }
 
-    let container: Container<TestModule> = ContainerBuilder::new()
+    let module = TestModule::builder()
         .with_component_parameters::<DatabaseConnectionPool>(DatabaseConnectionPoolParameters {
             value: 42,
         })
         .build();
 
-    let service = container.provide::<dyn Service>().unwrap();
+    let service: Box<dyn Service> = module.provide().unwrap();
     assert_eq!(service.get_double(), 84);
 }
 
@@ -128,8 +121,8 @@ fn can_mock_database() {
         }
     }
 
-    let container = Container::<TestModule>::default();
-    let repository = container.provide::<dyn Repository>().unwrap();
+    let module = TestModule::builder().build();
+    let repository: Box<dyn Repository> = module.provide().unwrap();
     assert_eq!(repository.get(), 3);
 }
 
@@ -156,7 +149,7 @@ fn can_mock_repository() {
         }
     }
 
-    let container = Container::<TestModule>::default();
-    let service = container.provide::<dyn Service>().unwrap();
+    let module = TestModule::builder().build();
+    let service: Box<dyn Service> = module.provide().unwrap();
     assert_eq!(service.get_double(), 6);
 }

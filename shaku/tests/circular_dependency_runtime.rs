@@ -1,7 +1,7 @@
 //! Runtime detection of circular dependencies (when not using the module macro). The module macro
 //! can detect cycles at compile time. See `ui/circular_dependency_compile_time.rs`.
 
-use shaku::{Component, Container, HasComponent, Interface, ModuleBuildContext};
+use shaku::{Component, HasComponent, Interface, ModuleBuildContext, ModuleBuilder};
 use std::sync::Arc;
 
 trait Component1Trait: Interface {}
@@ -30,48 +30,58 @@ struct TestModule {
     component2: Arc<dyn Component2Trait>,
 }
 impl shaku::Module for TestModule {
+    type Submodules = ();
+
     fn build(context: &mut shaku::ModuleBuildContext<Self>) -> Self {
         Self {
-            component1: Self::resolve(context),
-            component2: Self::resolve(context),
+            component1: Self::build_component(context),
+            component2: Self::build_component(context),
         }
     }
 }
 impl shaku::HasComponent<dyn Component1Trait> for TestModule {
-    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component1Trait> {
-        context.resolve::<Component1>()
+    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component1Trait> {
+        context.build_component::<Component1>()
     }
 
-    fn get_ref(&self) -> &Arc<dyn Component1Trait> {
-        &self.component1
+    fn resolve(&self) -> Arc<dyn Component1Trait> {
+        Arc::clone(&self.component1)
     }
 
-    fn get_mut(&mut self) -> &mut Arc<dyn Component1Trait> {
-        &mut self.component1
+    fn resolve_ref(&self) -> &dyn Component1Trait {
+        Arc::as_ref(&self.component1)
+    }
+
+    fn resolve_mut(&mut self) -> Option<&mut dyn Component1Trait> {
+        Arc::get_mut(&mut self.component1)
     }
 }
 impl shaku::HasComponent<dyn Component2Trait> for TestModule {
-    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component2Trait> {
-        context.resolve::<Component2>()
+    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component2Trait> {
+        context.build_component::<Component2>()
     }
 
-    fn get_ref(&self) -> &Arc<dyn Component2Trait> {
-        &self.component2
+    fn resolve(&self) -> Arc<dyn Component2Trait> {
+        Arc::clone(&self.component2)
     }
 
-    fn get_mut(&mut self) -> &mut Arc<dyn Component2Trait> {
-        &mut self.component2
+    fn resolve_ref(&self) -> &dyn Component2Trait {
+        Arc::as_ref(&self.component2)
+    }
+
+    fn resolve_mut(&mut self) -> Option<&mut dyn Component2Trait> {
+        Arc::get_mut(&mut self.component2)
     }
 }
 
 /// It is possible to create a circular dependency that is not caught at compile
 /// time by manually implementing the module. This test ensures that it is
-/// detected during container build.
+/// detected during module build.
 #[test]
 #[should_panic(
     expected = "Circular dependency detected while resolving dyn circular_dependency_runtime::Component1Trait. \
     Resolution chain: [circular_dependency_runtime::Component1, circular_dependency_runtime::Component2]"
 )]
 fn circular_dependency_runtime() {
-    Container::<TestModule>::default();
+    ModuleBuilder::<TestModule>::with_submodules(()).build();
 }

@@ -1,9 +1,9 @@
 //! A module which does not satisfy a provider's provider dependency will fail to compile
 
-use shaku::{module, ProvidedInterface, Provider};
+use shaku::{module, Provider};
 
-trait DependencyTrait: ProvidedInterface {}
-trait ProviderTrait: ProvidedInterface {}
+trait DependencyTrait {}
+trait ProviderTrait {}
 
 #[derive(Provider)]
 #[shaku(interface = DependencyTrait)]

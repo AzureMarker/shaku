@@ -2,7 +2,7 @@
 
 #![allow(clippy::blacklisted_name)]
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, HasComponent, Interface};
 use std::sync::Arc;
 
 trait Foo: Interface {
@@ -49,8 +49,8 @@ module! {
 /// If a parameter is not provided, the default is used
 #[test]
 fn default_if_not_provided() {
-    let container = Container::<TestModule>::default();
-    let foo: &dyn Foo = container.resolve_ref();
+    let module = TestModule::builder().build();
+    let foo: &dyn Foo = module.resolve_ref();
 
     assert_eq!(foo.foo(), "Foo = '', Bar = ''");
 }
@@ -58,7 +58,7 @@ fn default_if_not_provided() {
 /// When all parameters are provided, they are available to the components
 #[test]
 fn parameters_are_injected() {
-    let container: Container<TestModule> = ContainerBuilder::new()
+    let module = TestModule::builder()
         .with_component_parameters::<FooImpl>(FooImplParameters {
             value: "foo value".to_string(),
         })
@@ -67,6 +67,6 @@ fn parameters_are_injected() {
         })
         .build();
 
-    let foo = container.resolve::<dyn Foo>();
+    let foo: Arc<dyn Foo> = module.resolve();
     assert_eq!(foo.foo(), "Foo = 'foo value', Bar = 'bar value'");
 }

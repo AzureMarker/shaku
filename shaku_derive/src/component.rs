@@ -3,47 +3,47 @@
 use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;
 use crate::error::Error;
-use crate::structures::{Property, ServiceContainer};
+use crate::structures::{Property, ServiceData};
 use proc_macro2::TokenStream;
 use syn::DeriveInput;
 
 pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error> {
-    let container = ServiceContainer::from_derive_input(input)?;
+    let service = ServiceData::from_derive_input(input)?;
 
     let debug_level = get_debug_level();
     if debug_level > 1 {
-        println!("Container built from Component input: {:#?}", container);
+        println!("Service data parsed from Component input: {:#?}", service);
     }
 
-    let resolve_properties: Vec<TokenStream> = container
+    let resolve_properties: Vec<TokenStream> = service
         .properties
         .iter()
         .map(create_resolve_property)
         .collect();
 
-    let dependencies: Vec<TokenStream> = container
+    let dependencies: Vec<TokenStream> = service
         .properties
         .iter()
         .filter_map(create_dependency)
         .collect();
 
-    let parameters_properties: Vec<TokenStream> = container
+    let parameters_properties: Vec<TokenStream> = service
         .properties
         .iter()
         .filter_map(create_parameters_property)
         .collect();
 
-    let parameters_defaults: Vec<TokenStream> = container
+    let parameters_defaults: Vec<TokenStream> = service
         .properties
         .iter()
         .filter_map(create_parameters_default)
         .collect();
 
     // Component implementation
-    let component_name = container.metadata.identifier;
+    let component_name = service.metadata.identifier;
     let parameters_name = format_ident!("{}Parameters", component_name);
-    let interface = container.metadata.interface;
-    let visibility = container.metadata.visibility;
+    let interface = service.metadata.interface;
+    let visibility = service.metadata.visibility;
     let output = quote! {
         impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Component<M> for #component_name {
             type Interface = dyn #interface;
@@ -81,7 +81,7 @@ fn create_resolve_property(property: &Property) -> TokenStream {
 
     if property.is_service() {
         quote! {
-            #property_name: M::resolve(context)
+            #property_name: M::build_component(context)
         }
     } else {
         quote! {

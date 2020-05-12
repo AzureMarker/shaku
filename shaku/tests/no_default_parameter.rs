@@ -1,6 +1,6 @@
 //! Tests related to parameters which do not have a default value
 
-use shaku::{module, Component, ContainerBuilder, Interface};
+use shaku::{module, Component, Interface};
 
 trait MyComponent: Interface {}
 
@@ -30,10 +30,10 @@ module! {
     }
 }
 
-/// Providing the parameter will allow container creation to succeed
+/// Providing the parameter will allow module creation to succeed
 #[test]
 fn with_given_parameter() {
-    ContainerBuilder::<TestModule>::new()
+    TestModule::builder()
         .with_component_parameters::<MyComponentImpl>(MyComponentImplParameters {
             not_default: NoDefault,
         })
@@ -44,5 +44,5 @@ fn with_given_parameter() {
 #[test]
 #[should_panic(expected = "There is no default value for no_default_parameter::NoDefault")]
 fn without_given_parameter() {
-    ContainerBuilder::<TestModule>::new().build();
+    TestModule::builder().build();
 }

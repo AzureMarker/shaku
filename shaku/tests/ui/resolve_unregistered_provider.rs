@@ -1,8 +1,8 @@
 //! Requesting a provider which is not supported by the module will fail to compile
 
-use shaku::{module, Container, ProvidedInterface, Provider};
+use shaku::{module, HasProvider, Provider};
 
-trait ServiceTrait: ProvidedInterface {}
+trait ServiceTrait {}
 
 #[derive(Provider)]
 #[shaku(interface = ServiceTrait)]
@@ -17,6 +17,6 @@ module! {
 }
 
 fn main() {
-    let container = Container::<TestModule>::default();
-    let service = container.provide::<dyn ServiceTrait>();
+    let module = TestModule::builder().build();
+    let _service = HasProvider::<dyn ServiceTrait>::provide(&module);
 }

@@ -4,7 +4,6 @@
 extern crate rocket;
 
 use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
-use shaku::{Container, ContainerBuilder};
 use shaku_rocket::Inject;
 
 mod autofac;
@@ -16,7 +15,7 @@ fn index(writer: Inject<AutoFacModule, dyn IDateWriter>) -> String {
 }
 
 fn main() {
-    let container: Container<AutoFacModule> = ContainerBuilder::new()
+    let module = AutoFacModule::builder()
         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
             today: "June 19".to_string(),
             year: 2020,
@@ -24,7 +23,7 @@ fn main() {
         .build();
 
     rocket::ignite()
-        .manage(container)
+        .manage(module)
         .mount("/", routes![index])
         .launch();
 }

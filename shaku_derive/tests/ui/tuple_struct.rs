@@ -1,9 +1,9 @@
 //! Tuple structs currently cannot be derived
 
-use shaku::{Component, Interface, ProvidedInterface, Provider};
+use shaku::{Component, Interface, Provider};
 
 trait ComponentTrait: Interface {}
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Component)]
 #[shaku(interface = ComponentTrait)]

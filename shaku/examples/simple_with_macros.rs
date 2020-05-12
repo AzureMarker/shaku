@@ -1,16 +1,14 @@
 //! A simple example of using shaku with derives and macros (see the
 //! simple_no_macros example for the same code, but without derives or macros).
 
-use shaku::{
-    module, Component, Container, ContainerBuilder, Interface, ProvidedInterface, Provider,
-};
+use shaku::{module, Component, HasComponent, HasProvider, Interface, Provider};
 use std::fmt::Debug;
 use std::sync::Arc;
 
 // Traits
 
 trait SampleDependency: Interface + Debug {}
-trait SampleService: ProvidedInterface + Debug {}
+trait SampleService: Debug {}
 
 // Implementations
 
@@ -47,12 +45,12 @@ fn main() {
     let dependency_params = SampleDependencyImplParameters {
         value: "foo".to_string(),
     };
-    let container: Container<SampleModule> = ContainerBuilder::new()
+    let module = SampleModule::builder()
         .with_component_parameters::<SampleDependencyImpl>(dependency_params)
         .build();
 
-    let dependency: &dyn SampleDependency = container.resolve_ref();
-    let service: Box<dyn SampleService> = container.provide().unwrap();
+    let dependency: &dyn SampleDependency = module.resolve_ref();
+    let service: Box<dyn SampleService> = module.provide().unwrap();
 
     println!("{:?}", dependency);
     println!("{:?}", service);

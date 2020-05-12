@@ -9,7 +9,7 @@ more details, including a getting started guide.
 
 ## Example
 ```rust
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, Interface, HasComponent};
 use std::sync::Arc;
 
 trait IOutput: Interface {
@@ -53,14 +53,14 @@ module! {
 }
 
 fn main() {
-    let container: Container<MyModule> = ContainerBuilder::new()
+    let module = MyModule::builder()
         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
             today: "Jan 26".to_string(),
             year: 2020
         })
         .build();
 
-    let writer: &dyn IDateWriter = container.resolve_ref();
+    let writer: &dyn IDateWriter = module.resolve_ref();
     writer.write_date();
 }
 ```

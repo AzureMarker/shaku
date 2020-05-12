@@ -13,12 +13,10 @@ pub use inject_provided::InjectProvided;
 
 use rocket::request::Outcome;
 use rocket::{Request, State};
-use shaku::{Container, Module};
+use shaku::Module;
 
-fn get_container_from_state<'r, M: Module + Send + Sync>(
-    request: &Request<'r>,
-) -> Outcome<State<'r, Container<'static, M>>, String> {
+fn get_module_from_state<'r, M: Module>(request: &Request<'r>) -> Outcome<State<'r, M>, String> {
     request
         .guard()
-        .map_failure(|f| (f.0, "Failed to retrieve container from state".to_string()))
+        .map_failure(|f| (f.0, "Failed to retrieve module from state".to_string()))
 }

@@ -1,11 +1,9 @@
-use crate::container::{ComponentMap, ParameterMap};
+use crate::module::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
-use crate::Component;
 use crate::Module;
+use crate::{Component, HasProvider, Provider, ProviderFn};
 use std::any::{type_name, TypeId};
 use std::fmt::{self, Debug};
-use std::marker::PhantomData;
-use std::mem::replace;
 use std::sync::Arc;
 
 /// Builds a [`Module`] and its associated components. Build context, such as
@@ -15,9 +13,10 @@ use std::sync::Arc;
 pub struct ModuleBuildContext<M: Module> {
     resolved_components: ComponentMap,
     component_overrides: ComponentMap,
+    provider_overrides: ComponentMap,
     parameters: ParameterMap,
+    submodules: M::Submodules,
     resolve_chain: Vec<ResolveStep>,
-    _module: PhantomData<M>,
 }
 
 /// Tracks the current resolution chain. Used to detect circular dependencies.
@@ -37,13 +36,19 @@ impl Debug for ResolveStep {
 
 impl<M: Module> ModuleBuildContext<M> {
     /// Create the build context
-    pub(crate) fn new(parameters: ParameterMap, component_overrides: ComponentMap) -> Self {
+    pub(crate) fn new(
+        parameters: ParameterMap,
+        component_overrides: ComponentMap,
+        provider_overrides: ComponentMap,
+        submodules: M::Submodules,
+    ) -> Self {
         ModuleBuildContext {
             resolved_components: ComponentMap::new(),
             component_overrides,
+            provider_overrides,
             parameters,
+            submodules,
             resolve_chain: Vec::new(),
-            _module: PhantomData,
         }
     }
 
@@ -52,32 +57,14 @@ impl<M: Module> ModuleBuildContext<M> {
         M::build(&mut self)
     }
 
-    /// Perform an action in the context of a submodule and return the result
-    pub fn as_submodule<N: Module, R, F: FnOnce(&mut ModuleBuildContext<N>) -> R>(
-        &mut self,
-        action: F,
-    ) -> R {
-        let mut context = ModuleBuildContext {
-            resolved_components: replace(&mut self.resolved_components, ComponentMap::new()),
-            component_overrides: replace(&mut self.component_overrides, ComponentMap::new()),
-            parameters: replace(&mut self.parameters, ParameterMap::new()),
-            resolve_chain: replace(&mut self.resolve_chain, Vec::new()),
-            _module: PhantomData::<N>,
-        };
-
-        let result = action(&mut context);
-
-        self.resolved_components = context.resolved_components;
-        self.component_overrides = context.component_overrides;
-        self.parameters = context.parameters;
-        self.resolve_chain = context.resolve_chain;
-
-        result
+    /// Access this module's submodules
+    pub fn submodules(&self) -> &M::Submodules {
+        &self.submodules
     }
 
     /// Resolve a component by building it if it is not already resolved or
     /// overridden.
-    pub fn resolve<C: Component<M>>(&mut self) -> Arc<C::Interface> {
+    pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
         self.component_overrides
             .get::<Arc<C::Interface>>()
             .or_else(|| self.resolved_components.get::<Arc<C::Interface>>())
@@ -116,5 +103,17 @@ impl<M: Module> ModuleBuildContext<M> {
 
                 component
             })
+    }
+
+    /// Get a provider function from the given provider impl, or an overridden
+    /// one if configured during module build.
+    pub fn provider_fn<P: Provider<M>>(&self) -> Arc<ProviderFn<M, P::Interface>>
+    where
+        M: HasProvider<P::Interface>,
+    {
+        self.provider_overrides
+            .get::<Arc<ProviderFn<M, P::Interface>>>()
+            .map(Arc::clone)
+            .unwrap_or_else(|| Arc::new(Box::new(P::provide)))
     }
 }

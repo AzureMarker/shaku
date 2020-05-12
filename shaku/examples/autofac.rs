@@ -1,7 +1,7 @@
 //! Example based on the AutoFac 'getting started' example
 //! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
 
-use shaku::{module, Component, Container, ContainerBuilder, Interface};
+use shaku::{module, Component, HasComponent, Interface};
 use std::sync::Arc;
 
 trait IOutput: Interface {
@@ -55,7 +55,7 @@ module! {
 }
 
 fn main() {
-    let container: Container<AutoFacModule> = ContainerBuilder::new()
+    let module = AutoFacModule::builder()
         .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
             prefix: "PREFIX > ".to_string(),
         })
@@ -65,7 +65,7 @@ fn main() {
         })
         .build();
 
-    let writer = container.resolve::<dyn IDateWriter>();
+    let writer: Arc<dyn IDateWriter> = module.resolve();
     writer.write_date();
     let date = writer.get_date();
     assert_eq!(date, "Today is June 19, 2020");

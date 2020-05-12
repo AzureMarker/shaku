@@ -1,10 +1,10 @@
 //! A non-Box property cannot be provided
 
-use shaku::{Component, Interface, ProvidedInterface, Provider};
+use shaku::{Component, Interface, Provider};
 use std::sync::Arc;
 
 trait DependencyTrait: Interface {}
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Component)]
 #[shaku(interface = DependencyTrait)]

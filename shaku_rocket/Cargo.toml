@@ -9,5 +9,5 @@ license = "MIT/Apache-2.0"
 edition = "2018"
 
 [dependencies]
-shaku = { version = "~0.3.1", path = "../shaku" }
+shaku = { version = "~0.3.1", path = "../shaku", features = ["thread_safe"] }
 rocket = "0.4"

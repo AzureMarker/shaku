@@ -1,10 +1,10 @@
 //! A non-Arc property cannot be injected
 
-use shaku::{Component, Interface, ProvidedInterface, Provider};
+use shaku::{Component, Interface, Provider};
 
 trait DependencyTrait: Interface {}
 trait ComponentTrait: Interface {}
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Component)]
 #[shaku(interface = DependencyTrait)]

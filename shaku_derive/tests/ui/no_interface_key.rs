@@ -1,9 +1,9 @@
 //! "interface" must be used in the name-value notation for setting the interface
 
-use shaku::{Component, Interface, ProvidedInterface, Provider};
+use shaku::{Component, Interface, Provider};
 
 trait ComponentTrait: Interface {}
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Component)]
 #[shaku(interfac = ComponentTrait)]

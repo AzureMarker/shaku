@@ -1,7 +1,7 @@
 #![allow(clippy::blacklisted_name, clippy::mutex_atomic)]
 
 use rand::Rng;
-use shaku::{module, Component, Container, Interface};
+use shaku::{module, Component, HasComponent, Interface};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -41,14 +41,14 @@ const MAX_SLEEP_TIME: u64 = 2000;
 
 #[test]
 fn simple_multithreaded_resolve_ref() {
-    // Build container
-    let container = Container::<FooModule>::default();
-    let shared_container = Arc::new(Mutex::new(container));
+    // Build module
+    let module = FooModule::builder().build();
+    let shared_module = Arc::new(Mutex::new(module));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
     for i in 0..NB_THREADS {
-        let shared_container = shared_container.clone(); // local clones to be moved into the thread
+        let shared_module = shared_module.clone(); // local clones to be moved into the thread
 
         handles.push(
             thread::Builder::new()
@@ -60,10 +60,10 @@ fn simple_multithreaded_resolve_ref() {
                     let handle = thread::current();
                     thread::sleep(sleep);
 
-                    // Get a handle on the container
+                    // Get a handle on the module
                     {
-                        let container = shared_container.lock().unwrap();
-                        let foo = container.resolve_ref::<dyn Foo>();
+                        let module = shared_module.lock().unwrap();
+                        let foo: &dyn Foo = module.resolve_ref();
                         assert_eq!(foo.get_value(), 17);
                         println!(
                             "In thread {:?} > resolve ok > value = {}",
@@ -87,15 +87,15 @@ fn simple_multithreaded_resolve_ref() {
 
 #[test]
 fn simple_multithreaded_resolve_ref_n_mut() {
-    // Build container
-    let container = Container::<FooModule>::default();
-    let shared_container = Arc::new(Mutex::new(container));
+    // Build module
+    let module = FooModule::builder().build();
+    let shared_module = Arc::new(Mutex::new(module));
     let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
     for i in 0..NB_THREADS {
-        let (shared_container, latest_data) = (shared_container.clone(), latest_data.clone()); // local clones to be moved into the thread
+        let (shared_module, latest_data) = (shared_module.clone(), latest_data.clone()); // local clones to be moved into the thread
 
         handles.push(
             thread::Builder::new()
@@ -107,13 +107,13 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                     let handle = thread::current();
                     thread::sleep(sleep);
 
-                    // Resolve the container
+                    // Resolve the module
                     let use_mut = rand::thread_rng().gen_range(0, 10) < 5;
                     {
-                        let mut container = shared_container.lock().unwrap();
+                        let mut module = shared_module.lock().unwrap();
 
                         if use_mut {
-                            let foo = container.resolve_mut::<dyn Foo>().unwrap();
+                            let foo: &mut dyn Foo = module.resolve_mut().unwrap();
                             let new_value: usize = rand::thread_rng().gen_range(0, 256);
                             foo.set_value(new_value);
                             assert_eq!(foo.get_value(), new_value);
@@ -127,7 +127,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                                 foo.get_value()
                             );
                         } else {
-                            let foo = container.resolve_ref::<dyn Foo>();
+                            let foo: &dyn Foo = module.resolve_ref();
                             let data = latest_data.lock().unwrap();
 
                             println!(
@@ -154,9 +154,9 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
 #[test]
 fn simple_multithreaded_resolve_n_own() {
-    // Build container
-    let container = Container::<FooModule>::default();
-    let shared_container = Arc::new(Mutex::new(container));
+    // Build module
+    let module = FooModule::builder().build();
+    let shared_module = Arc::new(Mutex::new(module));
     let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
     // Launch a few threads where each will try to resolve `Foo`
@@ -165,7 +165,7 @@ fn simple_multithreaded_resolve_n_own() {
     println!("Owner is {}", owner);
 
     for i in 0..NB_THREADS {
-        let (shared_container, latest_data) = (shared_container.clone(), latest_data.clone()); // local clones to be moved into the thread
+        let (shared_module, latest_data) = (shared_module.clone(), latest_data.clone()); // local clones to be moved into the thread
 
         handles.push(
             thread::Builder::new()
@@ -177,10 +177,10 @@ fn simple_multithreaded_resolve_n_own() {
                     let handle = thread::current();
                     thread::sleep(sleep);
 
-                    // Resolve the container
+                    // Resolve the module
                     if i == owner {
-                        let container = shared_container.lock().unwrap();
-                        let foo = container.resolve::<dyn Foo>();
+                        let module = shared_module.lock().unwrap();
+                        let foo: Arc<dyn Foo> = module.resolve();
                         let data = latest_data.lock().unwrap();
                         println!(
                             "In thread {:?} > owner > resolve ok > value should be {}",
@@ -191,10 +191,10 @@ fn simple_multithreaded_resolve_n_own() {
                     } else if i != owner {
                         let use_mut = rand::thread_rng().gen_range(0, 10) < 5;
                         {
-                            let mut container = shared_container.lock().unwrap();
+                            let mut module = shared_module.lock().unwrap();
 
                             if use_mut {
-                                let foo = container.resolve_mut::<dyn Foo>().unwrap();
+                                let foo: &mut dyn Foo = module.resolve_mut().unwrap();
                                 let new_value: usize = rand::thread_rng().gen_range(0, 256);
                                 foo.set_value(new_value);
                                 assert_eq!(foo.get_value(), new_value);
@@ -208,7 +208,7 @@ fn simple_multithreaded_resolve_n_own() {
                                     foo.get_value()
                                 );
                             } else {
-                                let foo = container.resolve_ref::<dyn Foo>();
+                                let foo: &dyn Foo = module.resolve_ref();
                                 let data = latest_data.lock().unwrap();
 
                                 println!(

@@ -1,12 +1,12 @@
-use crate::get_container_from_state;
+use crate::get_module_from_state;
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
 use shaku::{HasComponent, Interface, Module};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-/// Used to retrieve a reference to a component from a shaku `Container`.
-/// The container should be stored in Rocket's state. Use this struct as a
+/// Used to retrieve a reference to a component from a shaku `Module`.
+/// The module should be stored in Rocket's state. Use this struct as a
 /// request guard.
 ///
 /// # Example
@@ -15,7 +15,7 @@ use std::ops::Deref;
 ///
 /// #[macro_use] extern crate rocket;
 ///
-/// use shaku::{module, Component, Container, ContainerBuilder, Interface};
+/// use shaku::{module, Component, Interface};
 /// use shaku_rocket::Inject;
 ///
 /// trait HelloWorld: Interface {
@@ -45,37 +45,32 @@ use std::ops::Deref;
 /// }
 ///
 /// fn main() {
-///     let container = Container::<HelloModule>::default();
+///     let module = HelloModule::builder().build();
 ///
 /// # if false { // We don't actually want to launch the server in an example.
 ///     rocket::ignite()
-///         .manage(container)
+///         .manage(module)
 ///         .mount("/", routes![hello])
 ///         .launch();
 /// # }
 /// }
 /// ```
-pub struct Inject<'r, M: Module + HasComponent<I> + Send + Sync, I: Interface + ?Sized>(
-    &'r I,
-    PhantomData<M>,
-);
+pub struct Inject<'r, M: Module + HasComponent<I>, I: Interface + ?Sized>(&'r I, PhantomData<M>);
 
-impl<'a, 'r, M: Module + HasComponent<I> + Send + Sync, I: Interface + ?Sized> FromRequest<'a, 'r>
+impl<'a, 'r, M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest<'a, 'r>
     for Inject<'r, M, I>
 {
     type Error = String;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        let container = get_container_from_state::<M>(request)?;
-        let component = container.inner().resolve_ref::<I>();
+        let module = get_module_from_state::<M>(request)?;
+        let component = module.inner().resolve_ref();
 
         Outcome::Success(Inject(component, PhantomData))
     }
 }
 
-impl<'r, M: Module + HasComponent<I> + Send + Sync, I: Interface + ?Sized> Deref
-    for Inject<'r, M, I>
-{
+impl<'r, M: Module + HasComponent<I>, I: Interface + ?Sized> Deref for Inject<'r, M, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {

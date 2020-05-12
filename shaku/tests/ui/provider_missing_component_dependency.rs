@@ -1,10 +1,10 @@
 //! A module which does not satisfy a provider's component dependency will fail to compile
 
-use shaku::{module, Component, Interface, ProvidedInterface, Provider};
+use shaku::{module, Component, Interface, Provider};
 use std::sync::Arc;
 
 trait DependencyTrait: Interface {}
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Component)]
 #[shaku(interface = DependencyTrait)]

@@ -1,14 +1,12 @@
 //! Tests related to overriding components/providers
 
-use shaku::{
-    module, Component, Container, ContainerBuilder, Interface, ProvidedInterface, Provider,
-};
+use shaku::{module, Component, HasProvider, Interface, Provider};
 use std::fmt::Debug;
 use std::sync::Arc;
 
 trait MyComponent: Interface + Debug {}
-trait MyProvider: ProvidedInterface + Debug {}
-trait MySecondProvider: ProvidedInterface + Debug {}
+trait MyProvider: Debug {}
+trait MySecondProvider: Debug {}
 
 #[derive(Component, Debug)]
 #[shaku(interface = MyComponent)]
@@ -46,10 +44,10 @@ fn override_component() {
     struct FakeComponent;
     impl MyComponent for FakeComponent {}
 
-    let container: Container<TestModule> = ContainerBuilder::new()
+    let module = TestModule::builder()
         .with_component_override::<dyn MyComponent>(Box::new(FakeComponent))
         .build();
-    let my_provider: Box<dyn MyProvider> = container.provide().unwrap();
+    let my_provider: Box<dyn MyProvider> = module.provide().unwrap();
 
     assert_eq!(
         format!("{:?}", my_provider),
@@ -65,10 +63,10 @@ fn override_provider() {
     struct FakeProvider;
     impl MyProvider for FakeProvider {}
 
-    let container: Container<TestModule> = ContainerBuilder::new()
+    let module = TestModule::builder()
         .with_provider_override::<dyn MyProvider>(Box::new(FakeProvider::provide))
         .build();
-    let my_provider: Box<dyn MySecondProvider> = container.provide().unwrap();
+    let my_provider: Box<dyn MySecondProvider> = module.provide().unwrap();
 
     assert_eq!(
         format!("{:?}", my_provider),

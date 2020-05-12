@@ -16,10 +16,10 @@ module! {
 }
 
 mod services {
-    use shaku::{module, Component, Interface, ProvidedInterface, Provider};
+    use shaku::{module, Component, Interface, Provider};
 
     pub trait MyComponent: Interface {}
-    pub trait MyProvider: ProvidedInterface {}
+    pub trait MyProvider {}
 
     #[derive(Component)]
     #[shaku(interface = MyComponent)]

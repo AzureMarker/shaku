@@ -1,6 +1,6 @@
 //! Tests related to sharing dependencies between components
 
-use shaku::{module, Component, Container, Interface};
+use shaku::{module, Component, HasComponent, Interface};
 use std::fmt::Debug;
 use std::sync::Arc;
 
@@ -59,11 +59,11 @@ module! {
 /// A dependency can be referenced by two components at the same time
 #[test]
 fn components_can_share_dependency() {
-    let container = Container::<TestModule>::default();
+    let module = TestModule::builder().build();
 
-    let dependency: &dyn IDependency = container.resolve_ref();
-    let component1: &dyn IComponent1 = container.resolve_ref();
-    let component2: &dyn IComponent2 = container.resolve_ref();
+    let dependency: &dyn IDependency = module.resolve_ref();
+    let component1: &dyn IComponent1 = module.resolve_ref();
+    let component2: &dyn IComponent2 = module.resolve_ref();
 
     assert!(std::ptr::eq(component1.dependency(), dependency));
     assert!(std::ptr::eq(component2.dependency(), dependency));

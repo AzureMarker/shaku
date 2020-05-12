@@ -1,8 +1,7 @@
 //! This module contains trait definitions for provided services and interfaces
 
-use crate::Container;
+use crate::module::ModuleInterface;
 use crate::Module;
-use std::any::Any;
 use std::error::Error;
 
 /// Like [`Component`]s, providers provide a service by implementing an interface.
@@ -18,45 +17,55 @@ use std::error::Error;
 /// [provider getting started guide]: guide/provider/index.html
 pub trait Provider<M: Module>: 'static {
     /// The trait/interface which this provider implements
-    type Interface: ProvidedInterface + ?Sized;
+    type Interface: ?Sized;
 
     /// Provides the service, possibly resolving other components/providers
     /// to do so.
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>>;
+    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>>;
 }
 
 /// The type signature of [`Provider::provide`]. This is used when overriding a
-/// provider via [`ContainerBuilder::with_provider_override`]
+/// provider via [`ModuleBuilder::with_provider_override`]
 ///
 /// [`Provider::provide`]: trait.Provider.html#tymethod.provide
-/// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
+/// [`ModuleBuilder::with_provider_override`]: struct.ModuleBuilder.html#method.with_provider_override
 #[cfg(not(feature = "thread_safe"))]
-pub type ProviderFn<M, I> =
-    Box<dyn (Fn(&Container<M>) -> Result<Box<I>, Box<dyn Error + 'static>>)>;
+pub type ProviderFn<M, I> = Box<dyn (Fn(&M) -> Result<Box<I>, Box<dyn Error>>)>;
 /// The type signature of [`Provider::provide`]. This is used when overriding a
-/// provider via [`ContainerBuilder::with_provider_override`]
+/// provider via [`ModuleBuilder::with_provider_override`]
 ///
 /// [`Provider::provide`]: trait.Provider.html#tymethod.provide
-/// [`ContainerBuilder::with_provider_override`]: struct.ContainerBuilder.html#method.with_provider_override
+/// [`ModuleBuilder::with_provider_override`]: struct.ModuleBuilder.html#method.with_provider_override
 #[cfg(feature = "thread_safe")]
-pub type ProviderFn<M, I> =
-    Box<dyn (Fn(&Container<M>) -> Result<Box<I>, Box<dyn Error + 'static>>) + Send + Sync>;
+pub type ProviderFn<M, I> = Box<dyn (Fn(&M) -> Result<Box<I>, Box<dyn Error>>) + Send + Sync>;
 
-#[cfg(not(feature = "thread_safe"))]
-trait_alias!(
-    /// Provided interfaces must be `'static` in order for the provider to be
-    /// stored in the container (hence the `Any` requirement).
+/// Indicates that a module contains a provider which implements the interface.
+pub trait HasProvider<I: ?Sized>: ModuleInterface {
+    /// Create a service using the provider registered with the interface `I`.
+    /// Each call will create a new instance of the service.
     ///
-    /// The `thread_safe` feature is turned off, so provided interfaces do not
-    /// need to implement `Send`.
-    pub ProvidedInterface = Any
-);
-#[cfg(feature = "thread_safe")]
-trait_alias!(
-    /// Provided interfaces must be `'static` in order for the provider to be
-    /// stored in the container (hence the `Any` requirement).
-    ///
-    /// The `thread_safe` feature is turned on, which requires provided
-    /// interfaces to also implement `Send`.
-    pub ProvidedInterface = Any + Send
-);
+    /// # Examples
+    /// ```
+    /// # use shaku::{module, HasProvider, Provider};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo {}
+    /// #
+    /// # #[derive(Provider)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # module! {
+    /// #     TestModule {
+    /// #         components = [],
+    /// #         providers = [FooImpl]
+    /// #     }
+    /// # }
+    /// #
+    /// # let module = TestModule::builder().build();
+    /// #
+    /// let foo: Box<dyn Foo> = module.provide().unwrap();
+    /// ```
+    fn provide(&self) -> Result<Box<I>, Box<dyn Error>>;
+}

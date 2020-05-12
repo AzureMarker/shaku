@@ -1,4 +1,4 @@
-error[E0277]: the trait bound `TestModule: shaku::module::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+error[E0277]: the trait bound `TestModule: shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
   --> $DIR/provider_missing_component_dependency.rs:22:1
    |
 22 | / module! {
@@ -7,12 +7,12 @@ error[E0277]: the trait bound `TestModule: shaku::module::HasComponent<(dyn Depe
 25 | |         providers = [ProviderImpl]
 26 | |     }
 27 | | }
-   | |_^ the trait `shaku::module::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   | |_^ the trait `shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
    = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `TestModule: shaku::module::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+error[E0277]: the trait bound `TestModule: shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
   --> $DIR/provider_missing_component_dependency.rs:22:1
    |
 22 | / module! {
@@ -21,7 +21,36 @@ error[E0277]: the trait bound `TestModule: shaku::module::HasComponent<(dyn Depe
 25 | |         providers = [ProviderImpl]
 26 | |     }
 27 | | }
-   | |_^ the trait `shaku::module::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   | |_^ the trait `shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   |
+   = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
+   = note: required because it appears within the type `TestModule`
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `TestModule: shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+  --> $DIR/provider_missing_component_dependency.rs:22:1
+   |
+22 | / module! {
+23 | |     TestModule {
+24 | |         components = [],
+25 | |         providers = [ProviderImpl]
+26 | |     }
+27 | | }
+   | |_^ the trait `shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   |
+   = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `TestModule: shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+  --> $DIR/provider_missing_component_dependency.rs:22:1
+   |
+22 | / module! {
+23 | |     TestModule {
+24 | |         components = [],
+25 | |         providers = [ProviderImpl]
+26 | |     }
+27 | | }
+   | |_^ the trait `shaku::component::HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
    = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

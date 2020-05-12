@@ -1,8 +1,8 @@
 //! Providers cannot have parameters
 
-use shaku::{ProvidedInterface, Provider};
+use shaku::Provider;
 
-trait ProviderTrait: ProvidedInterface {}
+trait ProviderTrait {}
 
 #[derive(Provider)]
 #[shaku(interface = ProviderTrait)]

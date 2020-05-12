@@ -3,8 +3,8 @@
 //! example expand to.
 
 use shaku::{
-    Component, Container, ContainerBuilder, HasComponent, HasProvider, Interface, Module,
-    ModuleBuildContext, ProvidedInterface, Provider,
+    Component, HasComponent, HasProvider, Interface, Module, ModuleBuildContext, ModuleBuilder,
+    Provider,
 };
 use std::error::Error;
 use std::fmt::Debug;
@@ -13,7 +13,7 @@ use std::sync::Arc;
 // Traits
 
 trait SampleDependency: Interface + Debug {}
-trait SampleService: ProvidedInterface + Debug {}
+trait SampleService: Debug {}
 
 // Implementations
 
@@ -45,9 +45,9 @@ impl SampleService for SampleServiceImpl {}
 impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServiceImpl {
     type Interface = dyn SampleService;
 
-    fn provide(container: &Container<M>) -> Result<Box<Self::Interface>, Box<dyn Error + 'static>> {
+    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
         Ok(Box::new(Self {
-            dependency: container.resolve(),
+            dependency: module.resolve(),
         }))
     }
 }
@@ -58,30 +58,34 @@ struct SampleModule {
     sample_dependency: Arc<dyn SampleDependency>,
 }
 impl Module for SampleModule {
+    type Submodules = ();
+
     fn build(context: &mut ModuleBuildContext<Self>) -> Self {
         Self {
-            sample_dependency: Self::resolve(context),
+            sample_dependency: Self::build_component(context),
         }
     }
 }
 impl HasComponent<dyn SampleDependency> for SampleModule {
-    fn resolve(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SampleDependency> {
-        context.resolve::<SampleDependencyImpl>()
+    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SampleDependency> {
+        context.build_component::<SampleDependencyImpl>()
     }
 
-    fn get_ref(&self) -> &Arc<dyn SampleDependency> {
-        &self.sample_dependency
+    fn resolve(&self) -> Arc<dyn SampleDependency> {
+        Arc::clone(&self.sample_dependency)
     }
 
-    fn get_mut(&mut self) -> &mut Arc<dyn SampleDependency> {
-        &mut self.sample_dependency
+    fn resolve_ref(&self) -> &dyn SampleDependency {
+        Arc::as_ref(&self.sample_dependency)
+    }
+
+    fn resolve_mut(&mut self) -> Option<&mut dyn SampleDependency> {
+        Arc::get_mut(&mut self.sample_dependency)
     }
 }
 impl HasProvider<dyn SampleService> for SampleModule {
-    fn provide(
-        container: &Container<Self>,
-    ) -> Result<Box<dyn SampleService>, Box<dyn Error + 'static>> {
-        SampleServiceImpl::provide(container)
+    fn provide(&self) -> Result<Box<dyn SampleService>, Box<dyn Error>> {
+        SampleServiceImpl::provide(self)
     }
 }
 
@@ -90,12 +94,12 @@ fn main() {
     let dependency_params = SampleDependencyImplParameters {
         value: "foo".to_string(),
     };
-    let container: Container<SampleModule> = ContainerBuilder::new()
+    let module = ModuleBuilder::<SampleModule>::with_submodules(())
         .with_component_parameters::<SampleDependencyImpl>(dependency_params)
         .build();
 
-    let dependency: &dyn SampleDependency = container.resolve_ref();
-    let service: Box<dyn SampleService> = container.provide().unwrap();
+    let dependency: &dyn SampleDependency = module.resolve_ref();
+    let service: Box<dyn SampleService> = module.provide().unwrap();
 
     println!("{:?}", dependency);
     println!("{:?}", service);

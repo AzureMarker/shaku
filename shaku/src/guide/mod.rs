@@ -1,11 +1,10 @@
 //! # Getting started guide
 //! Note: This getting started guide focuses on components, which live for the lifetime of the
-//! application (or, technically, the container). After reading this getting started guide, check
+//! application (or, technically, the module). After reading this getting started guide, check
 //! out the [provider guide] to learn how to create services with shorter lifetimes.
 //!
 //! ## Structure your application
-//! Start with your application's structs and traits. Use `Arc<dyn T>` for
-//! dependencies.
+//! Start with your application's structs and traits. Use `Arc<dyn T>` for dependencies.
 //!
 //! ```
 //! use std::sync::Arc;
@@ -122,11 +121,11 @@
 //! ```
 //!
 //! If you don't use the derive macro, add [`HasComponent`] bounds to your module generic and inject
-//! the dependencies manually with [`HasComponent::resolve`].
+//! the dependencies manually with [`HasComponent::build_component`].
 //!
-//! ## Create a Module
+//! ## Define a module
 //! Modules link together components and providers, and are core to providing shaku's compile time
-//! guarentees. A [`Module`] can be created manually or via the [`module`][module macro] macro (the
+//! guarentees. A [`Module`] can be defined manually or via the [`module`][module macro] macro (the
 //! `derive` feature is not necessary):
 //!
 //! ```
@@ -170,9 +169,10 @@
 //! This module implements `HasComponent<dyn IOutput>` and `HasComponent<dyn IDateWriter>` using the
 //! provided component implementations.
 //!
-//! ## Build a Container
-//! At application startup, create a [`Container`] using a [`ContainerBuilder`]. You can use this
-//! container to resolve the module's services.
+//! ## Build the module
+//! At application startup, start building the module using the generated `builder` method (created
+//! by the [`module`][module macro] macro). Alternatively, use [`ModuleBuilder::with_submodules`] to
+//! create the builder. Then, call [`ModuleBuilder::build`] to get the module instance.
 //!
 //! ```
 //! # use shaku::{module, Component, Interface};
@@ -209,14 +209,11 @@
 //! #     }
 //! # }
 //! #
-//! use shaku::{Container, ContainerBuilder};
-//!
-//! let container: Container<MyModule> = ContainerBuilder::new().build();
-//! // Alternatively, let container = Container::<MyModule>::default();
+//! let module = MyModule::builder().build();
 //! ```
 //!
 //! ### Passing parameters
-//! In many cases you need to pass parameters to a component. This can be done during container
+//! In many cases you need to pass parameters to a component. This can be done during module
 //! creation. Each component has an associated parameters type, and the derive generates a
 //! `*Parameters` struct for you (named after the component struct). Use this struct to pass in the
 //! parameters.
@@ -225,7 +222,7 @@
 //! override the default value by annotating the property with `#[shaku(default = ...)]`.
 //!
 //! ```
-//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
 //! # trait IOutput: Interface { fn write(&self, content: String); }
@@ -259,7 +256,7 @@
 //! #     }
 //! # }
 //! #
-//! let container: Container<MyModule> = ContainerBuilder::new()
+//! let module = MyModule::builder()
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
@@ -268,10 +265,11 @@
 //! ```
 //!
 //! ## Resolve components
-//! Once you created the [`Container`], you can resolve the components.
+//! Once you created the module, you can resolve the components using the module's [`HasComponent`]
+//! methods.
 //!
 //! ```
-//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
 //! # trait IOutput: Interface { fn write(&self, content: String); }
@@ -305,25 +303,27 @@
 //! #     }
 //! # }
 //! #
-//! # let container: Container<MyModule> = ContainerBuilder::new()
+//! # let module = MyModule::builder()
 //! #     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //! #         today: "Jan 26".to_string(),
 //! #         year: 2020
 //! #     })
 //! #     .build();
 //! #
-//! let writer: &dyn IDateWriter = container.resolve_ref();
+//! use shaku::HasComponent;
+//!
+//! let writer: &dyn IDateWriter = module.resolve_ref();
 //! writer.write_date(); // Prints "Today is Jan 26, 2020"
 //! ```
 //!
 //! ## Overriding components
 //! Although shaku is a compile time DI library, you can override the implementation of a service
-//! during the container build. This can be useful during testing, for example using an in-memory
+//! during the module build. This can be useful during testing, for example using an in-memory
 //! database while doing integration tests. For components, simply pass in a struct instance which
 //! implements the interface you want to override to [`with_component_override`]\:
 //!
 //! ```
-//! # use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! # use shaku::{module, Component, Interface, HasComponent};
 //! # use std::sync::Arc;
 //! #
 //! # trait IOutput: Interface { fn write(&self, content: String); }
@@ -367,7 +367,7 @@
 //!     }
 //! }
 //!
-//! let container: Container<MyModule> = ContainerBuilder::new()
+//! let module = MyModule::builder()
 //!     .with_component_override::<dyn IOutput>(Box::new(FakeOutput))
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
@@ -375,13 +375,13 @@
 //!     })
 //!     .build();
 //!
-//! let writer: &dyn IDateWriter = container.resolve_ref();
+//! let writer: &dyn IDateWriter = module.resolve_ref();
 //! writer.write_date(); // Nothing will be printed
 //! ```
 //!
 //! ## The full example
 //! ```
-//! use shaku::{module, Component, Container, ContainerBuilder, Interface};
+//! use shaku::{module, Component, Interface, HasComponent};
 //! use std::sync::Arc;
 //!
 //! trait IOutput: Interface {
@@ -424,14 +424,14 @@
 //!     }
 //! }
 //!
-//! let container: Container<MyModule> = ContainerBuilder::new()
+//! let module = MyModule::builder()
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
 //!     .build();
 //!
-//! let writer: &dyn IDateWriter = container.resolve_ref();
+//! let writer: &dyn IDateWriter = module.resolve_ref();
 //! writer.write_date();
 //! ```
 //!
@@ -440,11 +440,11 @@
 //! [`Component`]: ../trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
 //! [`HasComponent`]: ../trait.HasComponent.html
-//! [`HasComponent::resolve`]: ../trait.HasComponent.html#tymethod.resolve
+//! [`HasComponent::build_component`]: ../trait.HasComponent.html#tymethod.build_component
 //! [`Module`]: ../trait.Module.html
 //! [module macro]: ../macro.module.html
-//! [`ContainerBuilder`]: ../struct.ContainerBuilder.html
-//! [`Container`]: ../struct.Container.html
-//! [`with_component_override`]: ../struct.ContainerBuilder.html#method.with_component_override
+//! [`ModuleBuilder::with_submodules`]: ../struct.ModuleBuilder.html#method.with_submodules
+//! [`ModuleBuilder::build`]: ../struct.ModuleBuilder.html#method.build
+//! [`with_component_override`]: ../struct.ModuleBuilder.html#method.with_component_override
 
 pub mod provider;
