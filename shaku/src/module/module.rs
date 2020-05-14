@@ -33,6 +33,7 @@ use std::any::Any;
 /// [`HasComponent`]: trait.HasComponent.html
 /// [`module`]: macro.module.html
 pub trait Module: ModuleInterface {
+    /// A container for this module's submodules.
     type Submodules;
 
     /// Create the module instance by resolving the components this module

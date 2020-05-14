@@ -448,3 +448,4 @@
 //! [`with_component_override`]: ../struct.ModuleBuilder.html#method.with_component_override
 
 pub mod provider;
+pub mod submodules;
