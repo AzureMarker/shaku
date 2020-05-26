@@ -7,50 +7,50 @@ use std::sync::Arc;
 
 // Traits
 
-trait SampleDependency: Interface + Debug {}
-trait SampleService: Debug {}
+trait SimpleDependency: Interface + Debug {}
+trait SimpleService: Debug {}
 
 // Implementations
 
 #[derive(Component, Debug)]
-#[shaku(interface = SampleDependency)]
-struct SampleDependencyImpl {
+#[shaku(interface = SimpleDependency)]
+struct SimpleDependencyImpl {
     value: String,
 }
-impl SampleDependency for SampleDependencyImpl {}
+impl SimpleDependency for SimpleDependencyImpl {}
 
 #[derive(Provider, Debug)]
-#[shaku(interface = SampleService)]
-struct SampleServiceImpl {
+#[shaku(interface = SimpleService)]
+struct SimpleServiceImpl {
     #[shaku(inject)]
-    dependency: Arc<dyn SampleDependency>,
+    dependency: Arc<dyn SimpleDependency>,
 }
-impl SampleService for SampleServiceImpl {}
+impl SimpleService for SimpleServiceImpl {}
 
 // Module
 
 module! {
-    SampleModule {
+    SimpleModule {
         components = [
-            SampleDependencyImpl
+            SimpleDependencyImpl
         ],
         providers = [
-            SampleServiceImpl
+            SimpleServiceImpl
         ]
     }
 }
 
 //noinspection DuplicatedCode
 fn main() {
-    let dependency_params = SampleDependencyImplParameters {
+    let dependency_params = SimpleDependencyImplParameters {
         value: "foo".to_string(),
     };
-    let module = SampleModule::builder()
-        .with_component_parameters::<SampleDependencyImpl>(dependency_params)
+    let module = SimpleModule::builder()
+        .with_component_parameters::<SimpleDependencyImpl>(dependency_params)
         .build();
 
-    let dependency: &dyn SampleDependency = module.resolve_ref();
-    let service: Box<dyn SampleService> = module.provide().unwrap();
+    let dependency: &dyn SimpleDependency = module.resolve_ref();
+    let service: Box<dyn SimpleService> = module.provide().unwrap();
 
     println!("{:?}", dependency);
     println!("{:?}", service);

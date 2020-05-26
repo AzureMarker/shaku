@@ -12,19 +12,19 @@ use std::sync::Arc;
 
 // Traits
 
-trait SampleDependency: Interface + Debug {}
-trait SampleService: Debug {}
+trait SimpleDependency: Interface + Debug {}
+trait SimpleService: Debug {}
 
 // Implementations
 
 #[derive(Debug)]
-struct SampleDependencyImpl {
+struct SimpleDependencyImpl {
     value: String,
 }
-impl SampleDependency for SampleDependencyImpl {}
-impl<M: Module> Component<M> for SampleDependencyImpl {
-    type Interface = dyn SampleDependency;
-    type Parameters = SampleDependencyImplParameters;
+impl SimpleDependency for SimpleDependencyImpl {}
+impl<M: Module> Component<M> for SimpleDependencyImpl {
+    type Interface = dyn SimpleDependency;
+    type Parameters = SimpleDependencyImplParameters;
 
     fn build(_: &mut ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
         Box::new(Self {
@@ -33,17 +33,17 @@ impl<M: Module> Component<M> for SampleDependencyImpl {
     }
 }
 #[derive(Default)]
-struct SampleDependencyImplParameters {
+struct SimpleDependencyImplParameters {
     value: String,
 }
 
 #[derive(Debug)]
-struct SampleServiceImpl {
-    dependency: Arc<dyn SampleDependency>,
+struct SimpleServiceImpl {
+    dependency: Arc<dyn SimpleDependency>,
 }
-impl SampleService for SampleServiceImpl {}
-impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServiceImpl {
-    type Interface = dyn SampleService;
+impl SimpleService for SimpleServiceImpl {}
+impl<M: Module + HasComponent<dyn SimpleDependency>> Provider<M> for SimpleServiceImpl {
+    type Interface = dyn SimpleService;
 
     fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
         Ok(Box::new(Self {
@@ -54,54 +54,54 @@ impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServi
 
 // Module
 
-struct SampleModule {
-    sample_dependency: Arc<dyn SampleDependency>,
-    sample_service: Arc<ProviderFn<Self, dyn SampleService>>,
+struct SimpleModule {
+    simple_dependency: Arc<dyn SimpleDependency>,
+    simple_service: Arc<ProviderFn<Self, dyn SimpleService>>,
 }
-impl Module for SampleModule {
+impl Module for SimpleModule {
     type Submodules = ();
 
     fn build(context: &mut ModuleBuildContext<Self>) -> Self {
         Self {
-            sample_dependency: Self::build_component(context),
-            sample_service: context.provider_fn::<SampleServiceImpl>(),
+            simple_dependency: Self::build_component(context),
+            simple_service: context.provider_fn::<SimpleServiceImpl>(),
         }
     }
 }
-impl HasComponent<dyn SampleDependency> for SampleModule {
-    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SampleDependency> {
-        context.build_component::<SampleDependencyImpl>()
+impl HasComponent<dyn SimpleDependency> for SimpleModule {
+    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SimpleDependency> {
+        context.build_component::<SimpleDependencyImpl>()
     }
 
-    fn resolve(&self) -> Arc<dyn SampleDependency> {
-        Arc::clone(&self.sample_dependency)
+    fn resolve(&self) -> Arc<dyn SimpleDependency> {
+        Arc::clone(&self.simple_dependency)
     }
 
-    fn resolve_ref(&self) -> &dyn SampleDependency {
-        Arc::as_ref(&self.sample_dependency)
+    fn resolve_ref(&self) -> &dyn SimpleDependency {
+        Arc::as_ref(&self.simple_dependency)
     }
 
-    fn resolve_mut(&mut self) -> Option<&mut dyn SampleDependency> {
-        Arc::get_mut(&mut self.sample_dependency)
+    fn resolve_mut(&mut self) -> Option<&mut dyn SimpleDependency> {
+        Arc::get_mut(&mut self.simple_dependency)
     }
 }
-impl HasProvider<dyn SampleService> for SampleModule {
-    fn provide(&self) -> Result<Box<dyn SampleService>, Box<dyn Error>> {
-        (self.sample_service)(self)
+impl HasProvider<dyn SimpleService> for SimpleModule {
+    fn provide(&self) -> Result<Box<dyn SimpleService>, Box<dyn Error>> {
+        (self.simple_service)(self)
     }
 }
 
 //noinspection DuplicatedCode
 fn main() {
-    let dependency_params = SampleDependencyImplParameters {
+    let dependency_params = SimpleDependencyImplParameters {
         value: "foo".to_string(),
     };
-    let module = ModuleBuilder::<SampleModule>::with_submodules(())
-        .with_component_parameters::<SampleDependencyImpl>(dependency_params)
+    let module = ModuleBuilder::<SimpleModule>::with_submodules(())
+        .with_component_parameters::<SimpleDependencyImpl>(dependency_params)
         .build();
 
-    let dependency: &dyn SampleDependency = module.resolve_ref();
-    let service: Box<dyn SampleService> = module.provide().unwrap();
+    let dependency: &dyn SimpleDependency = module.resolve_ref();
+    let service: Box<dyn SimpleService> = module.provide().unwrap();
 
     println!("{:?}", dependency);
     println!("{:?}", service);
