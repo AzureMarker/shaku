@@ -9,7 +9,7 @@
 //! By default shaku is thread-safe and exposes derive macros, but these can be disabled by opting
 //! out of the following features:
 //!
-//! - `thread_safe`: Requires components to be `Send + Sync` and provided services to be `Send`
+//! - `thread_safe`: Requires components to be `Send + Sync`
 //! - `derive`: Uses the `shaku_derive` crate to provide proc-macro derives of `Component` and
 //!   `Provider`.
 //!
