@@ -17,5 +17,5 @@ syn = { version = "1.0", features = ["extra-traits", "full"] }
 proc-macro2 = "1.0"
 
 [dev-dependencies]
-shaku = { version = "~0.3.1", path = "../shaku" }
+shaku = { path = "../shaku" }
 trybuild = "1.0"
