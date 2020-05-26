@@ -59,11 +59,17 @@ jobs:
           test-args: "-- --skip compile_fail"
   shaku_rocket:
     docker:
-      - image: rustlang/rust:nightly
+      - image: rust:1.43.1
     working_directory: ~/project/shaku_rocket
     steps:
       - checkout:
           path: ~/project
+      - run:
+          name: "Install Nightly Compiler"
+          command: |
+            # Use the default profile to automatically get a nightly with clippy and rustfmt
+            rustup set profile default
+            rustup default nightly
       - style-check
       - lint-check
       - code-check
