@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   by calling the generated `builder` method on the module to be build.
 - Modules can depend on module interfaces, i.e., traits which have
   `HasComponent`/`HasProvider` bounds. Because of this, the submodules must be
-  provided to the module builder during module build. See the module macro
+  provided to the module builder during module build. See the [module macro]
   documentation for more details.
 - `ProvidedInterface` has been removed. Consequently, provided services do not
   need to implement `Send` to be thread-safe anymore.
@@ -28,9 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an optional module interface specifier to the module macro (add
   `: MyModuleInterface` after the module name). If a module interface is
   specified, the generated module will implement it.
+- Added a [submodule guide]
 
 ## Changed
 - shaku_rocket now ensures that the thread_safe feature is enabled.
+
+[module_macro]: https://docs.rs/shaku/0.4.0/shaku/macro.module.html
+[submodule guide]: https://docs.rs/shaku/0.4.0/shaku/guide/submodules/index.html
 
 ## [0.3.1] - 2020-05-11
 ### Fixed
