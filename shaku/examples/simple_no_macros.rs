@@ -4,7 +4,7 @@
 
 use shaku::{
     Component, HasComponent, HasProvider, Interface, Module, ModuleBuildContext, ModuleBuilder,
-    Provider,
+    Provider, ProviderFn,
 };
 use std::error::Error;
 use std::fmt::Debug;
@@ -56,6 +56,7 @@ impl<M: Module + HasComponent<dyn SampleDependency>> Provider<M> for SampleServi
 
 struct SampleModule {
     sample_dependency: Arc<dyn SampleDependency>,
+    sample_service: Arc<ProviderFn<Self, dyn SampleService>>,
 }
 impl Module for SampleModule {
     type Submodules = ();
@@ -63,6 +64,7 @@ impl Module for SampleModule {
     fn build(context: &mut ModuleBuildContext<Self>) -> Self {
         Self {
             sample_dependency: Self::build_component(context),
+            sample_service: context.provider_fn::<SampleServiceImpl>(),
         }
     }
 }
@@ -85,7 +87,7 @@ impl HasComponent<dyn SampleDependency> for SampleModule {
 }
 impl HasProvider<dyn SampleService> for SampleModule {
     fn provide(&self) -> Result<Box<dyn SampleService>, Box<dyn Error>> {
-        SampleServiceImpl::provide(self)
+        (self.sample_service)(self)
     }
 }
 
