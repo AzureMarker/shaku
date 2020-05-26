@@ -23,7 +23,7 @@
 //!
 //! trait MyComponent: Interface {}
 //! trait AuthManager: Interface {}
-//! trait AuthModule: HasComponent<dyn AuthManager> {};
+//! trait AuthModule: HasComponent<dyn AuthManager> {}
 //!
 //! #[derive(Component)]
 //! #[shaku(interface = MyComponent)]
@@ -61,7 +61,7 @@
 //! #
 //! # trait MyComponent: Interface {}
 //! # trait AuthManager: Interface {}
-//! # trait AuthModule: HasComponent<dyn AuthManager> {};
+//! # trait AuthModule: HasComponent<dyn AuthManager> {}
 //! #
 //! # #[derive(Component)]
 //! # #[shaku(interface = MyComponent)]
