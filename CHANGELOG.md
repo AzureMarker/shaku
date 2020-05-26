@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.4.0] - 2020-05-26
 ### Breaking Changes
 - Container is dead, long live Module! Resolving services now deals with modules
   instead of a Container of the module. Instead of building a container, you
@@ -33,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - shaku_rocket now ensures that the thread_safe feature is enabled.
 
-[module_macro]: https://docs.rs/shaku/0.4.0/shaku/macro.module.html
+[module macro]: https://docs.rs/shaku/0.4.0/shaku/macro.module.html
 [submodule guide]: https://docs.rs/shaku/0.4.0/shaku/guide/submodules/index.html
 
 ## [0.3.1] - 2020-05-11
@@ -72,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Mcat12/shaku/releases/tag/v0.4.0
 [0.3.1]: https://github.com/Mcat12/shaku/releases/tag/v0.3.1
 [0.3.0]: https://github.com/Mcat12/shaku/releases/tag/v0.3.0
 [0.2.0]: https://github.com/Mcat12/shaku/releases/tag/v0.2.0
