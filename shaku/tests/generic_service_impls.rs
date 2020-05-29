@@ -3,9 +3,10 @@
 //!
 //! TODO: Add support for generics in macros
 
-use shaku::{Component, HasComponent, Interface, Module, ModuleBuildContext, ModuleBuilder};
+use shaku::{
+    module, Component, HasComponent, Interface, Module, ModuleBuildContext, ModuleBuilder,
+};
 use std::fmt::Debug;
-use std::sync::Arc;
 
 trait RegisterService: Debug + Interface {}
 
@@ -27,42 +28,12 @@ impl<E: Debug + Default + Interface, M: Module> Component<M> for RegisterService
 
 impl<E: Debug + Default + Interface> RegisterService for RegisterServiceImpl<E> {}
 
-// module! {
-//     MyModule {
-//         components = [RegisterServiceImpl<()>],
-//         providers = []
-//     }
-// }
+type RegisterServiceImplType = RegisterServiceImpl<()>;
 
-struct MyModule {
-    register_service: Arc<dyn RegisterService>,
-}
-
-impl Module for MyModule {
-    type Submodules = ();
-
-    fn build(context: &mut ModuleBuildContext<Self>) -> Self {
-        MyModule {
-            register_service: Self::build_component(context),
-        }
-    }
-}
-
-impl HasComponent<dyn RegisterService> for MyModule {
-    fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn RegisterService> {
-        context.build_component::<RegisterServiceImpl<()>>()
-    }
-
-    fn resolve(&self) -> Arc<dyn RegisterService> {
-        Arc::clone(&self.register_service)
-    }
-
-    fn resolve_ref(&self) -> &dyn RegisterService {
-        Arc::as_ref(&self.register_service)
-    }
-
-    fn resolve_mut(&mut self) -> Option<&mut dyn RegisterService> {
-        Arc::get_mut(&mut self.register_service)
+module! {
+    MyModule {
+        components = [RegisterServiceImplType],
+        providers = []
     }
 }
 
