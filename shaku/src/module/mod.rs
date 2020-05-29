@@ -1,14 +1,13 @@
 //! This module handles building and resolving services.
 
-#[allow(clippy::module_inception)]
-mod module;
 mod module_build_context;
 mod module_builder;
 mod module_macro;
+mod module_traits;
 
-pub use self::module::{Module, ModuleInterface};
 pub use self::module_build_context::ModuleBuildContext;
 pub use self::module_builder::ModuleBuilder;
+pub use self::module_traits::{Module, ModuleInterface};
 
 #[cfg(not(feature = "thread_safe"))]
 type AnyType = dyn anymap::any::Any;
