@@ -64,19 +64,19 @@
 #[macro_export]
 macro_rules! module {
     {
-        $visibility:vis $module:ident $(: $module_trait:ident)? {
+        $visibility:vis $module:ident $(: $module_trait:ty)? {
             components = [
-                $($component:ident),* $(,)?
+                $($component:ident $(< $($c_generics:ty),* >)?),* $(,)?
             ],
             providers = [
-                $($provider:ident),* $(,)?
+                $($provider:ident $(< $($p_generics:ty),* >)?),* $(,)?
             ]
             $(, $(use $submodule:ident {
                 components = [
-                    $($sub_component:ident),* $(,)?
+                    $($sub_component:ty),* $(,)?
                 ],
                 providers = [
-                    $($sub_provider:ident),* $(,)?
+                    $($sub_provider:ty),* $(,)?
                 ] $(,)?
             }),* $(,)? )?
         }
@@ -87,10 +87,10 @@ macro_rules! module {
                 // It would be nice to prefix the property with something like
                 // "__di_", but macro_rules does not support concatenating
                 // idents on stable.
-                $component: ::std::sync::Arc<<$component as $crate::Component<Self>>::Interface>,
+                $component: ::std::sync::Arc<$crate::module!(@c_interface $component $($($c_generics),*)?)>,
             )*
             $(
-                $provider: ::std::sync::Arc<$crate::ProviderFn<Self, <$provider as $crate::Provider<Self>>::Interface>>,
+                $provider: ::std::sync::Arc<$crate::ProviderFn<Self, $crate::module!(@p_interface $provider $($($p_generics),*)?)>>,
             )*
             $($(
                 $submodule: ::std::sync::Arc<$submodule>,
@@ -124,11 +124,11 @@ macro_rules! module {
                 Self {
                 $(
                     $component: <Self as $crate::HasComponent<
-                        <$component as $crate::Component<Self>>::Interface
+                        $crate::module!(@c_interface $component $($($c_generics),*)?)
                     >>::build_component(context),
                 )*
                 $(
-                    $provider: context.provider_fn::<$provider>(),
+                    $provider: context.provider_fn::<$provider $( < $($p_generics),* > )?>(),
                 )*
                 $($(
                     $submodule,
@@ -138,31 +138,31 @@ macro_rules! module {
         }
 
         $(
-        impl $crate::HasComponent<<$component as $crate::Component<Self>>::Interface> for $module {
+        impl $crate::HasComponent<$crate::module!(@c_interface $component $($($c_generics),*)?)> for $module {
             fn build_component(
                 context: &mut $crate::ModuleBuildContext<Self>
-            ) -> ::std::sync::Arc<<$component as $crate::Component<Self>>::Interface> {
-                context.build_component::<$component>()
+            ) -> ::std::sync::Arc<$crate::module!(@c_interface $component $($($c_generics),*)?)> {
+                context.build_component::<$component $(< $($c_generics),* >)?>()
             }
 
-            fn resolve(&self) -> ::std::sync::Arc<<$component as $crate::Component<Self>>::Interface> {
+            fn resolve(&self) -> ::std::sync::Arc<$crate::module!(@c_interface $component $($($c_generics),*)?)> {
                 ::std::sync::Arc::clone(&self.$component)
             }
 
-            fn resolve_ref(&self) -> &<$component as $crate::Component<Self>>::Interface {
+            fn resolve_ref(&self) -> &$crate::module!(@c_interface $component $($($c_generics),*)?) {
                 ::std::sync::Arc::as_ref(&self.$component)
             }
 
-            fn resolve_mut(&mut self) -> Option<&mut <$component as $crate::Component<Self>>::Interface> {
+            fn resolve_mut(&mut self) -> Option<&mut $crate::module!(@c_interface $component $($($c_generics),*)?)> {
                 ::std::sync::Arc::get_mut(&mut self.$component)
             }
         }
         )*
 
         $(
-        impl $crate::HasProvider<<$provider as $crate::Provider<Self>>::Interface> for $module {
+        impl $crate::HasProvider<$crate::module!(@p_interface $provider $($($p_generics),*)?)> for $module {
             fn provide(&self) -> ::std::result::Result<
-                ::std::boxed::Box<<$provider as $crate::Provider<Self>>::Interface>,
+                ::std::boxed::Box<$crate::module!(@p_interface $provider $($($p_generics),*)?)>,
                 ::std::boxed::Box<dyn ::std::error::Error>
             > {
                 (self.$provider)(self)
@@ -171,10 +171,11 @@ macro_rules! module {
         )*
 
         $(
-        $crate::module!(@sub_component $module [$($submodule)*] [$($($submodule $sub_component)*)*]);
+        $crate::module!(@sub_component $module [$($submodule)*] [$($($submodule $sub_component,)*)*]);
         )?
 
         $($($(
+        #[allow(bare_trait_objects)]
         impl $crate::HasProvider<$sub_provider> for $module {
             fn provide(&self) -> ::std::result::Result<
                 ::std::boxed::Box<$sub_provider>,
@@ -186,11 +187,28 @@ macro_rules! module {
         )*)*)?
     };
 
+    // Transform the component type into its interface type
+    (@c_interface $component:ident $($generics:ty),*) => {
+        <$component < $($generics),* > as $crate::Component<Self>>::Interface
+    };
+
+    // Transform the provider type into its interface type
+    (@p_interface $provider:ident $($generics:ty),*) => {
+        <$provider < $($generics),* > as $crate::Provider<Self>>::Interface
+    };
+
     // Generate a HasComponent impl for a subcomponent. This impl needs to
     // access the submodules from context, which means it needs to destructure
     // the submodules tuple. To destructure the tuple, we need to have the full
     // list of submodules.
-    (@sub_component $module:ident [$($submodules:ident)*] [$current_submodule:ident $sub_component:ident $($rest:ident)*]) => {
+    (
+        @sub_component $module:ident [$($submodules:ident)*]
+        [
+            $current_submodule:ident $sub_component:ty,
+            $($other_submodules:ident $other_sub_components:ty,)*
+        ]
+    ) => {
+        #[allow(bare_trait_objects)]
         impl $crate::HasComponent<$sub_component> for $module {
             fn build_component(
                 context: &mut $crate::ModuleBuildContext<Self>
@@ -213,9 +231,12 @@ macro_rules! module {
             }
         }
 
-        $crate::module!(@sub_component $module [$($submodules)*] [$($rest)*]);
+        $crate::module!(
+            @sub_component $module [$($submodules)*]
+            [$($other_submodules $other_sub_components,)*]
+        );
     };
 
     // Finished generating subcomponent HasComponent impls
-    (@sub_component $module:ident [$($submodule:ident)*] []) => {};
+    (@sub_component $module:ident [$($submodule:tt)*] []) => {};
 }

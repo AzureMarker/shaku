@@ -28,11 +28,9 @@ impl<E: Debug + Default + Interface, M: Module> Component<M> for RegisterService
 
 impl<E: Debug + Default + Interface> RegisterService for RegisterServiceImpl<E> {}
 
-type RegisterServiceImplType = RegisterServiceImpl<()>;
-
 module! {
     MyModule {
-        components = [RegisterServiceImplType],
+        components = [RegisterServiceImpl<()>],
         providers = []
     }
 }
