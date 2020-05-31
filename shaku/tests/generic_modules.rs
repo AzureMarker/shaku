@@ -1,11 +1,9 @@
-//! Service implementations can be generic. Based off of issue #2:
+//! Modules and services can be generic. Based off of issue #2:
 //! https://github.com/Mcat12/shaku/issues/2
 //!
 //! TODO: Add support for generics in macros
 
-use shaku::{
-    module, Component, HasComponent, Interface, Module, ModuleBuildContext, ModuleBuilder,
-};
+use shaku::{module, Component, HasComponent, Interface, Module, ModuleBuildContext};
 use std::fmt::Debug;
 
 trait RegisterService: Debug + Interface {}
@@ -29,15 +27,15 @@ impl<E: Debug + Default + Interface, M: Module> Component<M> for RegisterService
 impl<E: Debug + Default + Interface> RegisterService for RegisterServiceImpl<E> {}
 
 module! {
-    MyModule {
-        components = [RegisterServiceImpl<()>],
+    MyModule<E: Debug + Default + Interface> {
+        components = [RegisterServiceImpl<E>],
         providers = []
     }
 }
 
 #[test]
 fn can_use_generic_service_impl() {
-    let module: MyModule = ModuleBuilder::with_submodules(()).build();
+    let module = MyModule::<()>::builder().build();
     let register_service: &dyn RegisterService = module.resolve_ref();
 
     assert_eq!(
