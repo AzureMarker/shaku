@@ -1,45 +1,44 @@
 //! Modules and services can be generic. Based off of issue #2:
 //! https://github.com/Mcat12/shaku/issues/2
-//!
-//! TODO: Add support for generics in derive macros
 
-use shaku::{module, Component, HasComponent, Interface, Module, ModuleBuildContext};
+use shaku::{module, Component, HasProvider, Interface, Provider};
 use std::fmt::Debug;
+use std::sync::Arc;
 
-trait RegisterService: Debug + Interface {}
+trait RegisterService<E: Debug + Interface>: Debug + Interface {}
+trait RegisterProvider: Debug {}
 
-// #[derive(Component)]
-// #[shaku(interface = RegisterService)]
-#[derive(Debug)]
+#[derive(Component, Debug)]
+#[shaku(interface = RegisterService<E>)]
 struct RegisterServiceImpl<E: Debug + Default + Interface> {
     executor: E,
 }
 
-impl<E: Debug + Default + Interface, M: Module> Component<M> for RegisterServiceImpl<E> {
-    type Interface = dyn RegisterService;
-    type Parameters = E;
+impl<E: Debug + Default + Interface> RegisterService<E> for RegisterServiceImpl<E> {}
 
-    fn build(_context: &mut ModuleBuildContext<M>, params: E) -> Box<dyn RegisterService> {
-        Box::new(RegisterServiceImpl { executor: params })
-    }
+#[derive(Provider, Debug)]
+#[shaku(interface = RegisterProvider)]
+struct RegisterProviderImpl<E: Debug + Interface> {
+    #[shaku(inject)]
+    register_service: Arc<dyn RegisterService<E>>,
 }
 
-impl<E: Debug + Default + Interface> RegisterService for RegisterServiceImpl<E> {}
+impl<E: Debug + Interface> RegisterProvider for RegisterProviderImpl<E> {}
 
 module! {
     MyModule<E: Debug + Default + Interface> {
         components = [RegisterServiceImpl<E>],
-        providers = []
+        providers = [RegisterProviderImpl<E>]
     }
 }
 
 #[test]
 fn can_use_generic_service_impl() {
     let module = MyModule::<()>::builder().build();
-    let register_service: &dyn RegisterService = module.resolve_ref();
+    let register_service: Box<dyn RegisterProvider> = module.provide().unwrap();
 
     assert_eq!(
         format!("{:?}", register_service),
-        "RegisterServiceImpl { executor: () }"
+        "RegisterProviderImpl { register_service: RegisterServiceImpl { executor: () } }"
     );
 }

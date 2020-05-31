@@ -43,11 +43,16 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
     let component_name = service.metadata.identifier;
     let parameters_name = format_ident!("{}Parameters", component_name);
     let interface = service.metadata.interface;
+    let (generic_impls, generic_tys, generic_where) = service.metadata.generics.split_for_impl();
+    let generic_impls_no_parens = &service.metadata.generics.params;
     let visibility = service.metadata.visibility;
     let output = quote! {
-        impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Component<M> for #component_name {
+        impl<
+            M: ::shaku::Module #(+ #dependencies)*,
+            #generic_impls_no_parens
+        > ::shaku::Component<M> for #component_name #generic_tys #generic_where {
             type Interface = dyn #interface;
-            type Parameters = #parameters_name;
+            type Parameters = #parameters_name #generic_tys;
 
             fn build(context: &mut ::shaku::ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
                 Box::new(Self {
@@ -56,11 +61,11 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
             }
         }
 
-        #visibility struct #parameters_name {
+        #visibility struct #parameters_name #generic_impls #generic_where {
             #(#visibility #parameters_properties),*
         }
 
-        impl ::std::default::Default for #parameters_name {
+        impl #generic_impls ::std::default::Default for #parameters_name #generic_tys #generic_where {
             fn default() -> Self {
                 Self {
                     #(#parameters_defaults),*

@@ -30,8 +30,13 @@ pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error>
     // Provider implementation
     let provider_name = service.metadata.identifier;
     let interface = service.metadata.interface;
+    let (_, generic_tys, generic_where) = service.metadata.generics.split_for_impl();
+    let generic_impls_no_parens = &service.metadata.generics.params;
     let output = quote! {
-        impl<M: ::shaku::Module #(+ #dependencies)*> ::shaku::Provider<M> for #provider_name {
+        impl<
+            M: ::shaku::Module #(+ #dependencies)*,
+            #generic_impls_no_parens
+        > ::shaku::Provider<M> for #provider_name #generic_tys #generic_where {
             type Interface = dyn #interface;
 
             fn provide(module: &M) -> ::std::result::Result<

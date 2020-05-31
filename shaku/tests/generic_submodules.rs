@@ -1,8 +1,6 @@
 //! Submodules can be generic
-//!
-//! TODO: Add support for generics in derive macros
 
-use shaku::{module, Component, HasComponent, Interface, Module, ModuleBuildContext};
+use shaku::{module, Component, HasComponent, Interface};
 use std::sync::Arc;
 
 trait DbPool<C>: Interface {
@@ -12,8 +10,8 @@ trait DbPool<C>: Interface {
 #[derive(Debug, Default)]
 struct DbConnection;
 
-// #[derive(Component)]
-// #[shaku(interface = DbPool<C>)]
+#[derive(Component)]
+#[shaku(interface = DbPool<C>)]
 struct DbPoolImpl<C: Interface + Default> {
     connection: C,
 }
@@ -21,15 +19,6 @@ struct DbPoolImpl<C: Interface + Default> {
 impl<C: Interface + Default> DbPool<C> for DbPoolImpl<C> {
     fn get_connection(&self) -> &C {
         &self.connection
-    }
-}
-
-impl<M: Module, C: Interface + Default> Component<M> for DbPoolImpl<C> {
-    type Interface = dyn DbPool<C>;
-    type Parameters = C;
-
-    fn build(_context: &mut ModuleBuildContext<M>, params: C) -> Box<dyn DbPool<C>> {
-        Box::new(Self { connection: params })
     }
 }
 

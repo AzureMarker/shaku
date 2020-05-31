@@ -2,7 +2,7 @@
 
 use crate::error::Error;
 use crate::parser::Parser;
-use syn::{DeriveInput, Expr, Ident, Type, Visibility};
+use syn::{DeriveInput, Expr, Generics, Ident, Type, Visibility};
 
 /// The main data structure, representing the data required to implement
 /// Component or Provider.
@@ -26,6 +26,7 @@ impl ServiceData {
 pub struct MetaData {
     pub identifier: Ident,
     pub interface: Type,
+    pub generics: Generics,
     pub visibility: Visibility,
 }
 
