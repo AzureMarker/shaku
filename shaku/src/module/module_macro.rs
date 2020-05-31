@@ -97,7 +97,7 @@ macro_rules! module {
             providers = [
                 $($provider:ident $(< $($p_generics:ty),+ >)?),* $(,)?
             ]
-            $(, $(use $submodule:ident {
+            $(, $(use $submodule:ident $(< $($s_generics:ty),+ >)? {
                 components = [
                     $($sub_component:ty),* $(,)?
                 ],
@@ -125,7 +125,7 @@ macro_rules! module {
                 >>,
             )*
             $($(
-                $submodule: ::std::sync::Arc<$submodule>,
+                $submodule: ::std::sync::Arc<$submodule $(< $($s_generics),+ >)?>,
             )*)?
         }
 
@@ -143,7 +143,7 @@ macro_rules! module {
         >)? $module $(< $($m_generic),* >)? {
             #[allow(non_snake_case)]
             $visibility fn builder($($(
-                $submodule: ::std::sync::Arc<$submodule>
+                $submodule: ::std::sync::Arc<$submodule $(< $($s_generics),+ >)?>
             ),*)?) -> $crate::ModuleBuilder<Self> {
                 // Convert function arguments into a tuple
                 $crate::ModuleBuilder::with_submodules(($($($submodule),*)?))
@@ -157,7 +157,7 @@ macro_rules! module {
             $crate::Module for $module $(< $($m_generic),* >)?
         {
             // A tuple of submodules
-            type Submodules = ($($(::std::sync::Arc<$submodule>),*)?);
+            type Submodules = ($($(::std::sync::Arc<$submodule $(< $($s_generics),+ >)?>),*)?);
 
             fn build(context: &mut $crate::ModuleBuildContext<Self>) -> Self {
                 #[allow(non_snake_case)]

@@ -1,7 +1,7 @@
 //! Modules and services can be generic. Based off of issue #2:
 //! https://github.com/Mcat12/shaku/issues/2
 //!
-//! TODO: Add support for generics in macros
+//! TODO: Add support for generics in derive macros
 
 use shaku::{module, Component, HasComponent, Interface, Module, ModuleBuildContext};
 use std::fmt::Debug;
