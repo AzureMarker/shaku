@@ -1,6 +1,6 @@
 [package]
 name = "shaku_derive"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Code generation for the shaku dependency injection framework"
 repository = "https://github.com/Mcat12/shaku"
