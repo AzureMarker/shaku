@@ -5,6 +5,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Support generics in derives and the `module` macro. For example:
+  ```rust
+  use shaku::{module, Component, Interface, HasComponent};
+
+  trait MyComponent<T: Interface>: Interface {}
+
+  #[derive(Component)]
+  #[shaku(interface = MyComponent<T>)]
+  struct MyComponentImpl<T: Interface + Default> {
+      value: T
+  }
+  impl<T: Interface + Default> MyComponent<T> for MyComponentImpl<T> {}
+
+  module! {
+      MyModule<T: Interface + Default> {
+          components = [MyComponentImpl<T>],
+          providers = []
+      }
+  }
+  ```
 
 ## [0.4.0] - 2020-05-26
 ### Breaking Changes
