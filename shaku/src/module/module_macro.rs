@@ -18,20 +18,21 @@
 ///
 /// ## Generics
 /// This macro supports generics at the module level:
-/// TODO: support generics in derive macros and then fix example
-/// ```rust,ignore
+/// ```rust
 /// use shaku::{module, Component, Interface, HasComponent};
 ///
-/// trait MyComponent: Interface {}
+/// trait MyComponent<T: Interface>: Interface {}
 ///
 /// #[derive(Component)]
-/// #[shaku(interface = MyComponent)]
-/// struct MyComponentImpl<T: Interface>(T);
-/// impl<T: Interface> MyComponent for MyComponentImpl<T> {}
+/// #[shaku(interface = MyComponent<T>)]
+/// struct MyComponentImpl<T: Interface + Default> {
+///     value: T
+/// }
+/// impl<T: Interface + Default> MyComponent<T> for MyComponentImpl<T> {}
 ///
-/// // MyModuleImpl implements Module and HasComponent<dyn MyComponent>
+/// // MyModuleImpl implements Module and HasComponent<dyn MyComponent<T>>
 /// module! {
-///     MyModule<T: Interface> {
+///     MyModule<T: Interface + Default> {
 ///         components = [MyComponentImpl<T>],
 ///         providers = []
 ///     }
