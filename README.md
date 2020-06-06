@@ -12,34 +12,34 @@ more details, including a getting started guide.
 use shaku::{module, Component, Interface, HasComponent};
 use std::sync::Arc;
 
-trait IOutput: Interface {
+trait Output: Interface {
     fn write(&self, content: String);
 }
 
-trait IDateWriter: Interface {
+trait DateWriter: Interface {
     fn write_date(&self);
 }
 
 #[derive(Component)]
-#[shaku(interface = IOutput)]
+#[shaku(interface = Output)]
 struct ConsoleOutput;
 
-impl IOutput for ConsoleOutput {
+impl Output for ConsoleOutput {
     fn write(&self, content: String) {
         println!("{}", content);
     }
 }
 
 #[derive(Component)]
-#[shaku(interface = IDateWriter)]
+#[shaku(interface = DateWriter)]
 struct TodayWriter {
     #[shaku(inject)]
-    output: Arc<dyn IOutput>,
+    output: Arc<dyn Output>,
     today: String,
     year: usize,
 }
 
-impl IDateWriter for TodayWriter {
+impl DateWriter for TodayWriter {
     fn write_date(&self) {
         self.output.write(format!("Today is {}, {}", self.today, self.year));
     }
@@ -60,7 +60,7 @@ fn main() {
         })
         .build();
 
-    let writer: &dyn IDateWriter = module.resolve_ref();
+    let writer: &dyn DateWriter = module.resolve_ref();
     writer.write_date();
 }
 ```

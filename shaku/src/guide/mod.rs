@@ -9,29 +9,29 @@
 //! ```
 //! use std::sync::Arc;
 //!
-//! trait IOutput {
+//! trait Output {
 //!     fn write(&self, content: String);
 //! }
 //!
-//! trait IDateWriter {
+//! trait DateWriter {
 //!     fn write_date(&self);
 //! }
 //!
 //! struct ConsoleOutput;
 //!
-//! impl IOutput for ConsoleOutput {
+//! impl Output for ConsoleOutput {
 //!     fn write(&self, content: String) {
 //!         println!("{}", content);
 //!     }
 //! }
 //!
 //! struct TodayWriter {
-//!     output: Arc<dyn IOutput>,
+//!     output: Arc<dyn Output>,
 //!     today: String,
 //!     year: usize,
 //! }
 //!
-//! impl IDateWriter for TodayWriter {
+//! impl DateWriter for TodayWriter {
 //!     fn write_date(&self) {
 //!         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //!     }
@@ -49,11 +49,11 @@
 //! ```
 //! use shaku::Interface;
 //!
-//! trait IOutput: Interface {
+//! trait Output: Interface {
 //!     fn write(&self, content: String);
 //! }
 //!
-//! trait IDateWriter: Interface {
+//! trait DateWriter: Interface {
 //!     fn write_date(&self);
 //! }
 //! ```
@@ -62,8 +62,8 @@
 //! A component is a struct that implements an [`Interface`] trait. In our example, we have 2
 //! components:
 //!
-//! - `TodayWriter` of type `IDateWriter`
-//! - `ConsoleOutput` of type `IOutput`
+//! - `TodayWriter` of type `DateWriter`
+//! - `ConsoleOutput` of type `Output`
 //!
 //! These components must implement [`Component`], which can either be done manually or through a
 //! derive macro (using the `derive` feature):
@@ -71,21 +71,21 @@
 //! ```
 //! # use shaku::Interface;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
+//! # trait Output: Interface { fn write(&self, content: String); }
 //! #
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! use shaku::Component;
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = IOutput)]
+//! #[shaku(interface = Output)]
 //! struct ConsoleOutput;
 //! ```
 //!
 //! ## Express dependencies
-//! Components can depend on other components. In our example, `TodayWriter` requires an `IOutput`
+//! Components can depend on other components. In our example, `TodayWriter` requires an `Output`
 //! component.
 //!
 //! To express this dependency, first make sure the property is declared as a
@@ -99,10 +99,10 @@
 //! # use shaku::Interface;
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -111,10 +111,10 @@
 //! use shaku::Component;
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = IDateWriter)]
+//! #[shaku(interface = DateWriter)]
 //! struct TodayWriter {
 //!     #[shaku(inject)]
-//!     output: Arc<dyn IOutput>,
+//!     output: Arc<dyn Output>,
 //!     today: String,
 //!     year: usize,
 //! }
@@ -132,25 +132,25 @@
 //! # use shaku::{Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IOutput)]
+//! # #[shaku(interface = Output)]
 //! # struct ConsoleOutput;
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
+//! # #[shaku(interface = DateWriter)]
 //! # struct TodayWriter {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
+//! #     output: Arc<dyn Output>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -166,7 +166,7 @@
 //! }
 //! ```
 //!
-//! This module implements `HasComponent<dyn IOutput>` and `HasComponent<dyn IDateWriter>` using the
+//! This module implements `HasComponent<dyn Output>` and `HasComponent<dyn DateWriter>` using the
 //! provided component implementations.
 //!
 //! ## Build the module
@@ -178,25 +178,25 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IOutput)]
+//! # #[shaku(interface = Output)]
 //! # struct ConsoleOutput;
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
+//! # #[shaku(interface = DateWriter)]
 //! # struct TodayWriter {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
+//! #     output: Arc<dyn Output>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -225,25 +225,25 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IOutput)]
+//! # #[shaku(interface = Output)]
 //! # struct ConsoleOutput;
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
+//! # #[shaku(interface = DateWriter)]
 //! # struct TodayWriter {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
+//! #     output: Arc<dyn Output>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -272,25 +272,25 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IOutput)]
+//! # #[shaku(interface = Output)]
 //! # struct ConsoleOutput;
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
+//! # #[shaku(interface = DateWriter)]
 //! # struct TodayWriter {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
+//! #     output: Arc<dyn Output>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -312,7 +312,7 @@
 //! #
 //! use shaku::HasComponent;
 //!
-//! let writer: &dyn IDateWriter = module.resolve_ref();
+//! let writer: &dyn DateWriter = module.resolve_ref();
 //! writer.write_date(); // Prints "Today is Jan 26, 2020"
 //! ```
 //!
@@ -326,25 +326,25 @@
 //! # use shaku::{module, Component, Interface, HasComponent};
 //! # use std::sync::Arc;
 //! #
-//! # trait IOutput: Interface { fn write(&self, content: String); }
-//! # trait IDateWriter: Interface { fn write_date(&self); }
+//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait DateWriter: Interface { fn write_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IOutput)]
+//! # #[shaku(interface = Output)]
 //! # struct ConsoleOutput;
-//! # impl IOutput for ConsoleOutput {
+//! # impl Output for ConsoleOutput {
 //! #     fn write(&self, content: String) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = IDateWriter)]
+//! # #[shaku(interface = DateWriter)]
 //! # struct TodayWriter {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn IOutput>,
+//! #     output: Arc<dyn Output>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl IDateWriter for TodayWriter {
+//! # impl DateWriter for TodayWriter {
 //! #     fn write_date(&self) {
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
@@ -358,24 +358,24 @@
 //! # }
 //! #
 //! #[derive(Component)]
-//! #[shaku(interface = IOutput)]
+//! #[shaku(interface = Output)]
 //! struct FakeOutput;
 //!
-//! impl IOutput for FakeOutput {
+//! impl Output for FakeOutput {
 //!     fn write(&self, _content: String) {
 //!         // We don't want to actually log stuff during tests
 //!     }
 //! }
 //!
 //! let module = MyModule::builder()
-//!     .with_component_override::<dyn IOutput>(Box::new(FakeOutput))
+//!     .with_component_override::<dyn Output>(Box::new(FakeOutput))
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
 //!     .build();
 //!
-//! let writer: &dyn IDateWriter = module.resolve_ref();
+//! let writer: &dyn DateWriter = module.resolve_ref();
 //! writer.write_date(); // Nothing will be printed
 //! ```
 //!
@@ -384,34 +384,34 @@
 //! use shaku::{module, Component, Interface, HasComponent};
 //! use std::sync::Arc;
 //!
-//! trait IOutput: Interface {
+//! trait Output: Interface {
 //!     fn write(&self, content: String);
 //! }
 //!
-//! trait IDateWriter: Interface {
+//! trait DateWriter: Interface {
 //!     fn write_date(&self);
 //! }
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = IOutput)]
+//! #[shaku(interface = Output)]
 //! struct ConsoleOutput;
 //!
-//! impl IOutput for ConsoleOutput {
+//! impl Output for ConsoleOutput {
 //!     fn write(&self, content: String) {
 //!         println!("{}", content);
 //!     }
 //! }
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = IDateWriter)]
+//! #[shaku(interface = DateWriter)]
 //! struct TodayWriter {
 //!     #[shaku(inject)]
-//!     output: Arc<dyn IOutput>,
+//!     output: Arc<dyn Output>,
 //!     today: String,
 //!     year: usize,
 //! }
 //!
-//! impl IDateWriter for TodayWriter {
+//! impl DateWriter for TodayWriter {
 //!     fn write_date(&self) {
 //!         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //!     }
@@ -431,7 +431,7 @@
 //!     })
 //!     .build();
 //!
-//! let writer: &dyn IDateWriter = module.resolve_ref();
+//! let writer: &dyn DateWriter = module.resolve_ref();
 //! writer.write_date();
 //! ```
 //!
