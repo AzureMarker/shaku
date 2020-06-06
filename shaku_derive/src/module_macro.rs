@@ -20,6 +20,8 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .map(|(i, ty)| component_property(i, ty))
         .collect();
 
+    let module_trait_impl = module_trait(&module);
+
     let has_component_impls: Vec<TokenStream> = module
         .services
         .components
@@ -37,6 +39,8 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
             #(#component_properties),*
         }
 
+        #module_trait_impl
+
         #(#has_component_impls)*
     };
 
@@ -47,6 +51,18 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     Ok(output)
 }
 
+/// Create an `impl $module_trait for $module` if there is a module trait
+fn module_trait(module: &ModuleData) -> Option<TokenStream> {
+    let module_trait = module.metadata.interface.as_ref()?;
+    let module_name = &module.metadata.identifier;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    Some(quote! {
+        impl #impl_generics #module_trait for #module_name #ty_generics #where_clause {}
+    })
+}
+
+/// Create the property which holds a component instance
 fn component_property(index: usize, component_ty: &Type) -> TokenStream {
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
@@ -56,6 +72,7 @@ fn component_property(index: usize, component_ty: &Type) -> TokenStream {
     }
 }
 
+/// Create a HasComponent impl
 fn has_component_impl(index: usize, component_ty: &Type, module: &ModuleData) -> TokenStream {
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
