@@ -3,7 +3,7 @@
 use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;
 use crate::error::Error;
-use crate::structures::{Property, PropertyType, ServiceData};
+use crate::structures::service::{Property, PropertyType, ServiceData};
 use proc_macro2::TokenStream;
 use syn::DeriveInput;
 

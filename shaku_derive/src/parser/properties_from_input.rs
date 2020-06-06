@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::parser::Parser;
-use crate::structures::Property;
+use crate::structures::service::Property;
 use syn::{Data, DeriveInput, Field};
 
 impl Parser<Vec<Property>> for DeriveInput {

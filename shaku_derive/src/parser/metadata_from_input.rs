@@ -1,7 +1,7 @@
 use crate::consts;
 use crate::error::Error;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
-use crate::structures::MetaData;
+use crate::structures::service::MetaData;
 use syn::{DeriveInput, Type};
 
 impl Parser<MetaData> for DeriveInput {
