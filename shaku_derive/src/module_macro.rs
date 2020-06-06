@@ -11,15 +11,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         println!("Module data parsed from input: {:#?}", module);
     }
 
-    let component_properties: Vec<TokenStream> = module
-        .services
-        .components
-        .items
-        .iter()
-        .enumerate()
-        .map(|(i, ty)| component_property(i, ty))
-        .collect();
-
+    let module_struct = module_struct(&module);
     let module_trait_impl = module_trait(&module);
 
     let has_component_impls: Vec<TokenStream> = module
@@ -31,16 +23,9 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .map(|(i, ty)| has_component_impl(i, ty, &module))
         .collect();
 
-    let visibility = module.metadata.visibility;
-    let module_name = module.metadata.identifier;
-    let module_generics = module.metadata.generics;
     let output = quote! {
-        #visibility struct #module_name #module_generics {
-            #(#component_properties),*
-        }
-
+        #module_struct
         #module_trait_impl
-
         #(#has_component_impls)*
     };
 
@@ -49,6 +34,28 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     }
 
     Ok(output)
+}
+
+/// Create the module struct
+fn module_struct(module: &ModuleData) -> TokenStream {
+    let component_properties: Vec<TokenStream> = module
+        .services
+        .components
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, ty)| component_property(i, ty))
+        .collect();
+
+    let visibility = &module.metadata.visibility;
+    let module_name = &module.metadata.identifier;
+    let module_generics = &module.metadata.generics;
+
+    quote! {
+        #visibility struct #module_name #module_generics {
+            #(#component_properties),*
+        }
+    }
 }
 
 /// Create an `impl $module_trait for $module` if there is a module trait
