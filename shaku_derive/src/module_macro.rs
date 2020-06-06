@@ -13,6 +13,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
 
     let module_struct = module_struct(&module);
     let module_trait_impl = module_trait(&module);
+    let module_impl = module_impl(&module);
 
     let has_component_impls: Vec<TokenStream> = module
         .services
@@ -26,6 +27,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     let output = quote! {
         #module_struct
         #module_trait_impl
+        #module_impl
         #(#has_component_impls)*
     };
 
@@ -67,6 +69,66 @@ fn module_trait(module: &ModuleData) -> Option<TokenStream> {
     Some(quote! {
         impl #impl_generics #module_trait for #module_name #ty_generics #where_clause {}
     })
+}
+
+/// Create a Module impl
+fn module_impl(module: &ModuleData) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    let component_builders: Vec<TokenStream> = module
+        .services
+        .components
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, ty)| component_build(i, ty))
+        .collect();
+
+    /*
+       #[allow(non_snake_case)]
+       let ($($($submodule),*)?) = context.submodules();
+       $($(
+       #[allow(non_snake_case)]
+       let $submodule = ::std::sync::Arc::clone($submodule);
+       )*)?
+
+       Self {
+       $(
+           $component: <Self as $crate::HasComponent<
+               $crate::module!(@c_interface $component $($($c_generics),+)?)
+           >>::build_component(context),
+       )*
+       $(
+           $provider: context.provider_fn::<$provider $( < $($p_generics),+ > )?>(),
+       )*
+       $($(
+           $submodule,
+       )*)?
+       }
+    */
+
+    quote! {
+        impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
+            type Submodules = (); // TODO
+
+            fn build(context: &mut ::shaku::ModuleBuildContext<Self>) -> Self {
+                Self {
+                    #(#component_builders,)*
+                }
+            }
+        }
+    }
+}
+
+/// Create a property initializer for the component during module build
+fn component_build(index: usize, component_ty: &Type) -> TokenStream {
+    let property = generate_name(index, "component", component_ty.span());
+    let interface = interface_from_component(component_ty);
+
+    quote! {
+        #property: <Self as ::shaku::HasComponent<#interface>>::build_component(context)
+    }
 }
 
 /// Create the property which holds a component instance
