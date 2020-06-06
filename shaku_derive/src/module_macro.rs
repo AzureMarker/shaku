@@ -11,7 +11,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         println!("Module data parsed from input: {:#?}", module);
     }
 
-    let component_properties: Vec<_> = module
+    let component_properties: Vec<TokenStream> = module
         .services
         .components
         .items
@@ -20,14 +20,24 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .map(|(i, ty)| component_property(i, ty))
         .collect();
 
+    let has_component_impls: Vec<TokenStream> = module
+        .services
+        .components
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, ty)| has_component_impl(i, ty, &module))
+        .collect();
+
     let visibility = module.metadata.visibility;
     let module_name = module.metadata.identifier;
     let module_generics = module.metadata.generics;
     let output = quote! {
-        #[allow(non_snake_case)]
         #visibility struct #module_name #module_generics {
             #(#component_properties),*
         }
+
+        #(#has_component_impls)*
     };
 
     if debug_level > 0 {
@@ -38,11 +48,40 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
 }
 
 fn component_property(index: usize, component_ty: &Type) -> TokenStream {
-    let ident = generate_name(index, "component", component_ty.span());
+    let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
 
     quote! {
-        #ident: ::std::sync::Arc<#interface>
+        #property: ::std::sync::Arc<#interface>
+    }
+}
+
+fn has_component_impl(index: usize, component_ty: &Type, module: &ModuleData) -> TokenStream {
+    let property = generate_name(index, "component", component_ty.span());
+    let interface = interface_from_component(component_ty);
+    let module_name = &module.metadata.identifier;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics ::shaku::HasComponent<#interface> for #module_name #ty_generics #where_clause {
+            fn build_component(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> ::std::sync::Arc<#interface> {
+                context.build_component::<#component_ty>()
+            }
+
+            fn resolve(&self) -> ::std::sync::Arc<#interface> {
+                ::std::sync::Arc::clone(&self.#property)
+            }
+
+            fn resolve_ref(&self) -> &#interface {
+                ::std::sync::Arc::as_ref(&self.#property)
+            }
+
+            fn resolve_mut(&mut self) -> ::std::option::Option<&mut #interface> {
+                ::std::sync::Arc::get_mut(&mut self.#property)
+            }
+        }
     }
 }
 
