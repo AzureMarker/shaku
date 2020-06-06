@@ -5,6 +5,7 @@ extern crate proc_macro;
 extern crate quote;
 
 use crate::error::Error;
+use crate::structures::module::ModuleData;
 use proc_macro::TokenStream;
 
 mod common_output;
@@ -37,7 +38,9 @@ pub fn provider(input: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
-    module_macro::expand_module_macro(input.into())
+    let module = syn::parse_macro_input!(input as ModuleData);
+
+    module_macro::expand_module_macro(module)
         .unwrap_or_else(make_compile_error)
         .into()
 }
