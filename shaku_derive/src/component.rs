@@ -1,4 +1,4 @@
-//! Implementation of the '#[derive(Component)]' procedural macro
+//! Implementation of the `#[derive(Component)]` procedural macro
 
 use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;

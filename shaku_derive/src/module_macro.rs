@@ -1,3 +1,5 @@
+//! Implementation of the `module` procedural macro
+
 use crate::debug::get_debug_level;
 use crate::error::Error;
 use crate::structures::module::ModuleData;
@@ -11,6 +13,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         println!("Module data parsed from input: {:#?}", module);
     }
 
+    // Build token streams
     let module_struct = module_struct(&module);
     let module_trait_impl = module_trait(&module);
     let module_impl = module_impl(&module);
@@ -24,6 +27,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .map(|(i, ty)| has_component_impl(i, ty, &module))
         .collect();
 
+    // Combine token streams for the final macro output
     let output = quote! {
         #module_struct
         #module_trait_impl
@@ -171,12 +175,14 @@ fn has_component_impl(index: usize, component_ty: &Type, module: &ModuleData) ->
     }
 }
 
+/// Get the interface type of a component via projection
 fn interface_from_component(component_ty: &Type) -> TokenStream {
     quote! {
         <#component_ty as ::shaku::Component<Self>>::Interface
     }
 }
 
+/// Generate an identifier for a module property.
 fn generate_name(index: usize, category: &str, span: Span) -> Ident {
     syn::Ident::new(&format!("__di_{}_{}", category, index), span)
 }
