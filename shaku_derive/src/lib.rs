@@ -8,21 +8,18 @@ use crate::error::Error;
 use crate::structures::module::ModuleData;
 use proc_macro::TokenStream;
 
-mod common_output;
-mod component;
 mod consts;
 mod debug;
 mod error;
-mod module_macro;
+mod macros;
 mod parser;
-mod provider;
 mod structures;
 
 #[proc_macro_derive(Component, attributes(shaku))]
 pub fn component(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
 
-    component::expand_derive_component(&input)
+    macros::component::expand_derive_component(&input)
         .unwrap_or_else(make_compile_error)
         .into()
 }
@@ -31,7 +28,7 @@ pub fn component(input: TokenStream) -> TokenStream {
 pub fn provider(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as syn::DeriveInput);
 
-    provider::expand_derive_provider(&input)
+    macros::provider::expand_derive_provider(&input)
         .unwrap_or_else(make_compile_error)
         .into()
 }
@@ -128,7 +125,7 @@ pub fn provider(input: TokenStream) -> TokenStream {
 pub fn module(input: TokenStream) -> TokenStream {
     let module = syn::parse_macro_input!(input as ModuleData);
 
-    module_macro::expand_module_macro(module)
+    macros::module::expand_module_macro(module)
         .unwrap_or_else(make_compile_error)
         .into()
 }

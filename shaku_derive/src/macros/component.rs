@@ -1,8 +1,8 @@
 //! Implementation of the `#[derive(Component)]` procedural macro
 
-use crate::common_output::create_dependency;
 use crate::debug::get_debug_level;
 use crate::error::Error;
+use crate::macros::common_output::create_dependency;
 use crate::structures::service::{Property, ServiceData};
 use proc_macro2::TokenStream;
 use syn::DeriveInput;
