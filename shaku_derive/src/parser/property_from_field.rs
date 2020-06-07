@@ -1,7 +1,7 @@
 use crate::consts;
 use crate::error::Error;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
-use crate::structures::service::{Property, PropertyType};
+use crate::structures::service::{Property, PropertyDefault, PropertyType};
 use syn::{Attribute, Expr, Field, GenericArgument, Path, PathArguments, Type};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
@@ -17,6 +17,7 @@ impl Parser<Property> for Field {
     fn parse_as(&self) -> Result<Property, Error> {
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
+        let has_no_default = check_for_attr(consts::NO_DEFAULT_ATTR_NAME, &self.attrs);
 
         let property_name = self
             .ident
@@ -25,16 +26,24 @@ impl Parser<Property> for Field {
 
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
-                let property_default =
-                    get_shaku_attribute(&self.attrs).and_then(|attr: &Attribute| {
-                        let inner = attr.parse_args::<KeyValue<Expr>>().ok()?;
+                let property_default = if has_no_default {
+                    PropertyDefault::NoDefault
+                } else {
+                    get_shaku_attribute(&self.attrs)
+                        .map(|attr: &Attribute| {
+                            let inner = match attr.parse_args::<KeyValue<Expr>>().ok() {
+                                Some(inner) => inner,
+                                None => return PropertyDefault::NotProvided,
+                            };
 
-                        if inner.key == consts::DEFAULT_ATTR_NAME {
-                            Some(inner.value)
-                        } else {
-                            None
-                        }
-                    });
+                            if inner.key == consts::DEFAULT_ATTR_NAME {
+                                PropertyDefault::Provided(Box::new(inner.value))
+                            } else {
+                                PropertyDefault::NotProvided
+                            }
+                        })
+                        .unwrap_or(PropertyDefault::NotProvided)
+                };
 
                 return Ok(Property {
                     property_name,
@@ -96,7 +105,7 @@ impl Parser<Property> for Field {
                     property_name,
                     ty: (*interface_type).clone(),
                     property_type,
-                    default: None,
+                    default: PropertyDefault::NotProvided,
                 })
             }
 

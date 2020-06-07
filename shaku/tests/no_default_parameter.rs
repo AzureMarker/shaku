@@ -7,19 +7,12 @@ trait MyComponent: Interface {}
 // Represents a type which does not implement Default
 struct NoDefault;
 
-fn unreachable_default<T>() -> T {
-    panic!(
-        "There is no default value for {}",
-        std::any::type_name::<T>()
-    )
-}
-
 #[derive(Component)]
 #[shaku(interface = MyComponent)]
 struct MyComponentImpl {
-    #[shaku(default = unreachable_default())]
+    #[shaku(no_default)]
     #[allow(dead_code)]
-    not_default: NoDefault,
+    no_default: NoDefault,
 }
 impl MyComponent for MyComponentImpl {}
 
@@ -35,14 +28,14 @@ module! {
 fn with_given_parameter() {
     TestModule::builder()
         .with_component_parameters::<MyComponentImpl>(MyComponentImplParameters {
-            not_default: NoDefault,
+            no_default: NoDefault,
         })
         .build();
 }
 
 /// Not providing the parameter will cause a panic
 #[test]
-#[should_panic(expected = "There is no default value for no_default_parameter::NoDefault")]
+#[should_panic(expected = "There is no default value for `no_default`")]
 fn without_given_parameter() {
     TestModule::builder().build();
 }

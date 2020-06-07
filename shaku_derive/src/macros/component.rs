@@ -3,7 +3,7 @@
 use crate::debug::get_debug_level;
 use crate::error::Error;
 use crate::macros::common_output::create_dependency;
-use crate::structures::service::{Property, ServiceData};
+use crate::structures::service::{Property, PropertyDefault, ServiceData};
 use proc_macro2::TokenStream;
 use syn::DeriveInput;
 
@@ -66,6 +66,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
         }
 
         impl #generic_impls ::std::default::Default for #parameters_name #generic_tys #generic_where {
+            #[allow(unreachable_code)]
             fn default() -> Self {
                 Self {
                     #(#parameters_defaults),*
@@ -115,13 +116,19 @@ fn create_parameters_default(property: &Property) -> Option<TokenStream> {
 
     let property_name = &property.property_name;
 
-    if let Some(default_expr) = &property.default {
-        Some(quote! {
+    match &property.default {
+        PropertyDefault::Provided(default_expr) => Some(quote! {
             #property_name: #default_expr
-        })
-    } else {
-        Some(quote! {
+        }),
+        PropertyDefault::NotProvided => Some(quote! {
             #property_name: Default::default()
-        })
+        }),
+        PropertyDefault::NoDefault => {
+            let unreachable_msg = format!("There is no default value for `{}`", property_name);
+
+            Some(quote! {
+                #property_name: unreachable!(#unreachable_msg)
+            })
+        }
     }
 }

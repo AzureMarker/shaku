@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - The `module` macro now supports associated types in generic modules bounds
   and where clauses on the module.
+- A new annotation for properties without a default is added:
+  `#[shaku(no_default)]`. If the parameters are not provided for a component
+  with such a property, there will be a panic during module creation (unless the
+  component is overridden. See the `no_default_parameter` test for an example.
 
 ## [0.4.1] - 2020-06-01
 ### Added

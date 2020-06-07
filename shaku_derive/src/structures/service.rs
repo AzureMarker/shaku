@@ -45,7 +45,7 @@ pub struct Property {
     /// Otherwise, the interface type (the type inside the Arc or Box).
     pub ty: Type,
     pub property_type: PropertyType,
-    pub default: Option<Expr>,
+    pub default: PropertyDefault,
 }
 
 impl Property {
@@ -55,4 +55,11 @@ impl Property {
             PropertyType::Parameter => false,
         }
     }
+}
+
+#[derive(Clone, Debug)]
+pub enum PropertyDefault {
+    Provided(Box<Expr>),
+    NotProvided,
+    NoDefault,
 }
