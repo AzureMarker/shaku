@@ -17,6 +17,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     // Build token streams
     let module_struct = module_struct(&module);
     let module_trait_impl = module_trait(&module);
+    let module_builder = module_builder(&module);
     let module_impl = module_impl(&module);
 
     let has_component_impls: Vec<TokenStream> = module
@@ -71,6 +72,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     let output = quote! {
         #module_struct
         #module_trait_impl
+        #module_builder
         #module_impl
         #(#has_component_impls)*
         #(#has_provider_impls)*
@@ -165,6 +167,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
 
     quote! {
         impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
+            #[allow(bare_trait_objects)]
             type Submodules = (#(::std::sync::Arc<#submodule_types>),*);
 
             fn build(context: &mut ::shaku::ModuleBuildContext<Self>) -> Self {
@@ -175,6 +178,26 @@ fn module_impl(module: &ModuleData) -> TokenStream {
                     #(#provider_builders,)*
                     #(#submodule_names,)*
                 }
+            }
+        }
+    }
+}
+
+/// Create the `builder` function on the generated module type
+fn module_builder(module: &ModuleData) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let visibility = &module.metadata.visibility;
+    let submodule_names = submodule_names(&module.submodules);
+    let submodule_types: Vec<&Type> = module.submodules.iter().map(|s| &s.ty).collect();
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics #module_name #ty_generics #where_clause {
+            #[allow(bare_trait_objects)]
+            #visibility fn builder(
+                #(#submodule_names: ::std::sync::Arc<#submodule_types>),*
+            ) -> ::shaku::ModuleBuilder<Self> {
+                ::shaku::ModuleBuilder::with_submodules((#(#submodule_names),*))
             }
         }
     }
@@ -241,6 +264,7 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
     let submodule_ty = &submodule.ty;
 
     quote! {
+        #[allow(bare_trait_objects)]
         #property: ::std::sync::Arc<#submodule_ty>
     }
 }
@@ -308,6 +332,7 @@ fn has_subcomponent_impl(
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     quote! {
+        #[allow(bare_trait_objects)]
         impl #impl_generics ::shaku::HasComponent<#component_ty> for #module_name #ty_generics #where_clause {
             fn build_component(
                 context: &mut ::shaku::ModuleBuildContext<Self>
@@ -345,6 +370,7 @@ fn has_subprovider_impl(
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     quote! {
+        #[allow(bare_trait_objects)]
         impl #impl_generics ::shaku::HasProvider<#provider_ty> for #module_name #ty_generics #where_clause {
             fn provide(&self) -> ::std::result::Result<
                 ::std::boxed::Box<#provider_ty>,
