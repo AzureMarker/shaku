@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when support for proc-macros in that position becomes stable.
 
 ### Added
-- The `module` macro now supports associated types in generic modules bounds
+- The `module` macro now supports associated types in generic module bounds
   and where clauses on the module.
 - A new annotation for properties without a default is added:
   `#[shaku(no_default)]`. If the parameters are not provided for a component
