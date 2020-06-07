@@ -165,7 +165,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
 
     quote! {
         impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
-            type Submodules = (#(#submodule_types),*);
+            type Submodules = (#(::std::sync::Arc<#submodule_types>),*);
 
             fn build(context: &mut ::shaku::ModuleBuildContext<Self>) -> Self {
                 #submodules_init
