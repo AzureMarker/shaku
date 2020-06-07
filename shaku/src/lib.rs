@@ -17,6 +17,11 @@
 //! [`shaku_rocket`]: https://crates.io/crates/shaku_rocket
 //! [getting started guide]: guide/index.html
 
+// This lint is ignored because proc-macros aren't allowed in statement position
+// (at least until 1.45). Removing the main function makes rustdoc think the
+// module macro is a statement instead of top-level item.
+#![allow(clippy::needless_doctest_main)]
+
 // Modules
 #[macro_use]
 mod trait_alias;
@@ -27,9 +32,9 @@ mod provider;
 
 pub mod guide;
 
-// Reexport derives
+// Reexport proc macros
 #[cfg(feature = "derive")]
-pub use {shaku_derive::Component, shaku_derive::Provider};
+pub use {shaku_derive::module, shaku_derive::Component, shaku_derive::Provider};
 
 // Expose a flat module structure
 pub use crate::{component::*, module::*, provider::*};

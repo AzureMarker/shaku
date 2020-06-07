@@ -79,9 +79,11 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// #     }
     /// # }
     /// #
+    /// # fn main() {
     /// # let module = TestModule::builder().build();
     /// #
     /// let foo: Arc<dyn Foo> = module.resolve();
+    /// # }
     /// ```
     fn resolve(&self) -> Arc<I>;
 
@@ -106,9 +108,11 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// #     }
     /// # }
     /// #
+    /// # fn main() {
     /// # let module = TestModule::builder().build();
     /// #
     /// let foo: &dyn Foo = module.resolve_ref();
+    /// # }
     /// ```
     fn resolve_ref(&self) -> &I;
 
@@ -138,9 +142,11 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// #     }
     /// # }
     /// #
+    /// # fn main() {
     /// # let mut module = TestModule::builder().build();
     /// #
     /// let foo: &mut dyn Foo = module.resolve_mut().unwrap();
+    /// # }
     /// ```
     fn resolve_mut(&mut self) -> Option<&mut I>;
 }

@@ -28,6 +28,7 @@ use std::any::Any;
 ///         providers = []
 ///     }
 /// }
+/// # fn main() {}
 /// ```
 ///
 /// [`HasComponent`]: trait.HasComponent.html

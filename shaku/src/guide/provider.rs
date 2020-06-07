@@ -207,6 +207,7 @@
 //! # impl Service for ServiceImpl {
 //! #     fn get_double(&self) -> usize { self.repo.get() * 2 }
 //! # }
+//! # fn main() {}
 //! #
 //! use shaku::module;
 //!
@@ -269,10 +270,12 @@
 //! #
 //! use shaku::HasProvider;
 //!
+//! # fn main() {
 //! let module = ExampleModule::builder().build();
 //! let service: Box<dyn Service> = module.provide().unwrap();
 //!
 //! assert_eq!(service.get_double(), 84)
+//! # }
 //! ```
 //!
 //! ## Overriding providers
@@ -335,12 +338,14 @@
 //!     }
 //! }
 //!
+//! # fn main() {
 //! let module = ExampleModule::builder()
 //!     .with_provider_override::<dyn Repository>(Box::new(InMemoryRepository::provide))
 //!     .build();
 //! let service: Box<dyn Service> = module.provide().unwrap();
 //!
 //! assert_eq!(service.get_double(), 14)
+//! # }
 //! ```
 //!
 //! ## The full example
@@ -426,10 +431,12 @@
 //!     }
 //! }
 //!
-//! let module = ExampleModule::builder().build();
-//! let service: Box<dyn Service> = module.provide().unwrap();
+//! fn main() {
+//!     let module = ExampleModule::builder().build();
+//!     let service: Box<dyn Service> = module.provide().unwrap();
 //!
-//! assert_eq!(service.get_double(), 84)
+//!     assert_eq!(service.get_double(), 84)
+//! }
 //! ```
 //!
 //! [getting started guide]: ../index.html

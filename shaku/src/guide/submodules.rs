@@ -44,6 +44,7 @@
 //!         }
 //!     }
 //! }
+//! # fn main() {}
 //! ```
 //!
 //! In this example, `RootModule` knows the implementation of its `MyComponent` component, but it
@@ -87,10 +88,12 @@
 //!     }
 //! }
 //!
+//! # fn main() {
 //! let auth_module = Arc::new(AuthModuleImpl::builder().build());
 //! let root_module = RootModule::builder(auth_module).build();
 //!
 //! let my_component: &dyn MyComponent = root_module.resolve_ref();
+//! # }
 //! ```
 //!
 //! `AuthModuleImpl` has no submodules, thus its `builder` function has no arguments.

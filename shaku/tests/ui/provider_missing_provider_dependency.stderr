@@ -1,7 +1,8 @@
 error[E0277]: the trait bound `TestModule: shaku::provider::HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> $DIR/provider_missing_provider_dependency.rs:21:2
    |
-21 | / module! {
+21 |   module! {
+   |  __^
 22 | |     TestModule {
 23 | |         components = [],
 24 | |         providers = [ProviderImpl]
@@ -29,22 +30,6 @@ error[E0277]: the trait bound `TestModule: shaku::provider::HasProvider<(dyn Dep
              <TestModule as shaku::provider::HasProvider<<ProviderImpl as shaku::provider::Provider<TestModule>>::Interface>>
    = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
    = note: required because it appears within the type `TestModule`
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `TestModule: shaku::provider::HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
-   |
-21 | / module! {
-22 | |     TestModule {
-23 | |         components = [],
-24 | |         providers = [ProviderImpl]
-25 | |     }
-26 | | }
-   | |_^ the trait `shaku::provider::HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
-   |
-   = help: the following implementations were found:
-             <TestModule as shaku::provider::HasProvider<<ProviderImpl as shaku::provider::Provider<TestModule>>::Interface>>
-   = note: required because of the requirements on the impl of `shaku::provider::Provider<TestModule>` for `ProviderImpl`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `TestModule: shaku::provider::HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied

@@ -155,6 +155,7 @@
 //! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
+//! # fn main() {}
 //! #
 //! use shaku::module;
 //!
@@ -208,8 +209,9 @@
 //! #         providers = []
 //! #     }
 //! # }
-//! #
+//! # fn main() {
 //! let module = MyModule::builder().build();
+//! # }
 //! ```
 //!
 //! ### Passing parameters
@@ -256,12 +258,14 @@
 //! #     }
 //! # }
 //! #
+//! # fn main() {
 //! let module = MyModule::builder()
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
 //!     .build();
+//! # }
 //! ```
 //!
 //! ## Resolve components
@@ -303,17 +307,19 @@
 //! #     }
 //! # }
 //! #
-//! # let module = MyModule::builder()
-//! #     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
-//! #         today: "Jan 26".to_string(),
-//! #         year: 2020
-//! #     })
-//! #     .build();
+//! # fn main() {
+//! #     let module = MyModule::builder()
+//! #         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//! #             today: "Jan 26".to_string(),
+//! #             year: 2020
+//! #         })
+//! #         .build();
 //! #
 //! use shaku::HasComponent;
 //!
 //! let writer: &dyn DateWriter = module.resolve_ref();
 //! writer.write_date(); // Prints "Today is Jan 26, 2020"
+//! # }
 //! ```
 //!
 //! ## Overriding components
@@ -367,6 +373,7 @@
 //!     }
 //! }
 //!
+//! # fn main() {
 //! let module = MyModule::builder()
 //!     .with_component_override::<dyn Output>(Box::new(FakeOutput))
 //!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
@@ -377,6 +384,7 @@
 //!
 //! let writer: &dyn DateWriter = module.resolve_ref();
 //! writer.write_date(); // Nothing will be printed
+//! # }
 //! ```
 //!
 //! ## The full example
@@ -424,15 +432,17 @@
 //!     }
 //! }
 //!
-//! let module = MyModule::builder()
-//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
-//!         today: "Jan 26".to_string(),
-//!         year: 2020
-//!     })
-//!     .build();
+//! fn main() {
+//!     let module = MyModule::builder()
+//!         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!             today: "Jan 26".to_string(),
+//!             year: 2020
+//!         })
+//!         .build();
 //!
-//! let writer: &dyn DateWriter = module.resolve_ref();
-//! writer.write_date();
+//!     let writer: &dyn DateWriter = module.resolve_ref();
+//!     writer.write_date();
+//! }
 //! ```
 //!
 //! [provider guide]: provider/index.html

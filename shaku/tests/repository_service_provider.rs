@@ -69,22 +69,22 @@ impl Service for ServiceImpl {
     }
 }
 
+module! {
+    TestModule {
+        components = [
+            DatabaseConnectionPool
+        ],
+        providers = [
+            DBConnection,
+            RepositoryImpl,
+            ServiceImpl
+        ]
+    }
+}
+
 /// Send + !Sync components are able to be provided via Providers.
 #[test]
 fn can_provide_send_component() {
-    module! {
-        TestModule {
-            components = [
-                DatabaseConnectionPool
-            ],
-            providers = [
-                DBConnection,
-                RepositoryImpl,
-                ServiceImpl
-            ]
-        }
-    }
-
     let module = TestModule::builder()
         .with_component_parameters::<DatabaseConnectionPool>(DatabaseConnectionPoolParameters {
             value: 42,
@@ -109,19 +109,9 @@ fn can_mock_database() {
         }
     }
 
-    module! {
-        TestModule {
-            components = [
-                MockDatabase
-            ],
-            providers = [
-                DBConnection,
-                RepositoryImpl
-            ]
-        }
-    }
-
-    let module = TestModule::builder().build();
+    let module = TestModule::builder()
+        .with_component_override::<dyn ConnectionPool>(Box::new(MockDatabase))
+        .build();
     let repository: Box<dyn Repository> = module.provide().unwrap();
     assert_eq!(repository.get(), 3);
 }
@@ -139,17 +129,9 @@ fn can_mock_repository() {
         }
     }
 
-    module! {
-        TestModule {
-            components = [],
-            providers = [
-                MockRepository,
-                ServiceImpl
-            ]
-        }
-    }
-
-    let module = TestModule::builder().build();
+    let module = TestModule::builder()
+        .with_provider_override::<dyn Repository>(Box::new(MockRepository::provide))
+        .build();
     let service: Box<dyn Service> = module.provide().unwrap();
     assert_eq!(service.get_double(), 6);
 }

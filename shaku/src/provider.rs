@@ -63,9 +63,11 @@ pub trait HasProvider<I: ?Sized>: ModuleInterface {
     /// #     }
     /// # }
     /// #
+    /// # fn main() {
     /// # let module = TestModule::builder().build();
     /// #
     /// let foo: Box<dyn Foo> = module.provide().unwrap();
+    /// # }
     /// ```
     fn provide(&self) -> Result<Box<I>, Box<dyn Error>>;
 }

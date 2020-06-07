@@ -2,7 +2,6 @@
 
 mod module_build_context;
 mod module_builder;
-mod module_macro;
 mod module_traits;
 
 pub use self::module_build_context::ModuleBuildContext;
