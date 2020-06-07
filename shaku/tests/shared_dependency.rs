@@ -65,6 +65,12 @@ fn components_can_share_dependency() {
     let component1: &dyn IComponent1 = module.resolve_ref();
     let component2: &dyn IComponent2 = module.resolve_ref();
 
-    assert!(std::ptr::eq(component1.dependency(), dependency));
-    assert!(std::ptr::eq(component2.dependency(), dependency));
+    // Need to use raw pointers due to
+    // https://rust-lang.github.io/rust-clippy/master/index.html#vtable_address_comparisons
+    let ptr1 = component1.dependency() as *const dyn IDependency as *const u8;
+    let ptr2 = component2.dependency() as *const dyn IDependency as *const u8;
+    let dep_ptr = dependency as *const dyn IDependency as *const u8;
+
+    assert_eq!(ptr1, dep_ptr);
+    assert_eq!(ptr2, dep_ptr);
 }
