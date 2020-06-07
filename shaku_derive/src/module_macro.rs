@@ -2,8 +2,9 @@
 
 use crate::debug::get_debug_level;
 use crate::error::Error;
-use crate::structures::module::ModuleData;
+use crate::structures::module::{ModuleData, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
+use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
 
@@ -72,6 +73,13 @@ fn module_struct(module: &ModuleData) -> TokenStream {
         .map(|(i, ty)| provider_property(i, ty))
         .collect();
 
+    let submodule_properties: Vec<TokenStream> = module
+        .submodules
+        .iter()
+        .enumerate()
+        .map(|(i, sub)| submodule_property(i, sub))
+        .collect();
+
     let visibility = &module.metadata.visibility;
     let module_name = &module.metadata.identifier;
     let module_generics = &module.metadata.generics;
@@ -80,6 +88,7 @@ fn module_struct(module: &ModuleData) -> TokenStream {
         #visibility struct #module_name #module_generics {
             #(#component_properties,)*
             #(#provider_properties,)*
+            #(#submodule_properties,)*
         }
     }
 }
@@ -118,37 +127,21 @@ fn module_impl(module: &ModuleData) -> TokenStream {
         .map(|(i, ty)| provider_build(i, ty))
         .collect();
 
-    /*
-       #[allow(non_snake_case)]
-       let ($($($submodule),*)?) = context.submodules();
-       $($(
-       #[allow(non_snake_case)]
-       let $submodule = ::std::sync::Arc::clone($submodule);
-       )*)?
-
-       Self {
-       $(
-           $component: <Self as $crate::HasComponent<
-               $crate::module!(@c_interface $component $($($c_generics),+)?)
-           >>::build_component(context),
-       )*
-       $(
-           $provider: context.provider_fn::<$provider $( < $($p_generics),+ > )?>(),
-       )*
-       $($(
-           $submodule,
-       )*)?
-       }
-    */
+    let submodules_init = submodules_init(&module.submodules);
+    let submodule_names = submodule_names(&module.submodules);
+    let submodule_types: Vec<&Type> = module.submodules.iter().map(|sub| &sub.ty).collect();
 
     quote! {
         impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
-            type Submodules = (); // TODO
+            type Submodules = (#(#submodule_types),*);
 
             fn build(context: &mut ::shaku::ModuleBuildContext<Self>) -> Self {
+                #submodules_init
+
                 Self {
                     #(#component_builders,)*
                     #(#provider_builders,)*
+                    #(#submodule_names,)*
                 }
             }
         }
@@ -174,6 +167,22 @@ fn provider_build(index: usize, provider_ty: &Type) -> TokenStream {
     }
 }
 
+/// Create a list of statements to initialize the submodule variables during module build
+fn submodules_init(submodules: &Punctuated<Submodule, syn::Token![,]>) -> TokenStream {
+    if submodules.is_empty() {
+        return TokenStream::new();
+    }
+
+    let names = submodule_names(submodules);
+
+    quote! {
+        let (#(#names),*) = context.submodules();
+        #(
+        let #names = ::std::sync::Arc::clone(#names);
+        )*
+    }
+}
+
 /// Create the property which holds a component instance
 fn component_property(index: usize, component_ty: &Type) -> TokenStream {
     let property = generate_name(index, "component", component_ty.span());
@@ -184,13 +193,23 @@ fn component_property(index: usize, component_ty: &Type) -> TokenStream {
     }
 }
 
-/// Create the property which holds a provider instance
+/// Create the property which holds a provider function
 fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
     let property = generate_name(index, "provider", provider_ty.span());
     let interface = interface_from_provider(provider_ty);
 
     quote! {
         #property: ::std::sync::Arc<::shaku::ProviderFn<Self, #interface>>
+    }
+}
+
+/// Create the property which holds a submodule instance
+fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
+    let property = generate_name(index, "submodule", submodule.ty.span());
+    let submodule_ty = &submodule.ty;
+
+    quote! {
+        #property: ::std::sync::Arc<#submodule_ty>
     }
 }
 
@@ -255,6 +274,15 @@ fn interface_from_provider(provider_ty: &Type) -> TokenStream {
     quote! {
         <#provider_ty as ::shaku::Provider<Self>>::Interface
     }
+}
+
+/// Generate a list of idents to use for the submodules
+fn submodule_names(submodules: &Punctuated<Submodule, syn::Token![,]>) -> Vec<Ident> {
+    submodules
+        .iter()
+        .enumerate()
+        .map(|(i, sub)| generate_name(i, "submodule", sub.ty.span()))
+        .collect()
 }
 
 /// Generate an identifier for a module property.
