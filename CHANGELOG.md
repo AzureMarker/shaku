@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Breaking Changes
+- The `module` macro is now a procedural macro and thus requires the `derive`
+  feature.
+- The `module` macro can no longer be used in statement position until 1.45,
+  when support for proc-macros in that position becomes stable.
+
+### Added
+- The `module` macro now supports associated types in generic modules bounds
+  and where clauses on the module.
 
 ## [0.4.1] - 2020-06-01
 ### Added
