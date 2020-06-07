@@ -52,6 +52,21 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         })
         .collect();
 
+    let has_subprovider_impls: Vec<TokenStream> = module
+        .submodules
+        .iter()
+        .enumerate()
+        .flat_map(|(i, submodule)| {
+            submodule
+                .services
+                .providers
+                .items
+                .iter()
+                .map(|provider| has_subprovider_impl(i, submodule, provider, &module))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+
     // Combine token streams for the final macro output
     let output = quote! {
         #module_struct
@@ -60,6 +75,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         #(#has_component_impls)*
         #(#has_provider_impls)*
         #(#has_subcomponent_impls)*
+        #(#has_subprovider_impls)*
     };
 
     if debug_level > 0 {
@@ -311,6 +327,30 @@ fn has_subcomponent_impl(
             fn resolve_mut(&mut self) -> ::std::option::Option<&mut #component_ty> {
                 ::std::sync::Arc::get_mut(&mut self.#submodule_name)
                     .and_then(::shaku::HasComponent::resolve_mut)
+            }
+        }
+    }
+}
+
+/// Create a HasProvider impl for a subprovider
+fn has_subprovider_impl(
+    submodule_index: usize,
+    submodule: &Submodule,
+    provider_ty: &Type,
+    module: &ModuleData,
+) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let submodule_ty = &submodule.ty;
+    let submodule_name = generate_name(submodule_index, "submodule", submodule_ty.span());
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics ::shaku::HasProvider<#provider_ty> for #module_name #ty_generics #where_clause {
+            fn provide(&self) -> ::std::result::Result<
+                ::std::boxed::Box<#provider_ty>,
+                ::std::boxed::Box<dyn ::std::error::Error>
+            > {
+                ::shaku::HasProvider::provide(::std::sync::Arc::as_ref(&self.#submodule_name))
             }
         }
     }
