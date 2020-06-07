@@ -117,9 +117,10 @@ fn module_struct(module: &ModuleData) -> TokenStream {
     let visibility = &module.metadata.visibility;
     let module_name = &module.metadata.identifier;
     let module_generics = &module.metadata.generics;
+    let where_clause = &module.metadata.generics.where_clause;
 
     quote! {
-        #visibility struct #module_name #module_generics {
+        #visibility struct #module_name #module_generics #where_clause {
             #(#component_properties,)*
             #(#provider_properties,)*
             #(#submodule_properties,)*
