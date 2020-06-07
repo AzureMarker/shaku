@@ -37,7 +37,7 @@ commands:
 jobs:
   shaku:
     docker:
-      - image: rust:1.43.1
+      - image: rust:1.44.0
     steps:
       - checkout
       - remove-rust-toolchain
@@ -59,7 +59,7 @@ jobs:
           test-args: "-- --skip compile_fail"
   shaku_rocket:
     docker:
-      - image: rust:1.43.1
+      - image: rust:1.44.0
     working_directory: ~/project/shaku_rocket
     steps:
       - checkout:
