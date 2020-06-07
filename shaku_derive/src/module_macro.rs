@@ -37,6 +37,21 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .map(|(i, ty)| has_provider_impl(i, ty, &module))
         .collect();
 
+    let has_subcomponent_impls: Vec<TokenStream> = module
+        .submodules
+        .iter()
+        .enumerate()
+        .flat_map(|(i, submodule)| {
+            submodule
+                .services
+                .components
+                .items
+                .iter()
+                .map(|component| has_subcomponent_impl(i, submodule, component, &module))
+                .collect::<Vec<_>>()
+        })
+        .collect();
+
     // Combine token streams for the final macro output
     let output = quote! {
         #module_struct
@@ -44,6 +59,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         #module_impl
         #(#has_component_impls)*
         #(#has_provider_impls)*
+        #(#has_subcomponent_impls)*
     };
 
     if debug_level > 0 {
@@ -257,6 +273,44 @@ fn has_provider_impl(index: usize, provider_ty: &Type, module: &ModuleData) -> T
                 ::std::boxed::Box<dyn ::std::error::Error>
             > {
                 (self.#property)(self)
+            }
+        }
+    }
+}
+
+/// Create a HasComponent impl for a subcomponent
+fn has_subcomponent_impl(
+    submodule_index: usize,
+    submodule: &Submodule,
+    component_ty: &Type,
+    module: &ModuleData,
+) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let submodule_ty = &submodule.ty;
+    let submodule_names = submodule_names(&module.submodules);
+    let submodule_name = generate_name(submodule_index, "submodule", submodule_ty.span());
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics ::shaku::HasComponent<#component_ty> for #module_name #ty_generics #where_clause {
+            fn build_component(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> ::std::sync::Arc<#component_ty> {
+                let (#(#submodule_names),*) = context.submodules();
+                #submodule_name.resolve()
+            }
+
+            fn resolve(&self) -> ::std::sync::Arc<#component_ty> {
+                self.#submodule_name.resolve()
+            }
+
+            fn resolve_ref(&self) -> &#component_ty {
+                self.#submodule_name.resolve_ref()
+            }
+
+            fn resolve_mut(&mut self) -> ::std::option::Option<&mut #component_ty> {
+                ::std::sync::Arc::get_mut(&mut self.#submodule_name)
+                    .and_then(::shaku::HasComponent::resolve_mut)
             }
         }
     }
