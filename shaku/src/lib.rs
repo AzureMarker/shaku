@@ -6,12 +6,12 @@
 //! See the [getting started guide]
 //!
 //! # Crate features
-//! By default shaku is thread-safe and exposes derive macros, but these can be disabled by opting
-//! out of the following features:
+//! By default shaku is thread-safe and exposes macros, but these can be disabled by opting out of
+//! the following features:
 //!
 //! - `thread_safe`: Requires components to be `Send + Sync`
 //! - `derive`: Uses the `shaku_derive` crate to provide proc-macro derives of `Component` and
-//!   `Provider`.
+//!   `Provider`, and the `module` macro.
 //!
 //! [Rocket]: https://rocket.rs
 //! [`shaku_rocket`]: https://crates.io/crates/shaku_rocket

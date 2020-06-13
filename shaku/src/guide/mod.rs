@@ -125,8 +125,8 @@
 //!
 //! ## Define a module
 //! Modules link together components and providers, and are core to providing shaku's compile time
-//! guarentees. A [`Module`] can be defined manually or via the [`module`][module macro] macro (the
-//! `derive` feature is not necessary):
+//! guarentees. A [`Module`] can be defined manually or via the [`module`][module macro] macro
+//! (using the `derive` feature):
 //!
 //! ```
 //! # use shaku::{Component, Interface};
