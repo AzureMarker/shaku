@@ -9,31 +9,31 @@
 //! ```
 //! use std::sync::Arc;
 //!
-//! trait Output {
-//!     fn write(&self, content: String);
+//! trait Logger {
+//!     fn log(&self, content: &str);
 //! }
 //!
-//! trait DateWriter {
-//!     fn write_date(&self);
+//! trait DateLogger {
+//!     fn log_date(&self);
 //! }
 //!
-//! struct ConsoleOutput;
+//! struct LoggerImpl;
 //!
-//! impl Output for ConsoleOutput {
-//!     fn write(&self, content: String) {
+//! impl Logger for LoggerImpl {
+//!     fn log(&self, content: &str) {
 //!         println!("{}", content);
 //!     }
 //! }
 //!
-//! struct TodayWriter {
-//!     output: Arc<dyn Output>,
+//! struct DateLoggerImpl {
+//!     logger: Arc<dyn Logger>,
 //!     today: String,
 //!     year: usize,
 //! }
 //!
-//! impl DateWriter for TodayWriter {
-//!     fn write_date(&self) {
-//!         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! impl DateLogger for DateLoggerImpl {
+//!     fn log_date(&self) {
+//!         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //!     }
 //! }
 //! ```
@@ -49,12 +49,12 @@
 //! ```
 //! use shaku::Interface;
 //!
-//! trait Output: Interface {
-//!     fn write(&self, content: String);
+//! trait Logger: Interface {
+//!     fn log(&self, content: &str);
 //! }
 //!
-//! trait DateWriter: Interface {
-//!     fn write_date(&self);
+//! trait DateLogger: Interface {
+//!     fn log_date(&self);
 //! }
 //! ```
 //!
@@ -62,8 +62,8 @@
 //! A component is a struct that implements an [`Interface`] trait. In our example, we have 2
 //! components:
 //!
-//! - `TodayWriter` of type `DateWriter`
-//! - `ConsoleOutput` of type `Output`
+//! - `DateLoggerImpl` of type `DateLogger`
+//! - `LoggerImpl` of type `Logger`
 //!
 //! These components must implement [`Component`], which can either be done manually or through a
 //! derive macro (using the `derive` feature):
@@ -71,21 +71,21 @@
 //! ```
 //! # use shaku::Interface;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
 //! #
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! use shaku::Component;
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = Output)]
-//! struct ConsoleOutput;
+//! #[shaku(interface = Logger)]
+//! struct LoggerImpl;
 //! ```
 //!
 //! ## Express dependencies
-//! Components can depend on other components. In our example, `TodayWriter` requires an `Output`
+//! Components can depend on other components. In our example, `DateLoggerImpl` requires an `Logger`
 //! component.
 //!
 //! To express this dependency, first make sure the property is declared as a
@@ -99,22 +99,22 @@
 //! # use shaku::Interface;
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
 //! use shaku::Component;
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = DateWriter)]
-//! struct TodayWriter {
+//! #[shaku(interface = DateLogger)]
+//! struct DateLoggerImpl {
 //!     #[shaku(inject)]
-//!     output: Arc<dyn Output>,
+//!     logger: Arc<dyn Logger>,
 //!     today: String,
 //!     year: usize,
 //! }
@@ -132,27 +132,27 @@
 //! # use shaku::{Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = Output)]
-//! # struct ConsoleOutput;
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # #[shaku(interface = Logger)]
+//! # struct LoggerImpl;
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = DateWriter)]
-//! # struct TodayWriter {
+//! # #[shaku(interface = DateLogger)]
+//! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn Output>,
+//! #     logger: Arc<dyn Logger>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! # fn main() {}
@@ -161,13 +161,13 @@
 //!
 //! module! {
 //!     MyModule {
-//!         components = [ConsoleOutput, TodayWriter],
+//!         components = [LoggerImpl, DateLoggerImpl],
 //!         providers = []
 //!     }
 //! }
 //! ```
 //!
-//! This module implements `HasComponent<dyn Output>` and `HasComponent<dyn DateWriter>` using the
+//! This module implements `HasComponent<dyn Logger>` and `HasComponent<dyn DateLogger>` using the
 //! provided component implementations.
 //!
 //! ## Build the module
@@ -179,33 +179,33 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = Output)]
-//! # struct ConsoleOutput;
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # #[shaku(interface = Logger)]
+//! # struct LoggerImpl;
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = DateWriter)]
-//! # struct TodayWriter {
+//! # #[shaku(interface = DateLogger)]
+//! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn Output>,
+//! #     logger: Arc<dyn Logger>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
 //! # module! {
 //! #     MyModule {
-//! #         components = [ConsoleOutput, TodayWriter],
+//! #         components = [LoggerImpl, DateLoggerImpl],
 //! #         providers = []
 //! #     }
 //! # }
@@ -229,40 +229,40 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = Output)]
-//! # struct ConsoleOutput;
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # #[shaku(interface = Logger)]
+//! # struct LoggerImpl;
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = DateWriter)]
-//! # struct TodayWriter {
+//! # #[shaku(interface = DateLogger)]
+//! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn Output>,
+//! #     logger: Arc<dyn Logger>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
 //! # module! {
 //! #     MyModule {
-//! #         components = [ConsoleOutput, TodayWriter],
+//! #         components = [LoggerImpl, DateLoggerImpl],
 //! #         providers = []
 //! #     }
 //! # }
 //! #
 //! # fn main() {
 //! let module = MyModule::builder()
-//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!     .with_component_parameters::<DateLoggerImpl>(DateLoggerImplParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
@@ -278,40 +278,40 @@
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = Output)]
-//! # struct ConsoleOutput;
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # #[shaku(interface = Logger)]
+//! # struct LoggerImpl;
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = DateWriter)]
-//! # struct TodayWriter {
+//! # #[shaku(interface = DateLogger)]
+//! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn Output>,
+//! #     logger: Arc<dyn Logger>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
 //! # module! {
 //! #     MyModule {
-//! #         components = [ConsoleOutput, TodayWriter],
+//! #         components = [LoggerImpl, DateLoggerImpl],
 //! #         providers = []
 //! #     }
 //! # }
 //! #
 //! # fn main() {
 //! #     let module = MyModule::builder()
-//! #         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//! #         .with_component_parameters::<DateLoggerImpl>(DateLoggerImplParameters {
 //! #             today: "Jan 26".to_string(),
 //! #             year: 2020
 //! #         })
@@ -319,8 +319,8 @@
 //! #
 //! use shaku::HasComponent;
 //!
-//! let writer: &dyn DateWriter = module.resolve_ref();
-//! writer.write_date(); // Prints "Today is Jan 26, 2020"
+//! let date_logger: &dyn DateLogger = module.resolve_ref();
+//! date_logger.log_date(); // Prints "Today is Jan 26, 2020"
 //! # }
 //! ```
 //!
@@ -334,58 +334,58 @@
 //! # use shaku::{module, Component, Interface, HasComponent};
 //! # use std::sync::Arc;
 //! #
-//! # trait Output: Interface { fn write(&self, content: String); }
-//! # trait DateWriter: Interface { fn write_date(&self); }
+//! # trait Logger: Interface { fn log(&self, content: &str); }
+//! # trait DateLogger: Interface { fn log_date(&self); }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = Output)]
-//! # struct ConsoleOutput;
-//! # impl Output for ConsoleOutput {
-//! #     fn write(&self, content: String) { println!("{}", content); }
+//! # #[shaku(interface = Logger)]
+//! # struct LoggerImpl;
+//! # impl Logger for LoggerImpl {
+//! #     fn log(&self, content: &str) { println!("{}", content); }
 //! # }
 //! #
 //! # #[derive(Component)]
-//! # #[shaku(interface = DateWriter)]
-//! # struct TodayWriter {
+//! # #[shaku(interface = DateLogger)]
+//! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
-//! #     output: Arc<dyn Output>,
+//! #     logger: Arc<dyn Logger>,
 //! #     today: String,
 //! #     year: usize,
 //! # }
-//! # impl DateWriter for TodayWriter {
-//! #     fn write_date(&self) {
-//! #         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! # impl DateLogger for DateLoggerImpl {
+//! #     fn log_date(&self) {
+//! #         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //! #     }
 //! # }
 //! #
 //! # module! {
 //! #     MyModule {
-//! #         components = [ConsoleOutput, TodayWriter],
+//! #         components = [LoggerImpl, DateLoggerImpl],
 //! #         providers = []
 //! #     }
 //! # }
 //! #
 //! #[derive(Component)]
-//! #[shaku(interface = Output)]
+//! #[shaku(interface = Logger)]
 //! struct FakeOutput;
 //!
-//! impl Output for FakeOutput {
-//!     fn write(&self, _content: String) {
+//! impl Logger for FakeOutput {
+//!     fn log(&self, _content: &str) {
 //!         // We don't want to actually log stuff during tests
 //!     }
 //! }
 //!
 //! # fn main() {
 //! let module = MyModule::builder()
-//!     .with_component_override::<dyn Output>(Box::new(FakeOutput))
-//!     .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!     .with_component_override::<dyn Logger>(Box::new(FakeOutput))
+//!     .with_component_parameters::<DateLoggerImpl>(DateLoggerImplParameters {
 //!         today: "Jan 26".to_string(),
 //!         year: 2020
 //!     })
 //!     .build();
 //!
-//! let writer: &dyn DateWriter = module.resolve_ref();
-//! writer.write_date(); // Nothing will be printed
+//! let date_logger: &dyn DateLogger = module.resolve_ref();
+//! date_logger.log_date(); // Nothing will be printed
 //! # }
 //! ```
 //!
@@ -394,56 +394,56 @@
 //! use shaku::{module, Component, Interface, HasComponent};
 //! use std::sync::Arc;
 //!
-//! trait Output: Interface {
-//!     fn write(&self, content: String);
+//! trait Logger: Interface {
+//!     fn log(&self, content: &str);
 //! }
 //!
-//! trait DateWriter: Interface {
-//!     fn write_date(&self);
+//! trait DateLogger: Interface {
+//!     fn log_date(&self);
 //! }
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = Output)]
-//! struct ConsoleOutput;
+//! #[shaku(interface = Logger)]
+//! struct LoggerImpl;
 //!
-//! impl Output for ConsoleOutput {
-//!     fn write(&self, content: String) {
+//! impl Logger for LoggerImpl {
+//!     fn log(&self, content: &str) {
 //!         println!("{}", content);
 //!     }
 //! }
 //!
 //! #[derive(Component)]
-//! #[shaku(interface = DateWriter)]
-//! struct TodayWriter {
+//! #[shaku(interface = DateLogger)]
+//! struct DateLoggerImpl {
 //!     #[shaku(inject)]
-//!     output: Arc<dyn Output>,
+//!     logger: Arc<dyn Logger>,
 //!     today: String,
 //!     year: usize,
 //! }
 //!
-//! impl DateWriter for TodayWriter {
-//!     fn write_date(&self) {
-//!         self.output.write(format!("Today is {}, {}", self.today, self.year));
+//! impl DateLogger for DateLoggerImpl {
+//!     fn log_date(&self) {
+//!         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
 //!     }
 //! }
 //!
 //! module! {
 //!     MyModule {
-//!         components = [ConsoleOutput, TodayWriter],
+//!         components = [LoggerImpl, DateLoggerImpl],
 //!         providers = []
 //!     }
 //! }
 //!
 //! fn main() {
 //!     let module = MyModule::builder()
-//!         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+//!         .with_component_parameters::<DateLoggerImpl>(DateLoggerImplParameters {
 //!             today: "Jan 26".to_string(),
 //!             year: 2020
 //!         })
 //!         .build();
 //!
-//!     let writer: &dyn DateWriter = module.resolve_ref();
-//!     writer.write_date();
+//!     let date_logger: &dyn DateLogger = module.resolve_ref();
+//!     date_logger.log_date();
 //! }
 //! ```
 //!

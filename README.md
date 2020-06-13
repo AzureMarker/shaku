@@ -12,56 +12,56 @@ more details, including a getting started guide.
 use shaku::{module, Component, Interface, HasComponent};
 use std::sync::Arc;
 
-trait Output: Interface {
-    fn write(&self, content: String);
+trait Logger: Interface {
+    fn log(&self, content: &str);
 }
 
-trait DateWriter: Interface {
-    fn write_date(&self);
+trait DateLogger: Interface {
+    fn log_date(&self);
 }
 
 #[derive(Component)]
-#[shaku(interface = Output)]
-struct ConsoleOutput;
+#[shaku(interface = Logger)]
+struct LoggerImpl;
 
-impl Output for ConsoleOutput {
-    fn write(&self, content: String) {
+impl Logger for LoggerImpl {
+    fn log(&self, content: &str) {
         println!("{}", content);
     }
 }
 
 #[derive(Component)]
-#[shaku(interface = DateWriter)]
-struct TodayWriter {
+#[shaku(interface = DateLogger)]
+struct DateLoggerImpl {
     #[shaku(inject)]
-    output: Arc<dyn Output>,
+    logger: Arc<dyn Logger>,
     today: String,
     year: usize,
 }
 
-impl DateWriter for TodayWriter {
-    fn write_date(&self) {
-        self.output.write(format!("Today is {}, {}", self.today, self.year));
+impl DateLogger for DateLoggerImpl {
+    fn log_date(&self) {
+        self.logger.log(&format!("Today is {}, {}", self.today, self.year));
     }
 }
 
 module! {
     MyModule {
-        components = [ConsoleOutput, TodayWriter],
+        components = [LoggerImpl, DateLoggerImpl],
         providers = []
     }
 }
 
 fn main() {
     let module = MyModule::builder()
-        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+        .with_component_parameters::<DateLoggerImpl>(DateLoggerImplParameters {
             today: "Jan 26".to_string(),
             year: 2020
         })
         .build();
 
-    let writer: &dyn DateWriter = module.resolve_ref();
-    writer.write_date();
+    let date_logger: &dyn DateLogger = module.resolve_ref();
+    date_logger.log_date();
 }
 ```
 
