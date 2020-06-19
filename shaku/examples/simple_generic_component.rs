@@ -1,10 +1,9 @@
-//! Modules and services can be generic. Based off of issue #2:
-//! https://github.com/Mcat12/shaku/issues/2
+//! A simple example of generic services and modules
 
-use shaku::{module, Component, Interface, HasComponent};
+use shaku::{module, Component, HasComponent, Interface};
 
 trait Animal {
-   fn audible_sound(&self) -> &str;
+    fn audible_sound(&self) -> &str;
 }
 
 #[derive(Default)]
@@ -29,11 +28,17 @@ trait AnimalService: Interface {
 
 #[derive(Component)]
 #[shaku(interface = AnimalService)]
-struct AnimalServiceImpl<A> where A: Animal + Default + Interface {
+struct AnimalServiceImpl<A>
+where
+    A: Animal + Default + Interface,
+{
     animal: A,
 }
 
-impl<A> AnimalService for AnimalServiceImpl<A> where A: Animal + Default + Interface {
+impl<A> AnimalService for AnimalServiceImpl<A>
+where
+    A: Animal + Default + Interface,
+{
     fn get_sound(&self) -> &str {
         self.animal.audible_sound()
     }
