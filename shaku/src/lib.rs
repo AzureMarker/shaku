@@ -20,6 +20,7 @@
 // This lint is ignored because proc-macros aren't allowed in statement position
 // (at least until 1.45). Removing the main function makes rustdoc think the
 // module macro is a statement instead of top-level item.
+// This can be removed once the MSRV is at least 1.45.
 #![allow(clippy::needless_doctest_main)]
 
 // Modules
