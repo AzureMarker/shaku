@@ -1,7 +1,7 @@
-error[E0277]: the trait bound `TestModule: shaku::HasComponent<(dyn ServiceTrait + 'static)>` is not satisfied
+error[E0277]: the trait bound `TestModule: HasComponent<(dyn ServiceTrait + 'static)>` is not satisfied
   --> $DIR/resolve_unregistered_component.rs:21:66
    |
 21 |     let _service = HasComponent::<dyn ServiceTrait>::resolve_ref(&module);
-   |                                                                  ^^^^^^^ the trait `shaku::HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
+   |                                                                  ^^^^^^^ the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
    |
-   = note: required by `shaku::HasComponent::resolve_ref`
+   = note: required by `resolve_ref`

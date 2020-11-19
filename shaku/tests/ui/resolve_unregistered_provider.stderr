@@ -1,7 +1,7 @@
-error[E0277]: the trait bound `TestModule: shaku::HasProvider<dyn ServiceTrait>` is not satisfied
+error[E0277]: the trait bound `TestModule: HasProvider<dyn ServiceTrait>` is not satisfied
   --> $DIR/resolve_unregistered_provider.rs:21:61
    |
 21 |     let _service = HasProvider::<dyn ServiceTrait>::provide(&module);
-   |                                                             ^^^^^^^ the trait `shaku::HasProvider<dyn ServiceTrait>` is not implemented for `TestModule`
+   |                                                             ^^^^^^^ the trait `HasProvider<dyn ServiceTrait>` is not implemented for `TestModule`
    |
    = note: required by `shaku::HasProvider::provide`

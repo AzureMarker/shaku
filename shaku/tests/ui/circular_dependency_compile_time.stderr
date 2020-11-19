@@ -26,7 +26,7 @@ error[E0275]: overflow evaluating the requirement `Component1: shaku::Component<
    = note: required because it appears within the type `TestModule`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0275]: overflow evaluating the requirement `TestModule: shaku::HasComponent<(dyn Component2Trait + 'static)>`
+error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component2Trait + 'static)>`
   --> $DIR/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
@@ -40,7 +40,7 @@ error[E0275]: overflow evaluating the requirement `TestModule: shaku::HasCompone
    = note: required because of the requirements on the impl of `shaku::Component<TestModule>` for `Component1`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0275]: overflow evaluating the requirement `TestModule: shaku::HasComponent<(dyn Component1Trait + 'static)>`
+error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
   --> $DIR/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
