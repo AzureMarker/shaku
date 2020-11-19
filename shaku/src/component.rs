@@ -20,10 +20,10 @@ pub trait Component<M: Module>: Interface {
 
     /// Use the build context and parameters to create the component. Other
     /// components can be resolved by adding a [`HasComponent`] bound to the
-    /// `M` generic, then calling [`M::resolve`].
+    /// `M` generic, then calling [`M::build_component`].
     ///
     /// [`HasComponent`]: trait.HasComponent.html
-    /// [`M::resolve`]: trait.HasComponent.html#tymethod.resolve
+    /// [`M::build_component`]: trait.HasComponent.html#tymethod.build_component
     fn build(context: &mut ModuleBuildContext<M>, params: Self::Parameters)
         -> Box<Self::Interface>;
 }
