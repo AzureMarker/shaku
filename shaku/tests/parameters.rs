@@ -12,6 +12,7 @@ trait Foo: Interface {
 #[derive(Component)]
 #[shaku(interface = Foo)]
 struct FooImpl {
+    #[shaku(default)]
     value: String,
     #[shaku(inject)]
     bar: Arc<dyn Bar>,
@@ -30,6 +31,7 @@ trait Bar: Interface {
 #[derive(Component)]
 #[shaku(interface = Bar)]
 struct BarImpl {
+    #[shaku(default)]
     bar_value: String,
 }
 

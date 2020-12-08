@@ -24,6 +24,7 @@ impl Connection for DbConnection {
 #[derive(Component)]
 #[shaku(interface = DbPool<C>)]
 struct DbPoolImpl<C: Connection<Database = MyDatabase> + Default> {
+    #[shaku(default)]
     connection: C,
 }
 

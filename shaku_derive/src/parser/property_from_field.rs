@@ -17,7 +17,7 @@ impl Parser<Property> for Field {
     fn parse_as(&self) -> Result<Property, Error> {
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
-        let has_no_default = check_for_attr(consts::NO_DEFAULT_ATTR_NAME, &self.attrs);
+        let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
 
         let property_name = self
             .ident
@@ -26,24 +26,31 @@ impl Parser<Property> for Field {
 
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
-                let property_default = if has_no_default {
-                    PropertyDefault::NoDefault
-                } else {
-                    get_shaku_attribute(&self.attrs)
-                        .map(|attr: &Attribute| {
-                            let inner = match attr.parse_args::<KeyValue<Expr>>().ok() {
-                                Some(inner) => inner,
-                                None => return PropertyDefault::NotProvided,
-                            };
-
+                let property_default = get_shaku_attribute(&self.attrs)
+                    .map(|attr| match attr.parse_args::<KeyValue<Expr>>().ok() {
+                        Some(inner) => {
                             if inner.key == consts::DEFAULT_ATTR_NAME {
-                                PropertyDefault::Provided(Box::new(inner.value))
+                                Ok(PropertyDefault::Provided(Box::new(inner.value)))
                             } else {
-                                PropertyDefault::NotProvided
+                                Err(Error::ParseError(format!(
+                                    "Unknown shaku attribute: '{}'",
+                                    inner.key
+                                )))
                             }
-                        })
-                        .unwrap_or(PropertyDefault::NotProvided)
-                };
+                        }
+                        None => {
+                            if has_default {
+                                Ok(PropertyDefault::NotProvided)
+                            } else {
+                                Err(Error::ParseError(format!(
+                                    "Unknown attribute: 'shaku{}'",
+                                    attr.tokens
+                                )))
+                            }
+                        }
+                    })
+                    .transpose()?
+                    .unwrap_or(PropertyDefault::NoDefault);
 
                 return Ok(Property {
                     property_name,

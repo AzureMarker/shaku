@@ -10,7 +10,6 @@ struct NoDefault;
 #[derive(Component)]
 #[shaku(interface = MyComponent)]
 struct MyComponentImpl {
-    #[shaku(no_default)]
     #[allow(dead_code)]
     no_default: NoDefault,
 }

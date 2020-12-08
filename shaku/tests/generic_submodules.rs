@@ -13,6 +13,7 @@ struct DbConnection;
 #[derive(Component)]
 #[shaku(interface = DbPool<C>)]
 struct DbPoolImpl<C: Interface + Default> {
+    #[shaku(default)]
     connection: C,
 }
 

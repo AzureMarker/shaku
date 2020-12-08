@@ -11,6 +11,7 @@ trait RegisterProvider: Debug {}
 #[derive(Component, Debug)]
 #[shaku(interface = RegisterService<E>)]
 struct RegisterServiceImpl<E: Debug + Default + Interface> {
+    #[shaku(default)]
     executor: E,
 }
 

@@ -21,6 +21,7 @@ struct DBConnection(RefCell<usize>);
 #[derive(Component)]
 #[shaku(interface = ConnectionPool)]
 struct DatabaseConnectionPool {
+    #[shaku(default)]
     value: usize,
 }
 
