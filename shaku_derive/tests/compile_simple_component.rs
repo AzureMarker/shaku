@@ -8,7 +8,7 @@ use std::sync::Arc;
 struct TestComponent {
     var1: String,
     var2: usize,
-    var3: Arc<String>,
+    var3: Arc<usize>,
     #[shaku(inject)]
     var5: Arc<dyn Bar>,
 }
