@@ -217,8 +217,8 @@
 //! ### Passing parameters
 //! In many cases you need to pass parameters to a component. This can be done during module
 //! creation. Each component has an associated parameters type, and the derive generates a
-//! `*Parameters` struct for you (named after the component struct). Use this struct to pass in the
-//! parameters.
+//! `*Parameters` struct for you (named after the component struct). Use this struct and
+//! [`with_component_parameters`] to pass in the parameters.
 //!
 //! Note that if you don't pass in parameters, the parameters' default values will be used. You can
 //! override the default value by annotating the property with `#[shaku(default = ...)]`. If the
@@ -457,6 +457,7 @@
 //! [module macro]: ../macro.module.html
 //! [`ModuleBuilder::with_submodules`]: ../struct.ModuleBuilder.html#method.with_submodules
 //! [`ModuleBuilder::build`]: ../struct.ModuleBuilder.html#method.build
+//! [`with_component_parameters`]: ../struct.ModuleBuilder.html#method.with_component_parameters
 //! [`with_component_override`]: ../struct.ModuleBuilder.html#method.with_component_override
 
 pub mod provider;
