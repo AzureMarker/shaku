@@ -1,7 +1,11 @@
 //! # Getting started guide
 //! Note: This getting started guide focuses on components, which live for the lifetime of the
 //! application (or, technically, the module). After reading this getting started guide, check
-//! out the [provider guide] to learn how to create services with shorter lifetimes.
+//! out the advanced guides:
+//! - [Getting started with providers][provider guide]: Learn how to create services with shorter
+//!   lifetimes.
+//! - [Getting started with submodules][submodule guide]: Learn how to organize and abstract
+//!   components into multiple modules.
 //!
 //! ## Structure your application
 //! Start with your application's structs and traits. Use `Arc<dyn T>` for dependencies.
@@ -448,6 +452,7 @@
 //! ```
 //!
 //! [provider guide]: provider/index.html
+//! [submodule guide]: submodules/index.html
 //! [`Interface`]: ../trait.Interface.html
 //! [`Component`]: ../trait.Component.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
