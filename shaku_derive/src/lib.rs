@@ -51,6 +51,8 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// from each submodule they want to use. Submodules can be abstracted by depending on traits
 /// instead of implementations. See `MySecondModule` in the example below.
 ///
+/// See also the [submodules getting started guide].
+///
 /// ## Generics
 /// This macro supports generics at the module level:
 /// ```rust
@@ -121,6 +123,7 @@ pub fn provider(input: TokenStream) -> TokenStream {
 ///
 /// [`Module`]: trait.Module.html
 /// [`ModuleInterface`]: trait.ModuleInterface.html
+/// [submodules getting started guide]: guide/submodules/index.html
 #[proc_macro]
 pub fn module(input: TokenStream) -> TokenStream {
     let module = syn::parse_macro_input!(input as ModuleData);
