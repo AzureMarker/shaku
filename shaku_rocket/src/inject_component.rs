@@ -55,7 +55,10 @@ use std::ops::Deref;
 /// # }
 /// }
 /// ```
-pub struct Inject<'r, M: Module + HasComponent<I>, I: Interface + ?Sized>(&'r I, PhantomData<M>);
+pub struct Inject<'r, M: Module + HasComponent<I>, I: Interface + ?Sized>(
+    &'r I,
+    PhantomData<*const M>,
+);
 
 impl<'a, 'r, M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest<'a, 'r>
     for Inject<'r, M, I>
