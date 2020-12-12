@@ -39,7 +39,7 @@ pub trait Module: ModuleInterface {
 
     /// Create the module instance by resolving the components this module
     /// provides.
-    fn build(context: &mut ModuleBuildContext<Self>) -> Self
+    fn build(context: ModuleBuildContext<Self>) -> Self
     where
         Self: Sized;
 }

@@ -65,12 +65,11 @@ impl<M: Module> ModuleBuilder<M> {
 
     /// Build the module
     pub fn build(self) -> M {
-        ModuleBuildContext::new(
+        M::build(ModuleBuildContext::new(
             self.parameters,
             self.component_overrides,
             self.provider_overrides,
             self.submodules,
-        )
-        .build()
+        ))
     }
 }

@@ -32,10 +32,10 @@ struct TestModule {
 impl shaku::Module for TestModule {
     type Submodules = ();
 
-    fn build(context: &mut shaku::ModuleBuildContext<Self>) -> Self {
+    fn build(mut context: shaku::ModuleBuildContext<Self>) -> Self {
         Self {
-            component1: Self::build_component(context),
-            component2: Self::build_component(context),
+            component1: Self::build_component(&mut context),
+            component2: Self::build_component(&mut context),
         }
     }
 }

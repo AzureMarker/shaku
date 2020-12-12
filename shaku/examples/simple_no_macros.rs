@@ -61,9 +61,9 @@ struct SimpleModule {
 impl Module for SimpleModule {
     type Submodules = ();
 
-    fn build(context: &mut ModuleBuildContext<Self>) -> Self {
+    fn build(mut context: ModuleBuildContext<Self>) -> Self {
         Self {
-            simple_dependency: Self::build_component(context),
+            simple_dependency: Self::build_component(&mut context),
             simple_service: context.provider_fn::<SimpleServiceImpl>(),
         }
     }

@@ -171,7 +171,9 @@ fn module_impl(module: &ModuleData) -> TokenStream {
             #[allow(bare_trait_objects)]
             type Submodules = (#(::std::sync::Arc<#submodule_types>),*);
 
-            fn build(context: &mut ::shaku::ModuleBuildContext<Self>) -> Self {
+            fn build(mut context: ::shaku::ModuleBuildContext<Self>) -> Self {
+                let context = &mut context;
+
                 #submodules_init
 
                 Self {
