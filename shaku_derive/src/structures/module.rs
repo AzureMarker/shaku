@@ -1,8 +1,11 @@
 //! Structures to hold useful module data
 
+use std::collections::{HashMap, HashSet};
+use syn::export::Hash;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::token;
+use syn::spanned::Spanned;
+use syn::{token, Attribute};
 use syn::{Generics, Ident, Type, Visibility};
 
 mod kw {
@@ -120,12 +123,12 @@ impl Parse for ModuleServices {
 /// A list of components/providers
 #[derive(Debug)]
 pub struct ModuleItems<T: Parse> {
-    keyword_token: T,
+    pub keyword_token: T,
     eq_token: token::Eq,
     bracket_token: token::Bracket,
     // Can't use syn::Token![,] here because of
     // https://github.com/rust-lang/rust/issues/50676
-    pub items: Punctuated<Type, token::Comma>,
+    pub items: Punctuated<ModuleItem, token::Comma>,
 }
 
 impl<T: Parse> Parse for ModuleItems<T> {
@@ -136,7 +139,68 @@ impl<T: Parse> Parse for ModuleItems<T> {
             keyword_token: input.parse()?,
             eq_token: input.parse()?,
             bracket_token: syn::bracketed!(content in input),
-            items: content.parse_terminated(Type::parse)?,
+            items: content.parse_terminated(ModuleItem::parse)?,
         })
+    }
+}
+
+/// An annotated component/provider type
+#[derive(Debug)]
+pub struct ModuleItem {
+    pub attributes: Vec<Attribute>,
+    pub ty: Type,
+}
+
+impl Parse for ModuleItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(ModuleItem {
+            attributes: input.call(Attribute::parse_outer)?,
+            ty: input.parse()?,
+        })
+    }
+}
+
+impl ModuleItem {
+    /// Parse attributes as if this item references a component
+    pub fn component_attributes(&self) -> Result<HashSet<ComponentAttribute>, syn::Error> {
+        let mut component_attrs = HashSet::new();
+
+        for attr in &self.attributes {
+            let attr_kind = if attr.path.is_ident("lazy") && attr.tokens.is_empty() {
+                ComponentAttribute::Lazy
+            } else {
+                return Err(syn::Error::new(attr.span(), "Unknown attribute"));
+            };
+
+            if component_attrs.contains(&attr_kind) {
+                return Err(syn::Error::new(attr.span(), "Duplicate attribute"));
+            }
+
+            component_attrs.insert(attr_kind);
+        }
+
+        Ok(component_attrs)
+    }
+}
+
+/// Valid component attributes
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum ComponentAttribute {
+    Lazy,
+}
+
+/// Parsed/validated attributes for components and (eventually) providers
+pub struct ParsedAttributes {
+    pub components: HashMap<Type, HashSet<ComponentAttribute>>,
+    // eventually will also contain provider attributes, once they exist
+}
+
+impl ParsedAttributes {
+    /// Check if a component is marked with `#[lazy]`
+    pub fn is_component_lazy(&self, component_ty: &Type) -> bool {
+        self.components
+            .get(component_ty)
+            .map(|attrs| attrs.contains(&ComponentAttribute::Lazy))
+            .unwrap_or(false)
     }
 }

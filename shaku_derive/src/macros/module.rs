@@ -2,8 +2,9 @@
 
 use crate::debug::get_debug_level;
 use crate::error::Error;
-use crate::structures::module::{ModuleData, Submodule};
+use crate::structures::module::{ModuleData, ModuleItem, ParsedAttributes, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
+use std::collections::HashMap;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
@@ -13,6 +14,10 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     if debug_level > 1 {
         println!("Module data parsed from input: {:#?}", module);
     }
+
+    // Validate attributes on components and providers
+    let attributes =
+        validate_attributes(&module).map_err(|err| Error::ParseError(err.to_string()))?;
 
     // Build token streams
     let module_struct = module_struct(&module);
@@ -26,7 +31,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| has_component_impl(i, ty, &module))
+        .map(|(i, ty)| has_component_impl(i, ty, &module, &attributes))
         .collect();
 
     let has_provider_impls: Vec<TokenStream> = module
@@ -35,7 +40,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| has_provider_impl(i, ty, &module))
+        .map(|(i, provider)| has_provider_impl(i, &provider.ty, &module))
         .collect();
 
     let has_subcomponent_impls: Vec<TokenStream> = module
@@ -48,7 +53,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
                 .components
                 .items
                 .iter()
-                .map(|component| has_subcomponent_impl(i, submodule, component, &module))
+                .map(|component| has_subcomponent_impl(i, submodule, &component.ty, &module))
                 .collect::<Vec<_>>()
         })
         .collect();
@@ -63,7 +68,7 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
                 .providers
                 .items
                 .iter()
-                .map(|provider| has_subprovider_impl(i, submodule, provider, &module))
+                .map(|provider| has_subprovider_impl(i, submodule, &provider.ty, &module))
                 .collect::<Vec<_>>()
         })
         .collect();
@@ -87,6 +92,59 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     Ok(output)
 }
 
+/// Check the attributes on `ModuleItem`s and return a parsed set of attributes
+/// for each item.
+///
+/// Currently the returned data structure contains a map from component type to
+/// attribute set.
+fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Error> {
+    // Check and collect component attributes
+    let mut component_attrs = HashMap::new();
+    for component in &module.services.components.items {
+        let attrs = component.component_attributes()?;
+        component_attrs.insert(component.ty.clone(), attrs);
+    }
+
+    // Check provider attributes
+    if module
+        .services
+        .providers
+        .items
+        .iter()
+        .any(|provider| !provider.attributes.is_empty())
+    {
+        return Err(syn::Error::new(
+            module.services.providers.keyword_token.span,
+            "Providers cannot have attributes",
+        ));
+    }
+
+    // Make sure submodules don't use attributes
+    for submodule in &module.submodules {
+        for component in &submodule.services.components.items {
+            if !component.attributes.is_empty() {
+                return Err(syn::Error::new(
+                    component.ty.span(),
+                    "Submodule components cannot have attributes",
+                ));
+            }
+        }
+
+        for provider in &submodule.services.components.items {
+            if !provider.attributes.is_empty() {
+                return Err(syn::Error::new(
+                    provider.ty.span(),
+                    "Submodule providers cannot have attributes",
+                ));
+            }
+        }
+    }
+
+    Ok(ParsedAttributes {
+        components: component_attrs,
+    })
+}
+
 /// Create the module struct
 fn module_struct(module: &ModuleData) -> TokenStream {
     let component_properties: Vec<TokenStream> = module
@@ -95,7 +153,7 @@ fn module_struct(module: &ModuleData) -> TokenStream {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| component_property(i, ty))
+        .map(|(i, component)| component_property(i, &component.ty))
         .collect();
 
     let provider_properties: Vec<TokenStream> = module
@@ -104,7 +162,7 @@ fn module_struct(module: &ModuleData) -> TokenStream {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| provider_property(i, ty))
+        .map(|(i, provider)| provider_property(i, &provider.ty))
         .collect();
 
     let submodule_properties: Vec<TokenStream> = module
@@ -124,6 +182,7 @@ fn module_struct(module: &ModuleData) -> TokenStream {
             #(#component_properties,)*
             #(#provider_properties,)*
             #(#submodule_properties,)*
+            build_context: ::shaku::ModuleBuildContext<Self>
         }
     }
 }
@@ -150,7 +209,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| component_build(i, ty))
+        .map(|(i, component)| component_build(i, &component.ty))
         .collect();
 
     let provider_builders: Vec<TokenStream> = module
@@ -159,7 +218,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| provider_build(i, ty))
+        .map(|(i, provider)| provider_build(i, &provider.ty))
         .collect();
 
     let submodules_init = submodules_init(&module.submodules);
@@ -178,6 +237,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
                     #(#component_builders,)*
                     #(#provider_builders,)*
                     #(#submodule_names,)*
+                    build_context: context
                 }
             }
         }
@@ -271,11 +331,18 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
 }
 
 /// Create a HasComponent impl
-fn has_component_impl(index: usize, component_ty: &Type, module: &ModuleData) -> TokenStream {
+fn has_component_impl(
+    index: usize,
+    component: &ModuleItem,
+    module: &ModuleData,
+    attributes: &ParsedAttributes,
+) -> TokenStream {
+    let component_ty = &component.ty;
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+    let is_lazy = attributes.is_component_lazy(component_ty);
 
     quote! {
         impl #impl_generics ::shaku::HasComponent<#interface> for #module_name #ty_generics #where_clause {
