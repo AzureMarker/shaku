@@ -80,10 +80,6 @@ impl HasComponent<dyn SimpleDependency> for SimpleModule {
     fn resolve_ref(&self) -> &dyn SimpleDependency {
         Arc::as_ref(&self.simple_dependency)
     }
-
-    fn resolve_mut(&mut self) -> Option<&mut dyn SimpleDependency> {
-        Arc::get_mut(&mut self.simple_dependency)
-    }
 }
 impl HasProvider<dyn SimpleService> for SimpleModule {
     fn provide(&self) -> Result<Box<dyn SimpleService>, Box<dyn Error>> {

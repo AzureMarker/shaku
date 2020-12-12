@@ -292,10 +292,6 @@ fn has_component_impl(index: usize, component_ty: &Type, module: &ModuleData) ->
             fn resolve_ref(&self) -> &#interface {
                 ::std::sync::Arc::as_ref(&self.#property)
             }
-
-            fn resolve_mut(&mut self) -> ::std::option::Option<&mut #interface> {
-                ::std::sync::Arc::get_mut(&mut self.#property)
-            }
         }
     }
 }
@@ -348,11 +344,6 @@ fn has_subcomponent_impl(
 
             fn resolve_ref(&self) -> &#component_ty {
                 self.#submodule_name.resolve_ref()
-            }
-
-            fn resolve_mut(&mut self) -> ::std::option::Option<&mut #component_ty> {
-                ::std::sync::Arc::get_mut(&mut self.#submodule_name)
-                    .and_then(::shaku::HasComponent::resolve_mut)
             }
         }
     }
