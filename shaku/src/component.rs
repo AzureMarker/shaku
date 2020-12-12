@@ -16,6 +16,11 @@ pub trait Component<M: Module>: Interface {
     type Interface: Interface + ?Sized;
 
     /// The parameters this component requires. If none are required, use `()`.
+    #[cfg(feature = "thread_safe")]
+    type Parameters: Default + Send + Sync;
+
+    /// The parameters this component requires. If none are required, use `()`.
+    #[cfg(not(feature = "thread_safe"))]
     type Parameters: Default;
 
     /// Use the build context and parameters to create the component. Other
