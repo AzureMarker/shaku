@@ -172,8 +172,6 @@ fn module_impl(module: &ModuleData) -> TokenStream {
             type Submodules = (#(::std::sync::Arc<#submodule_types>),*);
 
             fn build(mut context: ::shaku::ModuleBuildContext<Self>) -> Self {
-                let context = &mut context;
-
                 #submodules_init
 
                 Self {
@@ -212,7 +210,7 @@ fn component_build(index: usize, component_ty: &Type) -> TokenStream {
     let interface = interface_from_component(component_ty);
 
     quote! {
-        #property: <Self as ::shaku::HasComponent<#interface>>::build_component(context)
+        #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
     }
 }
 
