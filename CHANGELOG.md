@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Breaking Changes
-- Properties no longer require `Default` by default (pun intended).
-  If a property is not provided during module creation, there will be a panic.
+- Component parameters (the non-injected/provided struct properties) no longer
+  require `Default` by default (pun intended).
+  If a parameter is not provided during module creation, there will be a panic.
   The `#[shaku(default)]` and `#[shaku(default = ...)]` annotations can be used
   to enable a default (first via the `Default` trait, second via the provided
   expression). The `#[shaku(no_default)]` annotation has been removed since it
