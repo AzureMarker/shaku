@@ -20,10 +20,10 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
         validate_attributes(&module).map_err(|err| Error::ParseError(err.to_string()))?;
 
     // Build token streams
-    let module_struct = module_struct(&module);
+    let module_struct = module_struct(&module, &attributes);
     let module_trait_impl = module_trait(&module);
     let module_builder = module_builder(&module);
-    let module_impl = module_impl(&module);
+    let module_impl = module_impl(&module, &attributes);
 
     let has_component_impls: Vec<TokenStream> = module
         .services
@@ -146,14 +146,14 @@ fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Err
 }
 
 /// Create the module struct
-fn module_struct(module: &ModuleData) -> TokenStream {
+fn module_struct(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStream {
     let component_properties: Vec<TokenStream> = module
         .services
         .components
         .items
         .iter()
         .enumerate()
-        .map(|(i, component)| component_property(i, &component.ty))
+        .map(|(i, component)| component_property(i, &component.ty, attributes))
         .collect();
 
     let provider_properties: Vec<TokenStream> = module
@@ -182,7 +182,7 @@ fn module_struct(module: &ModuleData) -> TokenStream {
             #(#component_properties,)*
             #(#provider_properties,)*
             #(#submodule_properties,)*
-            build_context: ::shaku::ModuleBuildContext<Self>
+            build_context: ::std::sync::Mutex<::shaku::ModuleBuildContext<Self>>
         }
     }
 }
@@ -199,7 +199,7 @@ fn module_trait(module: &ModuleData) -> Option<TokenStream> {
 }
 
 /// Create a Module impl
-fn module_impl(module: &ModuleData) -> TokenStream {
+fn module_impl(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStream {
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
@@ -209,7 +209,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
         .items
         .iter()
         .enumerate()
-        .map(|(i, component)| component_build(i, &component.ty))
+        .map(|(i, component)| component_build(i, &component.ty, attributes))
         .collect();
 
     let provider_builders: Vec<TokenStream> = module
@@ -237,7 +237,7 @@ fn module_impl(module: &ModuleData) -> TokenStream {
                     #(#component_builders,)*
                     #(#provider_builders,)*
                     #(#submodule_names,)*
-                    build_context: context
+                    build_context: ::std::sync::Mutex::new(context)
                 }
             }
         }
@@ -265,12 +265,23 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 }
 
 /// Create a property initializer for the component during module build
-fn component_build(index: usize, component_ty: &Type) -> TokenStream {
+fn component_build(
+    index: usize,
+    component_ty: &Type,
+    attributes: &ParsedAttributes,
+) -> TokenStream {
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
+    let is_lazy = attributes.is_component_lazy(component_ty);
 
-    quote! {
-        #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
+    if is_lazy {
+        quote! {
+            #property: ::shaku::OnceCell::new()
+        }
+    } else {
+        quote! {
+            #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
+        }
     }
 }
 
@@ -300,12 +311,23 @@ fn submodules_init(submodules: &Punctuated<Submodule, syn::Token![,]>) -> TokenS
 }
 
 /// Create the property which holds a component instance
-fn component_property(index: usize, component_ty: &Type) -> TokenStream {
+fn component_property(
+    index: usize,
+    component_ty: &Type,
+    attributes: &ParsedAttributes,
+) -> TokenStream {
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
+    let is_lazy = attributes.is_component_lazy(component_ty);
 
-    quote! {
-        #property: ::std::sync::Arc<#interface>
+    if is_lazy {
+        quote! {
+            #property: ::shaku::OnceCell<::std::sync::Arc<#interface>>
+        }
+    } else {
+        quote! {
+            #property: ::std::sync::Arc<#interface>
+        }
     }
 }
 
@@ -344,6 +366,17 @@ fn has_component_impl(
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
     let is_lazy = attributes.is_component_lazy(component_ty);
 
+    let get_ref_code = if is_lazy {
+        quote! {
+            let component = self.#property.get_or_init(|| {
+                let mut context = self.build_context.lock().unwrap();
+                <Self as ::shaku::HasComponent<#interface>>::build_component(&mut *context)
+            });
+        }
+    } else {
+        quote! { let component = &self.#property; }
+    };
+
     quote! {
         impl #impl_generics ::shaku::HasComponent<#interface> for #module_name #ty_generics #where_clause {
             fn build_component(
@@ -353,11 +386,13 @@ fn has_component_impl(
             }
 
             fn resolve(&self) -> ::std::sync::Arc<#interface> {
-                ::std::sync::Arc::clone(&self.#property)
+                #get_ref_code
+                ::std::sync::Arc::clone(component)
             }
 
             fn resolve_ref(&self) -> &#interface {
-                ::std::sync::Arc::as_ref(&self.#property)
+                #get_ref_code
+                ::std::sync::Arc::as_ref(component)
             }
         }
     }
