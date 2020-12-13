@@ -19,11 +19,19 @@ pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
     let attributes =
         validate_attributes(&module).map_err(|err| Error::ParseError(err.to_string()))?;
 
+    // Only capture the build context if there is a lazy component
+    let capture_build_context = module
+        .services
+        .components
+        .items
+        .iter()
+        .any(|component| attributes.is_component_lazy(&component.ty));
+
     // Build token streams
-    let module_struct = module_struct(&module, &attributes);
+    let module_struct = module_struct(&module, &attributes, capture_build_context);
     let module_trait_impl = module_trait(&module);
     let module_builder = module_builder(&module);
-    let module_impl = module_impl(&module, &attributes);
+    let module_impl = module_impl(&module, &attributes, capture_build_context);
 
     let has_component_impls: Vec<TokenStream> = module
         .services
@@ -146,7 +154,11 @@ fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Err
 }
 
 /// Create the module struct
-fn module_struct(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStream {
+fn module_struct(
+    module: &ModuleData,
+    attributes: &ParsedAttributes,
+    capture_build_context: bool,
+) -> TokenStream {
     let component_properties: Vec<TokenStream> = module
         .services
         .components
@@ -177,12 +189,18 @@ fn module_struct(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStr
     let module_generics = &module.metadata.generics;
     let where_clause = &module.metadata.generics.where_clause;
 
+    let build_context_property = if capture_build_context {
+        quote! { build_context: ::std::sync::Mutex<::shaku::ModuleBuildContext<Self>>, }
+    } else {
+        TokenStream::new()
+    };
+
     quote! {
         #visibility struct #module_name #module_generics #where_clause {
             #(#component_properties,)*
             #(#provider_properties,)*
             #(#submodule_properties,)*
-            build_context: ::std::sync::Mutex<::shaku::ModuleBuildContext<Self>>
+            #build_context_property
         }
     }
 }
@@ -199,7 +217,11 @@ fn module_trait(module: &ModuleData) -> Option<TokenStream> {
 }
 
 /// Create a Module impl
-fn module_impl(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStream {
+fn module_impl(
+    module: &ModuleData,
+    attributes: &ParsedAttributes,
+    capture_build_context: bool,
+) -> TokenStream {
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
@@ -224,6 +246,11 @@ fn module_impl(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStrea
     let submodules_init = submodules_init(&module.submodules);
     let submodule_names = submodule_names(&module.submodules);
     let submodule_types: Vec<&Type> = module.submodules.iter().map(|sub| &sub.ty).collect();
+    let build_context_init = if capture_build_context {
+        quote! { build_context: ::std::sync::Mutex::new(context), }
+    } else {
+        TokenStream::new()
+    };
 
     quote! {
         impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
@@ -237,7 +264,7 @@ fn module_impl(module: &ModuleData, attributes: &ParsedAttributes) -> TokenStrea
                     #(#component_builders,)*
                     #(#provider_builders,)*
                     #(#submodule_names,)*
-                    build_context: ::std::sync::Mutex::new(context)
+                    #build_context_init
                 }
             }
         }
