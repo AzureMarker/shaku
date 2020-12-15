@@ -1,6 +1,5 @@
 //! Structures to hold useful service data parsed from syn::DeriveInput
 
-use crate::error::Error;
 use crate::parser::Parser;
 use syn::{DeriveInput, Expr, Generics, Ident, Type, Visibility};
 
@@ -13,7 +12,7 @@ pub struct ServiceData {
 }
 
 impl ServiceData {
-    pub fn from_derive_input(input: &DeriveInput) -> Result<Self, Error> {
+    pub fn from_derive_input(input: &DeriveInput) -> syn::Result<Self> {
         Ok(ServiceData {
             metadata: input.parse_as()?,
             properties: input.parse_as()?,

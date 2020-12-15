@@ -1,8 +1,8 @@
 use crate::consts;
-use crate::error::Error;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
-use syn::{Attribute, Expr, Field, GenericArgument, Path, PathArguments, Type};
+use syn::spanned::Spanned;
+use syn::{Attribute, Error, Expr, Field, GenericArgument, Path, PathArguments, Type};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
@@ -14,15 +14,14 @@ fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
 }
 
 impl Parser<Property> for Field {
-    fn parse_as(&self) -> Result<Property, Error> {
+    fn parse_as(&self) -> syn::Result<Property> {
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
         let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
 
-        let property_name = self
-            .ident
-            .clone()
-            .ok_or_else(|| Error::ParseError("Struct properties must be named".to_string()))?;
+        let property_name = self.ident.clone().ok_or_else(|| {
+            Error::new(self.span(), "Struct properties must be named".to_string())
+        })?;
 
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
@@ -32,20 +31,20 @@ impl Parser<Property> for Field {
                             if inner.key == consts::DEFAULT_ATTR_NAME {
                                 Ok(PropertyDefault::Provided(Box::new(inner.value)))
                             } else {
-                                Err(Error::ParseError(format!(
-                                    "Unknown shaku attribute: '{}'",
-                                    inner.key
-                                )))
+                                Err(Error::new(
+                                    inner.key.span(),
+                                    format!("Unknown shaku attribute: '{}'", inner.key),
+                                ))
                             }
                         }
                         None => {
                             if has_default {
                                 Ok(PropertyDefault::NotProvided)
                             } else {
-                                Err(Error::ParseError(format!(
-                                    "Unknown attribute: 'shaku{}'",
-                                    attr.tokens
-                                )))
+                                Err(Error::new(
+                                    attr.span(),
+                                    format!("Unknown attribute: 'shaku{}'", attr.tokens),
+                                ))
                             }
                         }
                     })
@@ -62,10 +61,10 @@ impl Parser<Property> for Field {
             (false, true) => PropertyType::Provided,
             (true, false) => PropertyType::Component,
             (true, true) => {
-                return Err(Error::ParseError(format!(
-                    "Error while parsing {}: Cannot inject and provide the same property",
-                    property_name
-                )))
+                return Err(Error::new(
+                    property_name.span(),
+                    "Cannot inject and provide the same property",
+                ))
             }
         };
 
@@ -103,7 +102,7 @@ impl Parser<Property> for Field {
                             _ => None
                         }
                     })
-                    .ok_or_else(|| Error::ParseError(format!(
+                    .ok_or_else(|| Error::new(path.span(), format!(
                         "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
                         property_name
                     )))?;
@@ -117,18 +116,22 @@ impl Parser<Property> for Field {
             }
 
             _ => match property_type {
-                PropertyType::Component => Err(Error::ParseError(format!(
-                    "Error in {}: Found non-Arc type annotated with #[{}({})]",
-                    property_name,
-                    consts::ATTR_NAME,
-                    consts::INJECT_ATTR_NAME
-                ))),
-                PropertyType::Provided => Err(Error::ParseError(format!(
-                    "Error in {}: Found non-Box type annotated with #[{}({})]",
-                    property_name,
-                    consts::ATTR_NAME,
-                    consts::PROVIDE_ATTR_NAME
-                ))),
+                PropertyType::Component => Err(Error::new(
+                    property_name.span(),
+                    format!(
+                        "Found non-Arc type annotated with #[{}({})]",
+                        consts::ATTR_NAME,
+                        consts::INJECT_ATTR_NAME
+                    ),
+                )),
+                PropertyType::Provided => Err(Error::new(
+                    property_name.span(),
+                    format!(
+                        "Found non-Box type annotated with #[{}({})]",
+                        consts::ATTR_NAME,
+                        consts::PROVIDE_ATTR_NAME
+                    ),
+                )),
                 PropertyType::Parameter => unreachable!(),
             },
         }

@@ -1,27 +1,11 @@
 error: Submodule components cannot have attributes
-  --> $DIR/submodule_service_attributes.rs:25:1
+  --> $DIR/submodule_service_attributes.rs:31:27
    |
-25 | / module! {
-26 | |     TestModule1 {
-27 | |         components = [],
-28 | |         providers = [],
-...  |
-34 | |     }
-35 | | }
-   | |_^
-   |
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+31 |             components = [#[lazy] ComponentTrait],
+   |                           ^
 
 error: Submodule providers cannot have attributes
-  --> $DIR/submodule_service_attributes.rs:37:1
+  --> $DIR/submodule_service_attributes.rs:44:26
    |
-37 | / module! {
-38 | |     TestModule2 {
-39 | |         components = [],
-40 | |         providers = [],
-...  |
-46 | |     }
-47 | | }
-   | |_^
-   |
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+44 |             providers = [#[lazy] ProviderTrait]
+   |                          ^

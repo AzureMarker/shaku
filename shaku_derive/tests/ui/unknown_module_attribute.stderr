@@ -1,12 +1,5 @@
 error: Unknown attribute
-  --> $DIR/unknown_module_attribute.rs:10:1
+  --> $DIR/unknown_module_attribute.rs:12:23
    |
-10 | / module! {
-11 | |     TestModule {
-12 | |         components = [#[unknown] ComponentImpl],
-13 | |         providers = []
-14 | |     }
-15 | | }
-   | |_^
-   |
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+12 |         components = [#[unknown] ComponentImpl],
+   |                       ^

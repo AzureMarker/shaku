@@ -1,15 +1,11 @@
-error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
-  --> $DIR/inject_non_arc.rs:14:10
+error: Found non-Arc type annotated with #[shaku(inject)]
+  --> $DIR/inject_non_arc.rs:18:5
    |
-14 | #[derive(Component)]
-   |          ^^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+18 |     dependency: Box<dyn DependencyTrait>,
+   |     ^^^^^^^^^^
 
-error: Error in dependency: Found non-Arc type annotated with #[shaku(inject)]
-  --> $DIR/inject_non_arc.rs:22:10
+error: Found non-Arc type annotated with #[shaku(inject)]
+  --> $DIR/inject_non_arc.rs:26:5
    |
-22 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+26 |     dependency: Box<dyn DependencyTrait>,
+   |     ^^^^^^^^^^

@@ -1,7 +1,5 @@
-error: Error when parsing value: Parameters are not allowed in Providers
- --> $DIR/provider_parameters.rs:7:10
-  |
-7 | #[derive(Provider)]
-  |          ^^^^^^^^
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+error: Parameters are not allowed in Providers
+  --> $DIR/provider_parameters.rs:10:5
+   |
+10 |     value: usize,
+   |     ^^^^^

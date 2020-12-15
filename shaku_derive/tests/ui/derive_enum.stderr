@@ -1,15 +1,11 @@
 error: Only structs are currently supported
- --> $DIR/derive_enum.rs:8:10
-  |
-8 | #[derive(Component)]
-  |          ^^^^^^^^^
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $DIR/derive_enum.rs:10:6
+   |
+10 | enum ComponentImpl {
+   |      ^^^^^^^^^^^^^
 
 error: Only structs are currently supported
-  --> $DIR/derive_enum.rs:13:10
+  --> $DIR/derive_enum.rs:17:6
    |
-13 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+17 | enum ProviderImpl {
+   |      ^^^^^^^^^^^^

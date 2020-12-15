@@ -1,15 +1,11 @@
 error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)]'
- --> $DIR/no_interface_key.rs:8:10
-  |
-8 | #[derive(Component)]
-  |          ^^^^^^^^^
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $DIR/no_interface_key.rs:10:8
+   |
+10 | struct ComponentImpl;
+   |        ^^^^^^^^^^^^^
 
 error: Unable to find interface. Please add a '#[shaku(interface = <your trait>)]'
-  --> $DIR/no_interface_key.rs:13:10
+  --> $DIR/no_interface_key.rs:15:8
    |
-13 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+15 | struct ProviderImpl;
+   |        ^^^^^^^^^^^^

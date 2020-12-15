@@ -1,13 +1,12 @@
 //! Implementation of the `#[derive(Component)]` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::error::Error;
 use crate::macros::common_output::create_dependency;
 use crate::structures::service::{Property, PropertyDefault, ServiceData};
 use proc_macro2::TokenStream;
 use syn::{DeriveInput, Ident};
 
-pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error> {
+pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> {
     let service = ServiceData::from_derive_input(input)?;
 
     let debug_level = get_debug_level();

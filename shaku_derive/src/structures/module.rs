@@ -1,5 +1,7 @@
 //! Structures to hold useful module data
 
+// use crate::error::Error;
+// use crate::parser::Parser;
 use std::collections::{HashMap, HashSet};
 use syn::export::Hash;
 use syn::parse::{Parse, ParseStream};
@@ -188,6 +190,16 @@ impl ModuleItem {
 pub enum ComponentAttribute {
     Lazy,
 }
+
+// impl Parser<ComponentAttribute> for Attribute {
+//     fn parse_as(&self) -> Result<ComponentAttribute, Error> {
+//         if self.path.is_ident("lazy") && self.tokens.is_empty() {
+//             Ok(ComponentAttribute::Lazy)
+//         } else {
+//             Err(Error::ParseError("Unknown attribute".to_string()))
+//         }
+//     }
+// }
 
 /// Parsed/validated attributes for components and (eventually) providers
 pub struct ParsedAttributes {

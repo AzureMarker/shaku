@@ -1,5 +1,4 @@
 use crate::consts;
-use crate::error::Error;
 use syn::Attribute;
 
 mod key_value;
@@ -12,7 +11,7 @@ pub(self) use self::key_value::KeyValue;
 /// Generic parser for syn structures
 // Note: Can't use `std::convert::From` here because we don't want to consume `T`
 pub trait Parser<T: Sized> {
-    fn parse_as(&self) -> Result<T, Error>;
+    fn parse_as(&self) -> syn::Result<T>;
 }
 
 /// Find the #[shaku(...)] attribute

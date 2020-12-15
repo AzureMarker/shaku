@@ -1,7 +1,6 @@
 //! Implementation of the `module` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::error::Error;
 use crate::structures::module::{ModuleData, ModuleItem, ParsedAttributes, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
 use std::collections::HashMap;
@@ -9,15 +8,14 @@ use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
 
-pub fn expand_module_macro(module: ModuleData) -> Result<TokenStream, Error> {
+pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
     let debug_level = get_debug_level();
     if debug_level > 1 {
         println!("Module data parsed from input: {:#?}", module);
     }
 
     // Validate attributes on components and providers
-    let attributes =
-        validate_attributes(&module).map_err(|err| Error::ParseError(err.to_string()))?;
+    let attributes = validate_attributes(&module)?;
 
     // Only capture the build context if there is a lazy component
     let capture_build_context = module
@@ -114,15 +112,16 @@ fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Err
     }
 
     // Check provider attributes
-    if module
+    if let Some(provider) = module
         .services
         .providers
         .items
         .iter()
-        .any(|provider| !provider.attributes.is_empty())
+        .find(|provider| !provider.attributes.is_empty())
     {
+        let attr = &provider.attributes[0];
         return Err(syn::Error::new(
-            module.services.providers.keyword_token.span,
+            attr.span(),
             "Providers cannot have attributes",
         ));
     }
@@ -130,18 +129,18 @@ fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Err
     // Make sure submodules don't use attributes
     for submodule in &module.submodules {
         for component in &submodule.services.components.items {
-            if !component.attributes.is_empty() {
+            if let Some(attr) = component.attributes.first() {
                 return Err(syn::Error::new(
-                    component.ty.span(),
+                    attr.span(),
                     "Submodule components cannot have attributes",
                 ));
             }
         }
 
         for provider in &submodule.services.providers.items {
-            if !provider.attributes.is_empty() {
+            if let Some(attr) = provider.attributes.first() {
                 return Err(syn::Error::new(
-                    provider.ty.span(),
+                    attr.span(),
                     "Submodule providers cannot have attributes",
                 ));
             }

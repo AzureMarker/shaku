@@ -1,13 +1,12 @@
 //! Implementation of the `#[derive(Provider)]` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::error::Error;
 use crate::macros::common_output::create_dependency;
 use crate::structures::service::{Property, PropertyType, ServiceData};
 use proc_macro2::TokenStream;
-use syn::DeriveInput;
+use syn::{DeriveInput, Error};
 
-pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error> {
+pub fn expand_derive_provider(input: &DeriveInput) -> syn::Result<TokenStream> {
     let service = ServiceData::from_derive_input(input)?;
 
     let debug_level = get_debug_level();
@@ -57,7 +56,7 @@ pub fn expand_derive_provider(input: &DeriveInput) -> Result<TokenStream, Error>
     Ok(output)
 }
 
-fn create_property_assignment(property: &Property) -> Result<TokenStream, Error> {
+fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
     let property_name = &property.property_name;
 
     match property.property_type {
@@ -67,9 +66,9 @@ fn create_property_assignment(property: &Property) -> Result<TokenStream, Error>
         PropertyType::Provided => Ok(quote! {
             #property_name: module.provide()?
         }),
-        PropertyType::Parameter => Err(Error::ParseError(format!(
-            "Error when parsing {}: Parameters are not allowed in Providers",
-            property_name
-        ))),
+        PropertyType::Parameter => Err(Error::new(
+            property.property_name.span(),
+            "Parameters are not allowed in Providers",
+        )),
     }
 }

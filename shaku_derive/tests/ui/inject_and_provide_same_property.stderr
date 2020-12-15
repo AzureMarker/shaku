@@ -1,7 +1,5 @@
-error: Error while parsing dependency: Cannot inject and provide the same property
-  --> $DIR/inject_and_provide_same_property.rs:14:10
+error: Cannot inject and provide the same property
+  --> $DIR/inject_and_provide_same_property.rs:19:5
    |
-14 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+19 |     dependency: Arc<dyn DependencyTrait>,
+   |     ^^^^^^^^^^

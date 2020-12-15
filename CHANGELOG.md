@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ```
   Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
   called to access it, or until it is required by another component/provider.
+  
+## Changed
+- Improved macro error messages by highlighting the relevant piece of code in
+  the error (via `syn::Error`).
 
 ## [0.5.0] - 2020-06-19
 ### Breaking Changes

@@ -1,7 +1,5 @@
-error: Error in dependency: Found non-Box type annotated with #[shaku(provide)]
-  --> $DIR/provide_non_box.rs:14:10
+error: Found non-Box type annotated with #[shaku(provide)]
+  --> $DIR/provide_non_box.rs:18:5
    |
-14 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+18 |     dependency: Arc<dyn DependencyTrait>,
+   |     ^^^^^^^^^^

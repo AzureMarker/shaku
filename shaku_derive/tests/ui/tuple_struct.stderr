@@ -1,15 +1,11 @@
 error: Struct properties must be named
- --> $DIR/tuple_struct.rs:8:10
-  |
-8 | #[derive(Component)]
-  |          ^^^^^^^^^
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  --> $DIR/tuple_struct.rs:10:22
+   |
+10 | struct ComponentImpl(usize);
+   |                      ^^^^^
 
 error: Struct properties must be named
-  --> $DIR/tuple_struct.rs:13:10
+  --> $DIR/tuple_struct.rs:15:21
    |
-13 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+15 | struct ProviderImpl(usize);
+   |                     ^^^^^

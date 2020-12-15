@@ -1,15 +1,11 @@
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
- --> $DIR/interface_not_name_value.rs:8:10
+ --> $DIR/interface_not_name_value.rs:9:1
   |
-8 | #[derive(Component)]
-  |          ^^^^^^^^^
-  |
-  = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+9 | #[shaku(interface(ComponentTrait))]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
-  --> $DIR/interface_not_name_value.rs:13:10
+  --> $DIR/interface_not_name_value.rs:14:1
    |
-13 | #[derive(Provider)]
-   |          ^^^^^^^^
-   |
-   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)
+14 | #[shaku(interface(ProviderTrait))]
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
