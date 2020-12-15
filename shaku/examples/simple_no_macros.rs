@@ -61,9 +61,9 @@ struct SimpleModule {
 impl Module for SimpleModule {
     type Submodules = ();
 
-    fn build(context: &mut ModuleBuildContext<Self>) -> Self {
+    fn build(mut context: ModuleBuildContext<Self>) -> Self {
         Self {
-            simple_dependency: Self::build_component(context),
+            simple_dependency: Self::build_component(&mut context),
             simple_service: context.provider_fn::<SimpleServiceImpl>(),
         }
     }
@@ -79,10 +79,6 @@ impl HasComponent<dyn SimpleDependency> for SimpleModule {
 
     fn resolve_ref(&self) -> &dyn SimpleDependency {
         Arc::as_ref(&self.simple_dependency)
-    }
-
-    fn resolve_mut(&mut self) -> Option<&mut dyn SimpleDependency> {
-        Arc::get_mut(&mut self.simple_dependency)
     }
 }
 impl HasProvider<dyn SimpleService> for SimpleModule {

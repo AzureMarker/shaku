@@ -14,4 +14,4 @@ type AnyType = dyn anymap::any::Any;
 type AnyType = dyn anymap::any::Any + Send + Sync;
 
 type ComponentMap = anymap::Map<AnyType>;
-type ParameterMap = anymap::AnyMap;
+type ParameterMap = anymap::Map<AnyType>;

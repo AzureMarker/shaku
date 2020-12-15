@@ -32,10 +32,10 @@ struct TestModule {
 impl shaku::Module for TestModule {
     type Submodules = ();
 
-    fn build(context: &mut shaku::ModuleBuildContext<Self>) -> Self {
+    fn build(mut context: shaku::ModuleBuildContext<Self>) -> Self {
         Self {
-            component1: Self::build_component(context),
-            component2: Self::build_component(context),
+            component1: Self::build_component(&mut context),
+            component2: Self::build_component(&mut context),
         }
     }
 }
@@ -51,10 +51,6 @@ impl shaku::HasComponent<dyn Component1Trait> for TestModule {
     fn resolve_ref(&self) -> &dyn Component1Trait {
         Arc::as_ref(&self.component1)
     }
-
-    fn resolve_mut(&mut self) -> Option<&mut dyn Component1Trait> {
-        Arc::get_mut(&mut self.component1)
-    }
 }
 impl shaku::HasComponent<dyn Component2Trait> for TestModule {
     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component2Trait> {
@@ -67,10 +63,6 @@ impl shaku::HasComponent<dyn Component2Trait> for TestModule {
 
     fn resolve_ref(&self) -> &dyn Component2Trait {
         Arc::as_ref(&self.component2)
-    }
-
-    fn resolve_mut(&mut self) -> Option<&mut dyn Component2Trait> {
-        Arc::get_mut(&mut self.component2)
     }
 }
 

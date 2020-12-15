@@ -52,11 +52,6 @@ impl<M: Module> ModuleBuildContext<M> {
         }
     }
 
-    /// Build the module
-    pub(crate) fn build(mut self) -> M {
-        M::build(&mut self)
-    }
-
     /// Access this module's submodules
     pub fn submodules(&self) -> &M::Submodules {
         &self.submodules

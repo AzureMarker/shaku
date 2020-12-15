@@ -16,6 +16,11 @@ pub trait Component<M: Module>: Interface {
     type Interface: Interface + ?Sized;
 
     /// The parameters this component requires. If none are required, use `()`.
+    #[cfg(feature = "thread_safe")]
+    type Parameters: Default + Send + Sync;
+
+    /// The parameters this component requires. If none are required, use `()`.
+    #[cfg(not(feature = "thread_safe"))]
     type Parameters: Default;
 
     /// Use the build context and parameters to create the component. Other
@@ -115,38 +120,4 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// # }
     /// ```
     fn resolve_ref(&self) -> &I;
-
-    /// Get a mutable reference to the component.
-    ///
-    /// If the component is jointly owned (an `Arc<I>` reference to the
-    /// component exists outside of this module), then `None` will be returned
-    /// as it is unsafe to take a mutable reference without exclusive ownership
-    /// of the component.
-    ///
-    /// # Example
-    /// ```
-    /// # use shaku::{module, Component, Interface, HasComponent};
-    /// # use std::sync::Arc;
-    /// #
-    /// # trait Foo: Interface {}
-    /// #
-    /// # #[derive(Component)]
-    /// # #[shaku(interface = Foo)]
-    /// # struct FooImpl;
-    /// # impl Foo for FooImpl {}
-    /// #
-    /// # module! {
-    /// #     TestModule {
-    /// #         components = [FooImpl],
-    /// #         providers = []
-    /// #     }
-    /// # }
-    /// #
-    /// # fn main() {
-    /// # let mut module = TestModule::builder().build();
-    /// #
-    /// let foo: &mut dyn Foo = module.resolve_mut().unwrap();
-    /// # }
-    /// ```
-    fn resolve_mut(&mut self) -> Option<&mut I>;
 }
