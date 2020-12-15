@@ -119,10 +119,14 @@
 //! struct DateLoggerImpl {
 //!     #[shaku(inject)]
 //!     logger: Arc<dyn Logger>,
+//!     #[shaku(default)]
 //!     today: String,
+//!     #[shaku(default)]
 //!     year: usize,
 //! }
 //! ```
+//!
+//! (note: `#[shaku(default)]` will use the `Default` trait if no value is given for the property)
 //!
 //! If you don't use the derive macro, add [`HasComponent`] bounds to your module generic and inject
 //! the dependencies manually with [`HasComponent::build_component`].
@@ -151,7 +155,9 @@
 //! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
 //! #     logger: Arc<dyn Logger>,
+//! #     #[shaku(default)]
 //! #     today: String,
+//! #     #[shaku(default)]
 //! #     year: usize,
 //! # }
 //! # impl DateLogger for DateLoggerImpl {
@@ -198,7 +204,9 @@
 //! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
 //! #     logger: Arc<dyn Logger>,
+//! #     #[shaku(default)]
 //! #     today: String,
+//! #     #[shaku(default)]
 //! #     year: usize,
 //! # }
 //! # impl DateLogger for DateLoggerImpl {
@@ -248,7 +256,9 @@
 //! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
 //! #     logger: Arc<dyn Logger>,
+//! #     #[shaku(default)]
 //! #     today: String,
+//! #     #[shaku(default)]
 //! #     year: usize,
 //! # }
 //! # impl DateLogger for DateLoggerImpl {
@@ -297,7 +307,9 @@
 //! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
 //! #     logger: Arc<dyn Logger>,
+//! #     #[shaku(default)]
 //! #     today: String,
+//! #     #[shaku(default)]
 //! #     year: usize,
 //! # }
 //! # impl DateLogger for DateLoggerImpl {
@@ -353,7 +365,9 @@
 //! # struct DateLoggerImpl {
 //! #     #[shaku(inject)]
 //! #     logger: Arc<dyn Logger>,
+//! #     #[shaku(default)]
 //! #     today: String,
+//! #     #[shaku(default)]
 //! #     year: usize,
 //! # }
 //! # impl DateLogger for DateLoggerImpl {
@@ -421,7 +435,9 @@
 //! struct DateLoggerImpl {
 //!     #[shaku(inject)]
 //!     logger: Arc<dyn Logger>,
+//!     #[shaku(default)]
 //!     today: String,
+//!     #[shaku(default)]
 //!     year: usize,
 //! }
 //!

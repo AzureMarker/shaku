@@ -10,7 +10,6 @@ struct NoDefault;
 #[derive(Component)]
 #[shaku(interface = MyComponent)]
 struct MyComponentImpl {
-    #[shaku(no_default)]
     #[allow(dead_code)]
     no_default: NoDefault,
 }
@@ -35,7 +34,7 @@ fn with_given_parameter() {
 
 /// Not providing the parameter will cause a panic
 #[test]
-#[should_panic(expected = "There is no default value for `no_default`")]
+#[should_panic(expected = "There is no default value for `MyComponentImpl::no_default`")]
 fn without_given_parameter() {
     TestModule::builder().build();
 }

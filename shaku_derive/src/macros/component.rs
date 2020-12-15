@@ -5,7 +5,7 @@ use crate::error::Error;
 use crate::macros::common_output::create_dependency;
 use crate::structures::service::{Property, PropertyDefault, ServiceData};
 use proc_macro2::TokenStream;
-use syn::DeriveInput;
+use syn::{DeriveInput, Ident};
 
 pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error> {
     let service = ServiceData::from_derive_input(input)?;
@@ -36,7 +36,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> Result<TokenStream, Error
     let parameters_defaults: Vec<TokenStream> = service
         .properties
         .iter()
-        .filter_map(create_parameters_default)
+        .filter_map(|property| create_parameters_default(property, &service.metadata.identifier))
         .collect();
 
     // Component implementation
@@ -109,7 +109,7 @@ fn create_parameters_property(property: &Property) -> Option<TokenStream> {
     })
 }
 
-fn create_parameters_default(property: &Property) -> Option<TokenStream> {
+fn create_parameters_default(property: &Property, component_ident: &Ident) -> Option<TokenStream> {
     if property.is_service() {
         return None;
     }
@@ -124,7 +124,10 @@ fn create_parameters_default(property: &Property) -> Option<TokenStream> {
             #property_name: Default::default()
         }),
         PropertyDefault::NoDefault => {
-            let unreachable_msg = format!("There is no default value for `{}`", property_name);
+            let unreachable_msg = format!(
+                "There is no default value for `{}::{}`",
+                component_ident, property_name
+            );
 
             Some(quote! {
                 #property_name: unreachable!(#unreachable_msg)

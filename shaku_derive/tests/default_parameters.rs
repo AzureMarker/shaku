@@ -12,6 +12,7 @@ struct MyStruct(usize);
 #[shaku(interface = MyTrait)]
 #[allow(dead_code)]
 struct MyComponent {
+    #[shaku(default)]
     value_one: usize,
     #[shaku(default = 10)]
     value_two: usize,
@@ -20,9 +21,9 @@ struct MyComponent {
 }
 impl MyTrait for MyComponent {}
 
-/// An unannotated parameter uses `Default::default()`
+/// A parameter with `#[shaku(default)]` uses `Default::default()`
 #[test]
-fn unannotated_uses_normal_default() {
+fn simply_annotated_uses_normal_default() {
     let parameters = MyComponentParameters::default();
 
     assert_eq!(parameters.value_one, usize::default());
