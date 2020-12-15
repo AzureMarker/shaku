@@ -56,7 +56,7 @@ use std::ops::Deref;
 /// # }
 /// }
 /// ```
-pub struct InjectProvided<M: Module + HasProvider<I>, I: ?Sized>(Box<I>, PhantomData<*const M>);
+pub struct InjectProvided<M: Module + HasProvider<I>, I: ?Sized>(Box<I>, PhantomData<M>);
 
 impl<'a, 'r, M: Module + HasProvider<I>, I: ?Sized> FromRequest<'a, 'r> for InjectProvided<M, I> {
     type Error = String;

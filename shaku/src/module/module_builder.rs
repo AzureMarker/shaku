@@ -15,7 +15,7 @@ pub struct ModuleBuilder<M: Module> {
     submodules: M::Submodules,
     component_overrides: ComponentMap,
     provider_overrides: ComponentMap,
-    _module: PhantomData<*const M>,
+    _module: PhantomData<M>,
 }
 
 impl<M: Module> ModuleBuilder<M> {

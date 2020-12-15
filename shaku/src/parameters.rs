@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 /// strings would overwrite the other string.
 pub(crate) struct ComponentParameters<C, P: Default> {
     pub(crate) value: P,
-    pub(crate) _component: PhantomData<*const C>,
+    pub(crate) _component: PhantomData<C>,
 }
 
 impl<C, P: Default> ComponentParameters<C, P> {
