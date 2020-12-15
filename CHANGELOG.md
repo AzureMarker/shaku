@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To support lazy components, component parameters (the non-injected/provided
   struct properties) must implement `Send` when the `thread_safe` feature is
   enabled.
+- `Module::build` now takes the `ModuleBuildContext` by value instead of by
+  mutable reference.
 - Component parameters no longer require `Default` by default (pun intended)
   when using the Component derive.
   If a parameter is not provided during module creation, there will be a panic.
