@@ -6,8 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Breaking Changes
-- Component parameters (the non-injected/provided struct properties) no longer
-  require `Default` by default (pun intended).
+- Components can now be lazily created. Annotate a component in the module with
+  `#[lazy]` to make it lazy:
+  ```rust
+  module! {
+      MyModule {
+          components = [#[lazy] ServiceImpl],
+          providers = []
+      }
+  }
+  ```
+  Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
+  called to access it, or until it is required by another component/provider.
+- To support lazy components, `resolve_mut` is removed. It relied upon having a
+  single `Arc` reference to the component, which can not be guaranteed in many
+  cases (including the case of lazy components).
+- To support lazy components, component parameters (the non-injected/provided
+  struct properties) must implement `Send` when the `thread_safe` feature is
+  enabled.
+- Component parameters no longer require `Default` by default (pun intended).
   If a parameter is not provided during module creation, there will be a panic.
   The `#[shaku(default)]` and `#[shaku(default = ...)]` annotations can be used
   to enable a default (first via the `Default` trait, second via the provided
