@@ -17,7 +17,7 @@ pub trait Component<M: Module>: Interface {
 
     /// The parameters this component requires. If none are required, use `()`.
     #[cfg(feature = "thread_safe")]
-    type Parameters: Default + Send + Sync;
+    type Parameters: Default + Send;
 
     /// The parameters this component requires. If none are required, use `()`.
     #[cfg(not(feature = "thread_safe"))]

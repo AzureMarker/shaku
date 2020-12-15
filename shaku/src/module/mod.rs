@@ -13,5 +13,10 @@ type AnyType = dyn anymap::any::Any;
 #[cfg(feature = "thread_safe")]
 type AnyType = dyn anymap::any::Any + Send + Sync;
 
+#[cfg(not(feature = "thread_safe"))]
+type ParamAnyType = dyn anymap::any::Any;
+#[cfg(feature = "thread_safe")]
+type ParamAnyType = dyn anymap::any::Any + Send;
+
 type ComponentMap = anymap::Map<AnyType>;
-type ParameterMap = anymap::Map<AnyType>;
+type ParameterMap = anymap::Map<ParamAnyType>;
