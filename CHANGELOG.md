@@ -6,18 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Breaking Changes
-- Components can now be lazily created. Annotate a component in the module with
-  `#[lazy]` to make it lazy:
-  ```rust
-  module! {
-      MyModule {
-          components = [#[lazy] ServiceImpl],
-          providers = []
-      }
-  }
-  ```
-  Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
-  called to access it, or until it is required by another component/provider.
 - To support lazy components, `resolve_mut` is removed. It relied upon having a
   single `Arc` reference to the component, which can not be guaranteed in many
   cases (including the case of lazy components).
@@ -31,6 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to enable a default (first via the `Default` trait, second via the provided
   expression). The `#[shaku(no_default)]` annotation has been removed since it
   is now the default.
+
+### Added
+- Components can now be lazily created. Annotate a component in the module with
+  `#[lazy]` to make it lazy:
+  ```rust
+  module! {
+      MyModule {
+          components = [#[lazy] ServiceImpl],
+          providers = []
+      }
+  }
+  ```
+  Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
+  called to access it, or until it is required by another component/provider.
 
 ## [0.5.0] - 2020-06-19
 ### Breaking Changes
