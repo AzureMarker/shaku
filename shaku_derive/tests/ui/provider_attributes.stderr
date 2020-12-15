@@ -1,0 +1,12 @@
+error: Providers cannot have attributes
+  --> $DIR/provider_attributes.rs:12:1
+   |
+12 | / module! {
+13 | |     TestModule {
+14 | |         components = [],
+15 | |         providers = [#[lazy] ProviderImpl]
+16 | |     }
+17 | | }
+   | |_^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

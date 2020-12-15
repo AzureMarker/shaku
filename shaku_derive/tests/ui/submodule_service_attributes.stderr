@@ -1,0 +1,27 @@
+error: Submodule components cannot have attributes
+  --> $DIR/submodule_service_attributes.rs:25:1
+   |
+25 | / module! {
+26 | |     TestModule1 {
+27 | |         components = [],
+28 | |         providers = [],
+...  |
+34 | |     }
+35 | | }
+   | |_^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: Submodule providers cannot have attributes
+  --> $DIR/submodule_service_attributes.rs:37:1
+   |
+37 | / module! {
+38 | |     TestModule2 {
+39 | |         components = [],
+40 | |         providers = [],
+...  |
+46 | |     }
+47 | | }
+   | |_^
+   |
+   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
