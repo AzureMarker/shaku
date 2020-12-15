@@ -138,7 +138,7 @@ fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Err
             }
         }
 
-        for provider in &submodule.services.components.items {
+        for provider in &submodule.services.providers.items {
             if !provider.attributes.is_empty() {
                 return Err(syn::Error::new(
                     provider.ty.span(),
