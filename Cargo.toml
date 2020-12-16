@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "shaku",
-    "shaku_derive"
+    "shaku_derive",
+    "shaku_actix"
 ]
 # shaku_rocket is excluded because it uses the nightly compiler.
 # It must be separately compiled (cargo check/build/test).

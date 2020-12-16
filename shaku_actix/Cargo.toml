@@ -1,0 +1,12 @@
+[package]
+name = "shaku_actix"
+version = "0.5.0"
+authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
+description = "Integration between shaku and Actix Web"
+repository = "https://github.com/Mcat12/shaku"
+keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection", "actix"]
+license = "MIT/Apache-2.0"
+edition = "2018"
+
+[dependencies]
+shaku = { version = "~0.5.0", path = "../shaku", features = ["thread_safe"] }
