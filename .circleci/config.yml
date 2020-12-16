@@ -33,7 +33,7 @@ commands:
     steps:
       - run:
           name: "Test"
-          command: cargo test << parameters.test-args >>
+          command: cargo test --all << parameters.test-args >>
 jobs:
   shaku:
     docker:
@@ -55,8 +55,9 @@ jobs:
       - install-tools
       - code-check
       - test:
-          # Multiple compiler messages are different in 1.38.0
-          test-args: "-- --skip compile_fail"
+          # Skip shaku_actix, as actix has a higher MSRV.
+          # Skip compile tests, as compiler messages are different in 1.38.0.
+          test-args: "--exclude shaku_actix -- --skip compile_fail"
   shaku_rocket:
     docker:
       - image: rust:1.48.0
