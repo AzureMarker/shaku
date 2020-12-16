@@ -21,10 +21,14 @@ commands:
           name: "Code Lint Check"
           command: cargo clippy --all-targets --all-features -- -D clippy::all
   code-check:
+    parameters:
+      check-args:
+        type: string
+        default: ""
     steps:
       - run:
           name: "Cargo Check"
-          command: cargo check
+          command: cargo check --all << parameters.check-args >>
   test:
     parameters:
       test-args:
@@ -53,9 +57,10 @@ jobs:
       - checkout
       - remove-rust-toolchain
       - install-tools
-      - code-check
+      # Skip shaku_actix, as actix has a higher MSRV.
+      - code-check:
+          check-args: "--exclude shaku_actix"
       - test:
-          # Skip shaku_actix, as actix has a higher MSRV.
           # Skip compile tests, as compiler messages are different in 1.38.0.
           test-args: "--exclude shaku_actix -- --skip compile_fail"
   shaku_rocket:
