@@ -11,4 +11,4 @@ edition = "2018"
 [dependencies]
 actix-web = "3"
 futures-util = "0.3"
-shaku = { version = "~0.5.0", path = "../shaku", features = ["thread_safe"] }
+shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
