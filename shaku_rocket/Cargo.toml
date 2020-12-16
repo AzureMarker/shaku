@@ -4,7 +4,7 @@ version = "0.5.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Integration between shaku and Rocket"
 repository = "https://github.com/Mcat12/shaku"
-keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
+keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection", "rocket"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 
