@@ -1,11 +1,13 @@
 //! Structures to hold useful module data
 
-use std::collections::{HashMap, HashSet};
+use crate::parser::Parser;
+use std::collections::HashSet;
 use syn::export::Hash;
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
-use syn::{token, Attribute};
-use syn::{Generics, Ident, Type, Visibility};
+use syn::{token, Attribute, Generics, Ident, Type, Visibility};
+
+pub type ComponentItem = ModuleItem<ComponentAttribute>;
 
 mod kw {
     syn::custom_keyword!(components);
@@ -39,28 +41,41 @@ pub struct Submodule {
 /// Services associated with a module/submodule
 #[derive(Debug)]
 pub struct ModuleServices {
-    pub components: ModuleItems<kw::components>,
+    pub components: ModuleItems<kw::components, ComponentAttribute>,
     pub comma_token: syn::Token![,],
-    pub providers: ModuleItems<kw::providers>,
+    pub providers: ModuleItems<kw::providers, ProviderAttribute>,
     pub trailing_comma: Option<syn::Token![,]>,
 }
 
 /// A list of components/providers
 #[derive(Debug)]
-pub struct ModuleItems<T: Parse> {
+pub struct ModuleItems<T: Parse, A>
+where
+    Attribute: Parser<A>,
+{
     pub keyword_token: T,
     pub eq_token: token::Eq,
     pub bracket_token: token::Bracket,
     // Can't use syn::Token![,] here because of
     // https://github.com/rust-lang/rust/issues/50676
-    pub items: Punctuated<ModuleItem, token::Comma>,
+    pub items: Punctuated<ModuleItem<A>, token::Comma>,
 }
 
 /// An annotated component/provider type
 #[derive(Debug)]
-pub struct ModuleItem {
-    pub attributes: Vec<Attribute>,
+pub struct ModuleItem<A>
+where
+    Attribute: Parser<A>,
+{
+    pub attributes: HashSet<A>,
     pub ty: Type,
+}
+
+impl ModuleItem<ComponentAttribute> {
+    /// Check if a component is marked with `#[lazy]`
+    pub fn is_lazy(&self) -> bool {
+        self.attributes.contains(&ComponentAttribute::Lazy)
+    }
 }
 
 /// Valid component attributes
@@ -69,18 +84,8 @@ pub enum ComponentAttribute {
     Lazy,
 }
 
-/// Parsed/validated attributes for components and (eventually) providers
-pub struct ParsedAttributes {
-    pub components: HashMap<Type, HashSet<ComponentAttribute>>,
-    // eventually will also contain provider attributes, once they exist
-}
-
-impl ParsedAttributes {
-    /// Check if a component is marked with `#[lazy]`
-    pub fn is_component_lazy(&self, component_ty: &Type) -> bool {
-        self.components
-            .get(component_ty)
-            .map(|attrs| attrs.contains(&ComponentAttribute::Lazy))
-            .unwrap_or(false)
-    }
+/// Valid provider attributes
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum ProviderAttribute {
+    // None currently
 }

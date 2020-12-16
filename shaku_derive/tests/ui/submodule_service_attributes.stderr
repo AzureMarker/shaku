@@ -1,10 +1,10 @@
 error: Submodule components cannot have attributes
-  --> $DIR/submodule_service_attributes.rs:31:27
+  --> $DIR/submodule_service_attributes.rs:31:35
    |
 31 |             components = [#[lazy] ComponentTrait],
-   |                           ^
+   |                                   ^^^^^^^^^^^^^^
 
-error: Submodule providers cannot have attributes
+error: Providers cannot have attributes
   --> $DIR/submodule_service_attributes.rs:44:26
    |
 44 |             providers = [#[lazy] ProviderTrait]

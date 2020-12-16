@@ -1,9 +1,8 @@
 //! Implementation of the `module` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::structures::module::{ModuleData, ModuleItem, ParsedAttributes, Submodule};
+use crate::structures::module::{ComponentItem, ModuleData, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
-use std::collections::HashMap;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
@@ -14,22 +13,19 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         println!("Module data parsed from input: {:#?}", module);
     }
 
-    // Validate attributes on components and providers
-    let attributes = validate_attributes(&module)?;
-
     // Only capture the build context if there is a lazy component
     let capture_build_context = module
         .services
         .components
         .items
         .iter()
-        .any(|component| attributes.is_component_lazy(&component.ty));
+        .any(ComponentItem::is_lazy);
 
     // Build token streams
-    let module_struct = module_struct(&module, &attributes, capture_build_context);
+    let module_struct = module_struct(&module, capture_build_context);
     let module_trait_impl = module_trait(&module);
     let module_builder = module_builder(&module);
-    let module_impl = module_impl(&module, &attributes, capture_build_context);
+    let module_impl = module_impl(&module, capture_build_context);
 
     let has_component_impls: Vec<TokenStream> = module
         .services
@@ -37,7 +33,7 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         .items
         .iter()
         .enumerate()
-        .map(|(i, ty)| has_component_impl(i, ty, &module, &attributes))
+        .map(|(i, ty)| has_component_impl(i, ty, &module))
         .collect();
 
     let has_provider_impls: Vec<TokenStream> = module
@@ -98,73 +94,15 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
     Ok(output)
 }
 
-/// Check the attributes on `ModuleItem`s and return a parsed set of attributes
-/// for each item.
-///
-/// Currently the returned data structure contains a map from component type to
-/// attribute set.
-fn validate_attributes(module: &ModuleData) -> Result<ParsedAttributes, syn::Error> {
-    // Check and collect component attributes
-    let mut component_attrs = HashMap::new();
-    for component in &module.services.components.items {
-        let attrs = component.component_attributes()?;
-        component_attrs.insert(component.ty.clone(), attrs);
-    }
-
-    // Check provider attributes
-    if let Some(provider) = module
-        .services
-        .providers
-        .items
-        .iter()
-        .find(|provider| !provider.attributes.is_empty())
-    {
-        let attr = &provider.attributes[0];
-        return Err(syn::Error::new(
-            attr.span(),
-            "Providers cannot have attributes",
-        ));
-    }
-
-    // Make sure submodules don't use attributes
-    for submodule in &module.submodules {
-        for component in &submodule.services.components.items {
-            if let Some(attr) = component.attributes.first() {
-                return Err(syn::Error::new(
-                    attr.span(),
-                    "Submodule components cannot have attributes",
-                ));
-            }
-        }
-
-        for provider in &submodule.services.providers.items {
-            if let Some(attr) = provider.attributes.first() {
-                return Err(syn::Error::new(
-                    attr.span(),
-                    "Submodule providers cannot have attributes",
-                ));
-            }
-        }
-    }
-
-    Ok(ParsedAttributes {
-        components: component_attrs,
-    })
-}
-
 /// Create the module struct
-fn module_struct(
-    module: &ModuleData,
-    attributes: &ParsedAttributes,
-    capture_build_context: bool,
-) -> TokenStream {
+fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStream {
     let component_properties: Vec<TokenStream> = module
         .services
         .components
         .items
         .iter()
         .enumerate()
-        .map(|(i, component)| component_property(i, &component.ty, attributes))
+        .map(|(i, component)| component_property(i, component))
         .collect();
 
     let provider_properties: Vec<TokenStream> = module
@@ -216,11 +154,7 @@ fn module_trait(module: &ModuleData) -> Option<TokenStream> {
 }
 
 /// Create a Module impl
-fn module_impl(
-    module: &ModuleData,
-    attributes: &ParsedAttributes,
-    capture_build_context: bool,
-) -> TokenStream {
+fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream {
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
@@ -230,7 +164,7 @@ fn module_impl(
         .items
         .iter()
         .enumerate()
-        .map(|(i, component)| component_build(i, &component.ty, attributes))
+        .map(|(i, component)| component_build(i, component))
         .collect();
 
     let provider_builders: Vec<TokenStream> = module
@@ -291,16 +225,11 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 }
 
 /// Create a property initializer for the component during module build
-fn component_build(
-    index: usize,
-    component_ty: &Type,
-    attributes: &ParsedAttributes,
-) -> TokenStream {
-    let property = generate_name(index, "component", component_ty.span());
-    let interface = interface_from_component(component_ty);
-    let is_lazy = attributes.is_component_lazy(component_ty);
+fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
+    let property = generate_name(index, "component", component.ty.span());
+    let interface = interface_from_component(&component.ty);
 
-    if is_lazy {
+    if component.is_lazy() {
         quote! {
             #property: ::shaku::OnceCell::new()
         }
@@ -337,16 +266,11 @@ fn submodules_init(submodules: &Punctuated<Submodule, syn::Token![,]>) -> TokenS
 }
 
 /// Create the property which holds a component instance
-fn component_property(
-    index: usize,
-    component_ty: &Type,
-    attributes: &ParsedAttributes,
-) -> TokenStream {
-    let property = generate_name(index, "component", component_ty.span());
-    let interface = interface_from_component(component_ty);
-    let is_lazy = attributes.is_component_lazy(component_ty);
+fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
+    let property = generate_name(index, "component", component.ty.span());
+    let interface = interface_from_component(&component.ty);
 
-    if is_lazy {
+    if component.is_lazy() {
         quote! {
             #property: ::shaku::OnceCell<::std::sync::Arc<#interface>>
         }
@@ -379,20 +303,14 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
 }
 
 /// Create a HasComponent impl
-fn has_component_impl(
-    index: usize,
-    component: &ModuleItem,
-    module: &ModuleData,
-    attributes: &ParsedAttributes,
-) -> TokenStream {
+fn has_component_impl(index: usize, component: &ComponentItem, module: &ModuleData) -> TokenStream {
     let component_ty = &component.ty;
     let property = generate_name(index, "component", component_ty.span());
     let interface = interface_from_component(component_ty);
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
-    let is_lazy = attributes.is_component_lazy(component_ty);
 
-    let get_ref_code = if is_lazy {
+    let get_ref_code = if component.is_lazy() {
         quote! {
             let component = self.#property.get_or_init(|| {
                 let mut context = self.build_context.lock().unwrap();

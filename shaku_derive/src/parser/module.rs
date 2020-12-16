@@ -1,11 +1,13 @@
+use crate::parser::Parser;
 use crate::structures::module::{
     ComponentAttribute, ModuleData, ModuleItem, ModuleItems, ModuleMetadata, ModuleServices,
-    Submodule,
+    ProviderAttribute, Submodule,
 };
 use std::collections::HashSet;
+use std::hash::Hash;
 use syn::parse::{Parse, ParseStream};
 use syn::spanned::Spanned;
-use syn::{Attribute, Generics};
+use syn::{Attribute, Error, Generics};
 
 impl Parse for ModuleData {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -60,10 +62,30 @@ impl Parse for Submodule {
 
         let content;
         syn::braced!(content in input);
-        let services = content.parse()?;
+        let services: ModuleServices = content.parse()?;
 
         if !content.is_empty() {
             return Err(content.error("expected end of input"));
+        }
+
+        // Make sure components don't use attributes
+        for component in &services.components.items {
+            if !component.attributes.is_empty() {
+                return Err(syn::Error::new(
+                    component.ty.span(),
+                    "Submodule components cannot have attributes",
+                ));
+            }
+        }
+
+        // Make sure providers don't use attributes
+        for provider in &services.providers.items {
+            if !provider.attributes.is_empty() {
+                return Err(syn::Error::new(
+                    provider.ty.span(),
+                    "Submodule providers cannot have attributes",
+                ));
+            }
         }
 
         Ok(Submodule { ty, services })
@@ -81,7 +103,10 @@ impl Parse for ModuleServices {
     }
 }
 
-impl<T: Parse> Parse for ModuleItems<T> {
+impl<T: Parse, A: Eq + Hash> Parse for ModuleItems<T, A>
+where
+    Attribute: Parser<A>,
+{
     #[allow(clippy::eval_order_dependence)]
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
@@ -94,34 +119,44 @@ impl<T: Parse> Parse for ModuleItems<T> {
     }
 }
 
-impl Parse for ModuleItem {
+impl<A: Eq + Hash> Parse for ModuleItem<A>
+where
+    Attribute: Parser<A>,
+{
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let unparsed_attrs = input.call(Attribute::parse_outer)?;
+        let mut attributes = HashSet::with_capacity(unparsed_attrs.len());
+
+        // Parse attributes and check for duplicates
+        for unparsed_attr in unparsed_attrs {
+            let attr = unparsed_attr.parse_as()?;
+
+            if attributes.contains(&attr) {
+                return Err(syn::Error::new(unparsed_attr.span(), "Duplicate attribute"));
+            }
+
+            attributes.insert(attr);
+        }
+
         Ok(ModuleItem {
-            attributes: input.call(Attribute::parse_outer)?,
+            attributes,
             ty: input.parse()?,
         })
     }
 }
 
-impl ModuleItem {
-    /// Parse attributes as if this item references a component
-    pub fn component_attributes(&self) -> Result<HashSet<ComponentAttribute>, syn::Error> {
-        let mut component_attrs = HashSet::new();
-
-        for attr in &self.attributes {
-            let attr_kind = if attr.path.is_ident("lazy") && attr.tokens.is_empty() {
-                ComponentAttribute::Lazy
-            } else {
-                return Err(syn::Error::new(attr.span(), "Unknown attribute"));
-            };
-
-            if component_attrs.contains(&attr_kind) {
-                return Err(syn::Error::new(attr.span(), "Duplicate attribute"));
-            }
-
-            component_attrs.insert(attr_kind);
+impl Parser<ComponentAttribute> for Attribute {
+    fn parse_as(&self) -> syn::Result<ComponentAttribute> {
+        if self.path.is_ident("lazy") && self.tokens.is_empty() {
+            Ok(ComponentAttribute::Lazy)
+        } else {
+            Err(Error::new(self.span(), "Unknown attribute".to_string()))
         }
+    }
+}
 
-        Ok(component_attrs)
+impl Parser<ProviderAttribute> for Attribute {
+    fn parse_as(&self) -> syn::Result<ProviderAttribute> {
+        Err(Error::new(self.span(), "Providers cannot have attributes"))
     }
 }
