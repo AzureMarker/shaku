@@ -104,6 +104,7 @@ pub fn provider(input: TokenStream) -> TokenStream {
 ///         providers = []
 ///     }
 /// }
+/// # fn main() {}
 /// ```
 ///
 /// # Examples
