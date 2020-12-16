@@ -83,6 +83,29 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// It is still possible to compile with a circular dependency if the module is manually implemented
 /// in a certain way. In that case, there will be a panic during module creation with more details.
 ///
+/// ## Lazy Components
+/// Components can be lazily created by annotating them with `#[lazy]` in the module declaration.
+/// The component will not be built until it is required, such as when `resolve_ref` is called for
+/// the first time.
+///
+/// ```rust
+/// use shaku::{module, Component, Interface};
+///
+/// trait Service: Interface {}
+///
+/// #[derive(Component)]
+/// #[shaku(interface = Service)]
+/// struct ServiceImpl;
+/// impl Service for ServiceImpl {}
+///
+/// module! {
+///     MyModule {
+///         components = [#[lazy] ServiceImpl],
+///         providers = []
+///     }
+/// }
+/// ```
+///
 /// # Examples
 /// ```
 /// use shaku::{module, Component, Interface, HasComponent};
