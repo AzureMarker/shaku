@@ -49,7 +49,7 @@ pub struct ModuleServices {
 
 /// A list of components/providers
 #[derive(Debug)]
-pub struct ModuleItems<T: Parse, A>
+pub struct ModuleItems<T: Parse, A: Eq + Hash>
 where
     Attribute: Parser<A>,
 {
@@ -63,7 +63,7 @@ where
 
 /// An annotated component/provider type
 #[derive(Debug)]
-pub struct ModuleItem<A>
+pub struct ModuleItem<A: Eq + Hash>
 where
     Attribute: Parser<A>,
 {
