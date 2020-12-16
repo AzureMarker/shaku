@@ -3,6 +3,7 @@ use syn::Attribute;
 
 mod key_value;
 mod metadata_from_input;
+mod module;
 mod properties_from_input;
 mod property_from_field;
 
