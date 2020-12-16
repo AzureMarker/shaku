@@ -36,9 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
   called to access it, or until it is required by another component/provider.
   
-## Changed
+### Changed
 - Improved macro error messages by highlighting the relevant piece of code in
   the error (via `syn::Error`).
+  
+### shaku_actix 0.1.0
+- New crate added to support Actix Web. It functions similarly to shaku_rocket.
 
 ## [0.5.0] - 2020-06-19
 ### Breaking Changes
