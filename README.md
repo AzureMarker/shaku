@@ -72,6 +72,12 @@ noted in the changelog.
 
 Minimum supported version: 1.38.0
 
+## Project Status
+The foundation of shaku's API is in place, and now the focus is to mature the
+project based on user feedback. I ([@Mcat12]) am active in the project, but I do
+not have many major changes of my own planned for the future. Most of the future
+changes will be based on user feedback.
+
 ## Acknowledgements
 This library started off as "he_di" (later renamed to "shaku") under the
 guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
