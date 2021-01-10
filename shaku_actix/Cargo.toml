@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Integration between shaku and Actix Web"
 repository = "https://github.com/Mcat12/shaku"
-keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection", "actix"]
+keywords = ["di", "ioc", "dependency", "dependency-injection", "actix"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 

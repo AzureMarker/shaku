@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.6.0] - 2021-01-09
 ### Breaking Changes
 - To support lazy components, `resolve_mut` is removed. It relied upon having a
   single `Arc` reference to the component, which can not be guaranteed in many
@@ -40,9 +42,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved macro error messages by highlighting the relevant piece of code in
   the error (via `syn::Error`).
   
+### Fixed
+- Fixed accidentally importing `syn::export::Hash`, which is not part of the
+  public API.
+  
 ### shaku_actix 0.1.0
 - New crate added to support Actix Web. It functions similarly to shaku_rocket.
   It works with both shaku 0.5 and 0.6.
+  
+### shaku_rocket 0.5.1
+- This version supports both shaku 0.5 and 0.6. This crate is now independently
+  versioned from the main shaku crate.
 
 ## [0.5.0] - 2020-06-19
 ### Breaking Changes
@@ -150,7 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Mcat12/shaku/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Mcat12/shaku/releases/tag/v0.5.0
 [0.4.1]: https://github.com/Mcat12/shaku/releases/tag/v0.4.1
 [0.4.0]: https://github.com/Mcat12/shaku/releases/tag/v0.4.0

@@ -1,13 +1,13 @@
 [package]
 name = "shaku_rocket"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Integration between shaku and Rocket"
 repository = "https://github.com/Mcat12/shaku"
-keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection", "rocket"]
+keywords = ["di", "ioc", "dependency", "dependency-injection", "rocket"]
 license = "MIT/Apache-2.0"
 edition = "2018"
 
 [dependencies]
-shaku = { version = "~0.5.0", path = "../shaku", features = ["thread_safe"] }
+shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
 rocket = "0.4"
