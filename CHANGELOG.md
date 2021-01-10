@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   
 ### shaku_actix 0.1.0
 - New crate added to support Actix Web. It functions similarly to shaku_rocket.
+  It works with both shaku 0.5 and 0.6.
 
 ## [0.5.0] - 2020-06-19
 ### Breaking Changes
