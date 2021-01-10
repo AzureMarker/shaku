@@ -2,7 +2,7 @@
 
 use crate::parser::Parser;
 use std::collections::HashSet;
-use syn::export::Hash;
+use std::hash::Hash;
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};

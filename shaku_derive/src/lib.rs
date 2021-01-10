@@ -78,7 +78,7 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// ## Circular dependencies
 /// This macro will detect circular dependencies at compile time. The error that is thrown will be
 /// something like
-/// "overflow evaluating the requirement `Component2: shaku::component::Component<TestModule>`".
+/// "overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`".
 ///
 /// It is still possible to compile with a circular dependency if the module is manually implemented
 /// in a certain way. In that case, there will be a panic during module creation with more details.

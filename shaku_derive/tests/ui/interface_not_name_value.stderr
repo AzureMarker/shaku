@@ -2,10 +2,10 @@ error: Invalid attribute format. The attribute must be in name-value form. Examp
  --> $DIR/interface_not_name_value.rs:9:1
   |
 9 | #[shaku(interface(ComponentTrait))]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^
 
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
   --> $DIR/interface_not_name_value.rs:14:1
    |
 14 | #[shaku(interface(ProviderTrait))]
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ^
