@@ -7,6 +7,11 @@
 Shaku is a compile time dependency injection Rust library. See the [docs] for
 more details, including a getting started guide.
 
+## Guides
+* [General getting started guide, with components (aka singletons)][component-guide]
+* [Providers (aka transient)][provider-guide]
+* [Submodules][submodules-guide]
+
 ## Example
 ```rust
 use shaku::{module, Component, Interface, HasComponent};
@@ -89,6 +94,9 @@ guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
 [crate-badge]: https://img.shields.io/crates/v/shaku.svg
 [doc-badge]: https://docs.rs/shaku/badge.svg
 [build-badge]: https://circleci.com/gh/Mcat12/shaku.svg?style=shield
+[component-guide]: https://docs.rs/shaku/*/shaku/guide/index.html
+[provider-guide]: https://docs.rs/shaku/*/shaku/guide/provider/index.html
+[submodules-guide]: https://docs.rs/shaku/*/shaku/guide/submodules/index.html
 [@bgbahoue]: https://github.com/bgbahoue
 [@U007D]: https://github.com/U007D
 [@Mcat12]: https://github.com/Mcat12
