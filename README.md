@@ -70,6 +70,16 @@ fn main() {
 }
 ```
 
+## Component vs Provider
+`Component` represents a single instance of a service, aka a singleton.
+`Provider` is more like a factory for instances. Each time a component is
+resolved you will get the same instance. Each time a provider is resolved you
+will get a new instance.
+
+For more details on `Component` and `Provider`, see the
+[getting started guide][component-guide] and the
+[provider getting started guide][provider-guide].
+
 ## Minimum Supported Rust Version
 Shaku supports the latest stable release of Rust, plus the previous two versions
 at minimum (but possibly more). Changes to the minimum supported version will be
