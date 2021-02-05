@@ -52,6 +52,21 @@ trait_alias!(
     pub Interface = Any + Send + Sync
 );
 
+/// The type signature of [`Component::build`] without the parameters. This is
+/// used when overriding a component via [`ModuleBuilder::with_component_override_fn`]
+///
+/// [`Component::build`]: trait.Component.html#tymethod.build
+/// [`ModuleBuilder::with_component_override_fn`]: struct.ModuleBuilder.html#method.with_component_override_fn
+#[cfg(not(feature = "thread_safe"))]
+pub type ComponentFn<M, I> = Box<dyn FnOnce(&mut ModuleBuildContext<M>) -> Box<I>>;
+/// The type signature of [`Component::build`] without the parameters. This is
+/// used when overriding a component via [`ModuleBuilder::with_component_override_fn`]
+///
+/// [`Component::build`]: trait.Component.html#tymethod.build
+/// [`ModuleBuilder::with_component_override_fn`]: struct.ModuleBuilder.html#method.with_component_override_fn
+#[cfg(feature = "thread_safe")]
+pub type ComponentFn<M, I> = Box<dyn (FnOnce(&mut ModuleBuildContext<M>) -> Box<I>) + Send + Sync>;
+
 /// Indicates that a module contains a component which implements the interface.
 pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// Build the component during module build. Usually this involves calling

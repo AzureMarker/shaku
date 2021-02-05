@@ -2,7 +2,7 @@ use crate::component::Interface;
 use crate::module::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
 use crate::provider::ProviderFn;
-use crate::{Component, HasComponent, HasProvider, Module, ModuleBuildContext};
+use crate::{Component, ComponentFn, HasComponent, HasProvider, Module, ModuleBuildContext};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -14,6 +14,7 @@ pub struct ModuleBuilder<M: Module> {
     parameters: ParameterMap,
     submodules: M::Submodules,
     component_overrides: ComponentMap,
+    component_fn_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     _module: PhantomData<M>,
 }
@@ -25,6 +26,7 @@ impl<M: Module> ModuleBuilder<M> {
             parameters: ParameterMap::new(),
             submodules,
             component_overrides: ComponentMap::new(),
+            component_fn_overrides: ComponentMap::new(),
             provider_overrides: ComponentMap::new(),
             _module: PhantomData,
         }
@@ -41,13 +43,27 @@ impl<M: Module> ModuleBuilder<M> {
         self
     }
 
-    /// Override a component implementation.
+    /// Override a component implementation. This method is best used when the
+    /// overriding component has no injected dependencies.
     pub fn with_component_override<I: Interface + ?Sized>(mut self, component: Box<I>) -> Self
     where
         M: HasComponent<I>,
     {
         self.component_overrides
             .insert::<Arc<I>>(Arc::from(component));
+        self
+    }
+
+    /// Override a component implementation. This method is best used when the
+    /// overriding component has injected dependencies.
+    pub fn with_component_override_fn<I: Interface + ?Sized>(
+        mut self,
+        component_fn: ComponentFn<M, I>,
+    ) -> Self
+    where
+        M: HasComponent<I>,
+    {
+        self.component_fn_overrides.insert(component_fn);
         self
     }
 
@@ -68,6 +84,7 @@ impl<M: Module> ModuleBuilder<M> {
         M::build(ModuleBuildContext::new(
             self.parameters,
             self.component_overrides,
+            self.component_fn_overrides,
             self.provider_overrides,
             self.submodules,
         ))

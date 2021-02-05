@@ -1,7 +1,7 @@
 use crate::module::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
-use crate::Module;
 use crate::{Component, HasProvider, Provider, ProviderFn};
+use crate::{ComponentFn, Module};
 use std::any::{type_name, TypeId};
 use std::fmt::{self, Debug};
 use std::sync::Arc;
@@ -13,6 +13,7 @@ use std::sync::Arc;
 pub struct ModuleBuildContext<M: Module> {
     resolved_components: ComponentMap,
     component_overrides: ComponentMap,
+    component_fn_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     parameters: ParameterMap,
     submodules: M::Submodules,
@@ -39,12 +40,14 @@ impl<M: Module> ModuleBuildContext<M> {
     pub(crate) fn new(
         parameters: ParameterMap,
         component_overrides: ComponentMap,
+        component_fn_overrides: ComponentMap,
         provider_overrides: ComponentMap,
         submodules: M::Submodules,
     ) -> Self {
         ModuleBuildContext {
             resolved_components: ComponentMap::new(),
             component_overrides,
+            component_fn_overrides,
             provider_overrides,
             parameters,
             submodules,
@@ -60,28 +63,33 @@ impl<M: Module> ModuleBuildContext<M> {
     /// Resolve a component by building it if it is not already resolved or
     /// overridden.
     pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
+        // First check overridden component set
         self.component_overrides
             .get::<Arc<C::Interface>>()
+            // Second check resolved components
             .or_else(|| self.resolved_components.get::<Arc<C::Interface>>())
             .map(Arc::clone)
+            // Third check overridden component fn set (will be placed into resolved components)
+            .or_else(|| {
+                let component_fn = self
+                    .component_fn_overrides
+                    .remove::<ComponentFn<M, C::Interface>>()?;
+                self.add_resolve_step::<C>();
+
+                // Build the component
+                let component = component_fn(self);
+                let component = Arc::from(component);
+                self.resolved_components
+                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
+
+                // Resolution was successful, pop the component off the chain
+                self.resolve_chain.pop();
+
+                Some(component)
+            })
+            // Fourth resolve the concrete component
             .unwrap_or_else(|| {
-                let step = ResolveStep {
-                    component_type_name: type_name::<C>(),
-                    component_type_id: TypeId::of::<C>(),
-                    interface_type_name: type_name::<C::Interface>(),
-                    interface_type_id: TypeId::of::<C::Interface>(),
-                };
-
-                // Check for a circular dependency
-                if self.resolve_chain.contains(&step) {
-                    panic!(
-                        "Circular dependency detected while resolving {}. Resolution chain: {:?}",
-                        step.interface_type_name, self.resolve_chain
-                    );
-                }
-
-                // Add this component to the chain
-                self.resolve_chain.push(step);
+                self.add_resolve_step::<C>();
 
                 // Build the component
                 let parameters = self
@@ -110,5 +118,25 @@ impl<M: Module> ModuleBuildContext<M> {
             .get::<Arc<ProviderFn<M, P::Interface>>>()
             .map(Arc::clone)
             .unwrap_or_else(|| Arc::new(Box::new(P::provide)))
+    }
+
+    fn add_resolve_step<C: Component<M>>(&mut self) {
+        let step = ResolveStep {
+            component_type_name: type_name::<C>(),
+            component_type_id: TypeId::of::<C>(),
+            interface_type_name: type_name::<C::Interface>(),
+            interface_type_id: TypeId::of::<C::Interface>(),
+        };
+
+        // Check for a circular dependency
+        if self.resolve_chain.contains(&step) {
+            panic!(
+                "Circular dependency detected while resolving {}. Resolution chain: {:?}",
+                step.interface_type_name, self.resolve_chain
+            );
+        }
+
+        // Add this component to the chain
+        self.resolve_chain.push(step);
     }
 }
