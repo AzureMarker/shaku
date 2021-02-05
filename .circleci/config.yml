@@ -50,6 +50,10 @@ jobs:
       - lint-check
       - code-check
       - test
+      - run:
+          name: "Test with thread_safe off"
+          working_directory: shaku
+          command: cargo test --no-default-features --features derive -- --skip compile_fail
   shaku-msrv:
     docker:
       - image: rust:1.38.0
