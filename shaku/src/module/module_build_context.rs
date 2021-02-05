@@ -12,7 +12,6 @@ use std::sync::Arc;
 /// [`Module`]: trait.Module.html
 pub struct ModuleBuildContext<M: Module> {
     resolved_components: ComponentMap,
-    component_overrides: ComponentMap,
     component_fn_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     parameters: ParameterMap,
@@ -45,8 +44,7 @@ impl<M: Module> ModuleBuildContext<M> {
         submodules: M::Submodules,
     ) -> Self {
         ModuleBuildContext {
-            resolved_components: ComponentMap::new(),
-            component_overrides,
+            resolved_components: component_overrides,
             component_fn_overrides,
             provider_overrides,
             parameters,
@@ -63,13 +61,11 @@ impl<M: Module> ModuleBuildContext<M> {
     /// Resolve a component by building it if it is not already resolved or
     /// overridden.
     pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
-        // First check resolved components
+        // First check resolved components (which includes overridden component instances)
         self.resolved_components
             .get::<Arc<C::Interface>>()
-            // Second check overridden component set
-            .or_else(|| self.component_overrides.get::<Arc<C::Interface>>())
             .map(Arc::clone)
-            // Third check overridden component fn set (will be placed into resolved components)
+            // Second check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
                 let component_fn = self
                     .component_fn_overrides
@@ -87,7 +83,7 @@ impl<M: Module> ModuleBuildContext<M> {
 
                 Some(component)
             })
-            // Fourth resolve the concrete component
+            // Third resolve the concrete component
             .unwrap_or_else(|| {
                 self.add_resolve_step::<C>();
 
