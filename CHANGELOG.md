@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2021-02-05
+### Added
+- Added `ModuleBuilder::with_component_override_fn`. This will allow you to
+  override a component with a mock that has injected fields (i.e. is a
+  `Component`). See [#24](https://github.com/Mcat12/shaku/issues/24).
+  
+### Misc
+- Added links to the guides to the readme.
+- Added a section to the readme on `Component` vs `Provider`.
+- Additionally run the tests without the `thread_safe` feature in CI.
+
 ## [0.6.0] - 2021-01-09
 ### Breaking Changes
 - To support lazy components, `resolve_mut` is removed. It relied upon having a
@@ -160,7 +171,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/Mcat12/shaku/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Mcat12/shaku/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Mcat12/shaku/releases/tag/v0.5.0
 [0.4.1]: https://github.com/Mcat12/shaku/releases/tag/v0.4.1
