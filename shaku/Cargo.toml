@@ -1,6 +1,6 @@
 [package]
 name = "shaku"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Compile Time Dependency Injection for Rust"
 repository = "https://github.com/Mcat12/shaku"
