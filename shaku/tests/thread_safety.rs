@@ -1,4 +1,5 @@
 //! Tests related to thread-safety
+#![cfg(feature = "thread_safe")]
 
 use shaku::{module, Component, Interface, ModuleInterface};
 

@@ -1,4 +1,5 @@
 #![allow(clippy::blacklisted_name, clippy::mutex_atomic)]
+#![cfg(feature = "thread_safe")]
 
 use rand::Rng;
 use shaku::{module, Component, HasComponent, Interface};
