@@ -63,11 +63,11 @@ impl<M: Module> ModuleBuildContext<M> {
     /// Resolve a component by building it if it is not already resolved or
     /// overridden.
     pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
-        // First check overridden component set
-        self.component_overrides
+        // First check resolved components
+        self.resolved_components
             .get::<Arc<C::Interface>>()
-            // Second check resolved components
-            .or_else(|| self.resolved_components.get::<Arc<C::Interface>>())
+            // Second check overridden component set
+            .or_else(|| self.component_overrides.get::<Arc<C::Interface>>())
             .map(Arc::clone)
             // Third check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
