@@ -6,6 +6,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2021-02-09]
+### shaku_rocket 0.6.0
+#### Breaking Changes
+- Modules must now be inserted into Rocket's state wrapped in a `Box`. This
+  supports inserting module trait objects (e.g. `Box<dyn MyModule>`).
+
+#### Added
+- Added support for module trait objects. This is useful if the module changes
+  at runtime (e.g. production vs development modules):
+  ```rust
+  trait MyModule: HasComponent<dyn MyService> {}
+
+  #[get("/")]
+  fn index(service: Inject<dyn MyModule, dyn MyService>) {
+      // ...
+  }
+  ```
+
+### shaku_actix 0.1.1
+#### Added
+- Relaxed requirements on the module type in `Inject` and `InjectProvided` to
+  support module trait objects (e.g. `Arc<dyn MyModule>`):
+
+  ```rust
+  trait MyModule: HasComponent<dyn MyService> {}
+
+  async fn index(service: Inject<dyn MyModule, dyn MyService>) {
+    // ...
+  }
+  ```
+
 ## [0.6.1] - 2021-02-05
 ### Added
 - Added `ModuleBuilder::with_component_override_fn`. This will allow you to
@@ -171,7 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/342673133b06ea2fa5414a2458fa066e338b828e...HEAD
+[2021-02-09]: https://github.com/Mcat12/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
 [0.6.1]: https://github.com/Mcat12/shaku/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Mcat12/shaku/releases/tag/v0.6.0
 [0.5.0]: https://github.com/Mcat12/shaku/releases/tag/v0.5.0
