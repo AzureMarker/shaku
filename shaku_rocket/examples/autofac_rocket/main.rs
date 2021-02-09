@@ -23,7 +23,7 @@ fn main() {
         .build();
 
     rocket::ignite()
-        .manage(module)
+        .manage(Box::new(module))
         .mount("/", routes![index])
         .launch();
 }

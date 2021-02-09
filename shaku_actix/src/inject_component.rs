@@ -2,7 +2,7 @@ use crate::get_module_from_state;
 use actix_web::dev::{Payload, PayloadStream};
 use actix_web::{Error, FromRequest, HttpRequest};
 use futures_util::future;
-use shaku::{HasComponent, Interface, Module};
+use shaku::{HasComponent, Interface, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::sync::Arc;
@@ -59,9 +59,14 @@ use std::sync::Arc;
 /// # } else { Ok(()) }
 /// }
 /// ```
-pub struct Inject<M: Module + HasComponent<I>, I: Interface + ?Sized>(Arc<I>, PhantomData<M>);
+pub struct Inject<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>(
+    Arc<I>,
+    PhantomData<M>,
+);
 
-impl<M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest for Inject<M, I> {
+impl<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized> FromRequest
+    for Inject<M, I>
+{
     type Error = Error;
     type Future = future::Ready<Result<Self, Error>>;
     type Config = ();
@@ -77,7 +82,7 @@ impl<M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest for Inject<
     }
 }
 
-impl<M: Module + HasComponent<I>, I: Interface + ?Sized> Deref for Inject<M, I> {
+impl<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized> Deref for Inject<M, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {

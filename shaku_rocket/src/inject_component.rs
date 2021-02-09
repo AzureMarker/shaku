@@ -1,13 +1,14 @@
 use crate::get_module_from_state;
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
-use shaku::{HasComponent, Interface, Module};
+use shaku::{HasComponent, Interface, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
 /// Used to retrieve a reference to a component from a shaku `Module`.
-/// The module should be stored in Rocket's state. Use this struct as a
-/// request guard.
+/// The module should be stored in Rocket's state, in a `Box` (It could be
+/// `Box<dyn MyModule>` if the module implementation changes at runtime).
+/// Use this `Inject` struct as a request guard.
 ///
 /// # Example
 /// ```rust
@@ -49,16 +50,19 @@ use std::ops::Deref;
 ///
 /// # if false { // We don't actually want to launch the server in an example.
 ///     rocket::ignite()
-///         .manage(module)
+///         .manage(Box::new(module))
 ///         .mount("/", routes![hello])
 ///         .launch();
 /// # }
 /// }
 /// ```
-pub struct Inject<'r, M: Module + HasComponent<I>, I: Interface + ?Sized>(&'r I, PhantomData<M>);
+pub struct Inject<'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>(
+    &'r I,
+    PhantomData<M>,
+);
 
-impl<'a, 'r, M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest<'a, 'r>
-    for Inject<'r, M, I>
+impl<'a, 'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>
+    FromRequest<'a, 'r> for Inject<'r, M, I>
 {
     type Error = String;
 
@@ -70,7 +74,9 @@ impl<'a, 'r, M: Module + HasComponent<I>, I: Interface + ?Sized> FromRequest<'a,
     }
 }
 
-impl<'r, M: Module + HasComponent<I>, I: Interface + ?Sized> Deref for Inject<'r, M, I> {
+impl<'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized> Deref
+    for Inject<'r, M, I>
+{
     type Target = I;
 
     fn deref(&self) -> &Self::Target {

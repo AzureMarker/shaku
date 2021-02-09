@@ -1,6 +1,6 @@
 [package]
 name = "shaku_actix"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Integration between shaku and Actix Web"
 repository = "https://github.com/Mcat12/shaku"

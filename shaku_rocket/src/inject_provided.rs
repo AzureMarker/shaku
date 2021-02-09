@@ -2,13 +2,14 @@ use crate::get_module_from_state;
 use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
 use rocket::{http::Status, Request};
-use shaku::{HasProvider, Module};
+use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
 /// Used to create a provided service from a shaku `Module`.
-/// The module should be stored in Rocket's state. Use this struct as a
-/// request guard.
+/// The module should be stored in Rocket's state, in a `Box` (It could be
+/// `Box<dyn MyModule>` if the module implementation changes at runtime).
+/// Use this `InjectProvided` struct as a request guard.
 ///
 /// # Example
 /// ```rust
@@ -50,15 +51,20 @@ use std::ops::Deref;
 ///
 /// # if false { // We don't actually want to launch the server in an example.
 ///     rocket::ignite()
-///         .manage(module)
+///         .manage(Box::new(module))
 ///         .mount("/", routes![hello])
 ///         .launch();
 /// # }
 /// }
 /// ```
-pub struct InjectProvided<M: Module + HasProvider<I>, I: ?Sized>(Box<I>, PhantomData<M>);
+pub struct InjectProvided<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized>(
+    Box<I>,
+    PhantomData<M>,
+);
 
-impl<'a, 'r, M: Module + HasProvider<I>, I: ?Sized> FromRequest<'a, 'r> for InjectProvided<M, I> {
+impl<'a, 'r, M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest<'a, 'r>
+    for InjectProvided<M, I>
+{
     type Error = String;
 
     fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
@@ -73,7 +79,7 @@ impl<'a, 'r, M: Module + HasProvider<I>, I: ?Sized> FromRequest<'a, 'r> for Inje
     }
 }
 
-impl<M: Module + HasProvider<I>, I: ?Sized> Deref for InjectProvided<M, I> {
+impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> Deref for InjectProvided<M, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {

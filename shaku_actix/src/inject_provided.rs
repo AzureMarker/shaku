@@ -3,7 +3,7 @@ use actix_web::dev::{Payload, PayloadStream};
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{Error, FromRequest, HttpRequest};
 use futures_util::future;
-use shaku::{HasProvider, Module};
+use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
@@ -59,9 +59,12 @@ use std::ops::Deref;
 /// # } else { Ok(()) }
 /// }
 /// ```
-pub struct InjectProvided<M: Module + HasProvider<I>, I: ?Sized>(Box<I>, PhantomData<M>);
+pub struct InjectProvided<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized>(
+    Box<I>,
+    PhantomData<M>,
+);
 
-impl<M: Module + HasProvider<I>, I: ?Sized> FromRequest for InjectProvided<M, I> {
+impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest for InjectProvided<M, I> {
     type Error = Error;
     type Future = future::Ready<Result<Self, Error>>;
     type Config = ();
@@ -80,7 +83,7 @@ impl<M: Module + HasProvider<I>, I: ?Sized> FromRequest for InjectProvided<M, I>
     }
 }
 
-impl<M: Module + HasProvider<I>, I: ?Sized> Deref for InjectProvided<M, I> {
+impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> Deref for InjectProvided<M, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {

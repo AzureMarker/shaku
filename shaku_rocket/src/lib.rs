@@ -13,9 +13,11 @@ pub use inject_provided::InjectProvided;
 
 use rocket::request::Outcome;
 use rocket::{Request, State};
-use shaku::Module;
+use shaku::ModuleInterface;
 
-fn get_module_from_state<'r, M: Module>(request: &Request<'r>) -> Outcome<State<'r, M>, String> {
+fn get_module_from_state<'r, M: ModuleInterface + ?Sized>(
+    request: &Request<'r>,
+) -> Outcome<State<'r, Box<M>>, String> {
     request
         .guard()
         .map_failure(|f| (f.0, "Failed to retrieve module from state".to_string()))
