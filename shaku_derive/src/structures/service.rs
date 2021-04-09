@@ -1,7 +1,7 @@
 //! Structures to hold useful service data parsed from syn::DeriveInput
 
 use crate::parser::Parser;
-use syn::{DeriveInput, Expr, Generics, Ident, Type, Visibility};
+use syn::{Attribute, DeriveInput, Expr, Generics, Ident, Type, Visibility};
 
 /// The main data structure, representing the data required to implement
 /// Component or Provider.
@@ -45,6 +45,7 @@ pub struct Property {
     pub ty: Type,
     pub property_type: PropertyType,
     pub default: PropertyDefault,
+    pub doc_comment: Vec<Attribute>,
 }
 
 impl Property {

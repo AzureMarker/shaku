@@ -22,6 +22,12 @@ impl Parser<Property> for Field {
         let property_name = self.ident.clone().ok_or_else(|| {
             Error::new(self.span(), "Struct properties must be named".to_string())
         })?;
+        let doc_comment = self
+            .attrs
+            .iter()
+            .filter(|attr| attr.path.is_ident("doc"))
+            .cloned()
+            .collect();
 
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
@@ -56,6 +62,7 @@ impl Parser<Property> for Field {
                     ty: self.ty.clone(),
                     property_type: PropertyType::Parameter,
                     default: property_default,
+                    doc_comment,
                 });
             }
             (false, true) => PropertyType::Provided,
@@ -112,6 +119,7 @@ impl Parser<Property> for Field {
                     ty: (*interface_type).clone(),
                     property_type,
                     default: PropertyDefault::NotProvided,
+                    doc_comment,
                 })
             }
 

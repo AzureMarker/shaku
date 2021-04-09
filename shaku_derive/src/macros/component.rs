@@ -4,7 +4,7 @@ use crate::debug::get_debug_level;
 use crate::macros::common_output::create_dependency;
 use crate::structures::service::{Property, PropertyDefault, ServiceData};
 use proc_macro2::TokenStream;
-use syn::{DeriveInput, Ident};
+use syn::{DeriveInput, Ident, Visibility};
 
 pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> {
     let service = ServiceData::from_derive_input(input)?;
@@ -26,10 +26,11 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
         .filter_map(create_dependency)
         .collect();
 
+    let visibility = &service.metadata.visibility;
     let parameters_properties: Vec<TokenStream> = service
         .properties
         .iter()
-        .filter_map(create_parameters_property)
+        .filter_map(|property| create_parameters_property(property, visibility))
         .collect();
 
     let parameters_defaults: Vec<TokenStream> = service
@@ -41,10 +42,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
     // Component implementation
     let component_name = service.metadata.identifier;
     let parameters_name = format_ident!("{}Parameters", component_name);
+    let parameters_doc = format!(" Parameters for {}", component_name);
     let interface = service.metadata.interface;
     let (generic_impls, generic_tys, generic_where) = service.metadata.generics.split_for_impl();
     let generic_impls_no_parens = &service.metadata.generics.params;
-    let visibility = service.metadata.visibility;
     let output = quote! {
         impl<
             M: ::shaku::Module #(+ #dependencies)*,
@@ -60,8 +61,9 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
             }
         }
 
+        #[doc = #parameters_doc]
         #visibility struct #parameters_name #generic_impls #generic_where {
-            #(#visibility #parameters_properties),*
+            #(#parameters_properties),*
         }
 
         impl #generic_impls ::std::default::Default for #parameters_name #generic_tys #generic_where {
@@ -95,16 +97,18 @@ fn create_resolve_property(property: &Property) -> TokenStream {
     }
 }
 
-fn create_parameters_property(property: &Property) -> Option<TokenStream> {
+fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<TokenStream> {
     if property.is_service() {
         return None;
     }
 
     let property_name = &property.property_name;
     let property_type = &property.ty;
+    let doc_comment = &property.doc_comment;
 
     Some(quote! {
-        #property_name: #property_type
+        #(#doc_comment)*
+        #vis #property_name: #property_type
     })
 }
 

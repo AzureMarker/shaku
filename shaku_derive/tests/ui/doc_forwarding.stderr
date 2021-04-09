@@ -1,0 +1,11 @@
+error: missing documentation for a struct field
+  --> $DIR/doc_forwarding.rs:14:1
+   |
+14 | pub struct MyComponentImpl {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> $DIR/doc_forwarding.rs:3:9
+   |
+3  | #![deny(missing_docs)]
+   |         ^^^^^^^^^^^^
