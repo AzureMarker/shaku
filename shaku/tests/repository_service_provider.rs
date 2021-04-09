@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::error::Error;
 
 trait ConnectionPool: Interface {
-    fn get(&self) -> DBConnection;
+    fn get(&self) -> DbConnection;
 }
 
 trait Repository {
@@ -16,7 +16,7 @@ trait Service {
 
 // Using RefCell because it is Send + !Sync. A real DB connection would be
 // Send + !Sync for other reasons.
-struct DBConnection(RefCell<usize>);
+struct DbConnection(RefCell<usize>);
 
 #[derive(Component)]
 #[shaku(interface = ConnectionPool)]
@@ -26,14 +26,14 @@ struct DatabaseConnectionPool {
 }
 
 impl ConnectionPool for DatabaseConnectionPool {
-    fn get(&self) -> DBConnection {
+    fn get(&self) -> DbConnection {
         // In real code, this would call a real pool for a real connection
-        DBConnection(RefCell::new(self.value))
+        DbConnection(RefCell::new(self.value))
     }
 }
 
-impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection {
-    type Interface = DBConnection;
+impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DbConnection {
+    type Interface = DbConnection;
 
     fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
         let pool: &dyn ConnectionPool = module.resolve_ref();
@@ -47,7 +47,7 @@ impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DBConnection 
 #[shaku(interface = Repository)]
 struct RepositoryImpl {
     #[shaku(provide)]
-    db: Box<DBConnection>,
+    db: Box<DbConnection>,
 }
 
 impl Repository for RepositoryImpl {
@@ -76,7 +76,7 @@ module! {
             DatabaseConnectionPool
         ],
         providers = [
-            DBConnection,
+            DbConnection,
             RepositoryImpl,
             ServiceImpl
         ]
@@ -104,9 +104,9 @@ fn can_mock_database() {
     struct MockDatabase;
 
     impl ConnectionPool for MockDatabase {
-        fn get(&self) -> DBConnection {
+        fn get(&self) -> DbConnection {
             // This would use a test database in real code
-            DBConnection(RefCell::new(3))
+            DbConnection(RefCell::new(3))
         }
     }
 
