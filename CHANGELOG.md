@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2021-04-10]
+### shaku_derive 0.6.1
+#### Added
+- The `Component` derive now documents the generated parameters struct. The
+  struct is documented as "Parameters for {component}" while the fields use the
+  documentation attached to the original fields.
+
 ## [2021-02-09]
 ### shaku_rocket 0.6.0
 #### Breaking Changes
@@ -202,7 +209,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/342673133b06ea2fa5414a2458fa066e338b828e...HEAD
+[Unreleased]: https://github.com/Mcat12/shaku/compare/5eee11ef073d179215265fb60f2d506e28716f96...HEAD
+[2021-04-10]: https://github.com/Mcat12/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
 [2021-02-09]: https://github.com/Mcat12/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
 [0.6.1]: https://github.com/Mcat12/shaku/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Mcat12/shaku/releases/tag/v0.6.0
