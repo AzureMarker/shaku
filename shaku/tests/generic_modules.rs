@@ -1,5 +1,5 @@
 //! Modules and services can be generic. Based off of issue #2:
-//! https://github.com/Mcat12/shaku/issues/2
+//! https://github.com/AzureMarker/shaku/issues/2
 
 use shaku::{module, Component, HasProvider, Interface, Provider};
 use std::fmt::Debug;

@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `ModuleBuilder::with_component_override_fn`. This will allow you to
   override a component with a mock that has injected fields (i.e. is a
-  `Component`). See [#24](https://github.com/Mcat12/shaku/issues/24).
+  `Component`). See [#24](https://github.com/AzureMarker/shaku/issues/24).
   
 ### Misc
 - Added links to the guides to the readme.
@@ -209,15 +209,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/Mcat12/shaku/compare/5eee11ef073d179215265fb60f2d506e28716f96...HEAD
-[2021-04-10]: https://github.com/Mcat12/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
-[2021-02-09]: https://github.com/Mcat12/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
-[0.6.1]: https://github.com/Mcat12/shaku/releases/tag/v0.6.1
-[0.6.0]: https://github.com/Mcat12/shaku/releases/tag/v0.6.0
-[0.5.0]: https://github.com/Mcat12/shaku/releases/tag/v0.5.0
-[0.4.1]: https://github.com/Mcat12/shaku/releases/tag/v0.4.1
-[0.4.0]: https://github.com/Mcat12/shaku/releases/tag/v0.4.0
-[0.3.1]: https://github.com/Mcat12/shaku/releases/tag/v0.3.1
-[0.3.0]: https://github.com/Mcat12/shaku/releases/tag/v0.3.0
-[0.2.0]: https://github.com/Mcat12/shaku/releases/tag/v0.2.0
-[0.1.0]: https://github.com/Mcat12/shaku/releases/tag/v0.1.0
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/5eee11ef073d179215265fb60f2d506e28716f96...HEAD
+[2021-04-10]: https://github.com/AzureMarker/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
+[2021-02-09]: https://github.com/AzureMarker/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
+[0.6.1]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.1
+[0.6.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.0
+[0.5.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.5.0
+[0.4.1]: https://github.com/AzureMarker/shaku/releases/tag/v0.4.1
+[0.4.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.4.0
+[0.3.1]: https://github.com/AzureMarker/shaku/releases/tag/v0.3.1
+[0.3.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.3.0
+[0.2.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.2.0
+[0.1.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.1.0

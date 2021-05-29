@@ -89,24 +89,24 @@ Minimum supported version: 1.38.0
 
 ## Project Status
 The foundation of shaku's API is in place, and now the focus is to mature the
-project based on user feedback. I ([@Mcat12]) am active in the project, but I do
-not have many major changes of my own planned for the future. Most of the future
-changes will be based on user feedback.
+project based on user feedback. I ([@AzureMarker]) am active in the project, but
+I do not have many major changes of my own planned for the future. Most of the
+future changes will be based on user feedback.
 
 ## Acknowledgements
 This library started off as "he_di" (later renamed to "shaku") under the
 guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
-([@Mcat12]) to continue the library from where they left off.
+([@AzureMarker]) to continue the library from where they left off.
 
 [crates-io]: https://crates.io/crates/shaku
 [docs]: https://docs.rs/shaku
-[builds]: https://circleci.com/gh/Mcat12/shaku
+[builds]: https://circleci.com/gh/AzureMarker/shaku
 [crate-badge]: https://img.shields.io/crates/v/shaku.svg
 [doc-badge]: https://docs.rs/shaku/badge.svg
-[build-badge]: https://circleci.com/gh/Mcat12/shaku.svg?style=shield
+[build-badge]: https://circleci.com/gh/AzureMarker/shaku.svg?style=shield
 [component-guide]: https://docs.rs/shaku/*/shaku/guide/index.html
 [provider-guide]: https://docs.rs/shaku/*/shaku/guide/provider/index.html
 [submodules-guide]: https://docs.rs/shaku/*/shaku/guide/submodules/index.html
 [@bgbahoue]: https://github.com/bgbahoue
 [@U007D]: https://github.com/U007D
-[@Mcat12]: https://github.com/Mcat12
+[@AzureMarker]: https://github.com/AzureMarker
