@@ -61,33 +61,15 @@ jobs:
       - checkout
       - remove-rust-toolchain
       - install-tools
-      # Skip shaku_actix, as actix has a higher MSRV.
       - code-check:
-          check-args: "--exclude shaku_actix"
+          # Actix and Rocket have a higher MSRV.
+          check-args: "--exclude shaku_actix --exclude shaku_rocket"
       - test:
           # Skip compile tests, as compiler messages are different in 1.38.0.
-          test-args: "--exclude shaku_actix -- --skip compile_fail"
-  shaku_rocket:
-    docker:
-      - image: rust:1.51.0
-    working_directory: ~/project/shaku_rocket
-    steps:
-      - checkout:
-          path: ~/project
-      - run:
-          name: "Install Nightly Compiler"
-          command: |
-            # Use the default profile to automatically get a nightly with clippy and rustfmt
-            rustup set profile default
-            rustup default nightly
-      - style-check
-      - lint-check
-      - code-check
-      - test
+          test-args: "--exclude shaku_actix --exclude shaku_rocket -- --skip compile_fail"
 workflows:
   version: 2
   build:
     jobs:
       - shaku
       - shaku-msrv
-      - shaku_rocket

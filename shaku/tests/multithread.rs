@@ -58,7 +58,7 @@ fn simple_multithreaded_resolve_ref() {
                 .name(format!("reader #{}", &i))
                 .spawn(move || {
                     // Inject some randomness in the test
-                    let sleep_ms = rand::thread_rng().gen_range(0, MAX_SLEEP_TIME);
+                    let sleep_ms = rand::thread_rng().gen_range(0..MAX_SLEEP_TIME);
                     thread::sleep(Duration::from_millis(sleep_ms));
 
                     let foo: &dyn Foo = shared_module.resolve_ref();
@@ -93,7 +93,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                 .spawn(move || {
                     // Inject some randomness in the test
                     let handle = thread::current();
-                    let sleep_ms = rand::thread_rng().gen_range(0, MAX_SLEEP_TIME);
+                    let sleep_ms = rand::thread_rng().gen_range(0..MAX_SLEEP_TIME);
                     thread::sleep(Duration::from_millis(sleep_ms));
 
                     // Resolve the module
@@ -101,7 +101,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                     if use_mut {
                         // Set a new value
                         let foo: &dyn Foo = shared_module.resolve_ref();
-                        let new_value: usize = rand::thread_rng().gen_range(0, 256);
+                        let new_value: usize = rand::thread_rng().gen_range(0..256);
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
 

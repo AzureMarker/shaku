@@ -15,10 +15,12 @@ use rocket::request::Outcome;
 use rocket::{Request, State};
 use shaku::ModuleInterface;
 
-fn get_module_from_state<'r, M: ModuleInterface + ?Sized>(
-    request: &Request<'r>,
-) -> Outcome<State<'r, Box<M>>, String> {
+#[allow(clippy::needless_lifetimes)] // false positive
+async fn get_module_from_state<'r, M: ModuleInterface + ?Sized>(
+    request: &'r Request<'_>,
+) -> Outcome<&'r State<Box<M>>, String> {
     request
         .guard()
+        .await
         .map_failure(|f| (f.0, "Failed to retrieve module from state".to_string()))
 }

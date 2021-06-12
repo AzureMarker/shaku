@@ -1,4 +1,5 @@
 use crate::get_module_from_state;
+use rocket::outcome::try_outcome;
 use rocket::request::{FromRequest, Outcome};
 use rocket::Request;
 use shaku::{HasComponent, Interface, ModuleInterface};
@@ -12,8 +13,6 @@ use std::ops::Deref;
 ///
 /// # Example
 /// ```rust
-/// #![feature(proc_macro_hygiene, decl_macro)]
-///
 /// #[macro_use] extern crate rocket;
 ///
 /// use shaku::{module, Component, Interface};
@@ -45,30 +44,32 @@ use std::ops::Deref;
 ///     hello_world.greet()
 /// }
 ///
-/// fn main() {
+/// # fn main() { // We don't actually want to launch the server in an example.
+/// #[rocket::launch]
+/// fn rocket() -> _ {
 ///     let module = HelloModule::builder().build();
 ///
-/// # if false { // We don't actually want to launch the server in an example.
-///     rocket::ignite()
+///     rocket::build()
 ///         .manage(Box::new(module))
 ///         .mount("/", routes![hello])
-///         .launch();
-/// # }
 /// }
+/// # }
 /// ```
 pub struct Inject<'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>(
     &'r I,
     PhantomData<M>,
 );
 
-impl<'a, 'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>
-    FromRequest<'a, 'r> for Inject<'r, M, I>
+#[rocket::async_trait]
+impl<'r, M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized> FromRequest<'r>
+    for Inject<'r, M, I>
 {
     type Error = String;
 
-    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        let module = get_module_from_state::<M>(request)?;
-        let component = module.inner().resolve_ref();
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let module: &'r rocket::State<Box<M>> =
+            try_outcome!(get_module_from_state::<M>(request).await);
+        let component: &'r I = module.inner().resolve_ref();
 
         Outcome::Success(Inject(component, PhantomData))
     }

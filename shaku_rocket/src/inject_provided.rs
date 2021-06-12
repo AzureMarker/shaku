@@ -1,5 +1,5 @@
 use crate::get_module_from_state;
-use rocket::outcome::IntoOutcome;
+use rocket::outcome::{try_outcome, IntoOutcome};
 use rocket::request::{FromRequest, Outcome};
 use rocket::{http::Status, Request};
 use shaku::{HasProvider, ModuleInterface};
@@ -13,8 +13,6 @@ use std::ops::Deref;
 ///
 /// # Example
 /// ```rust
-/// #![feature(proc_macro_hygiene, decl_macro)]
-///
 /// #[macro_use] extern crate rocket;
 ///
 /// use shaku::{module, Provider};
@@ -46,34 +44,35 @@ use std::ops::Deref;
 ///     hello_world.greet()
 /// }
 ///
-/// fn main() {
+/// # fn main() { // We don't actually want to launch the server in an example.
+/// #[rocket::launch]
+/// fn rocket() -> _ {
 ///     let module = HelloModule::builder().build();
 ///
-/// # if false { // We don't actually want to launch the server in an example.
-///     rocket::ignite()
+///     rocket::build()
 ///         .manage(Box::new(module))
 ///         .mount("/", routes![hello])
-///         .launch();
-/// # }
 /// }
+/// # }
 /// ```
 pub struct InjectProvided<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized>(
     Box<I>,
     PhantomData<M>,
 );
 
-impl<'a, 'r, M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest<'a, 'r>
+#[rocket::async_trait]
+impl<'r, M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest<'r>
     for InjectProvided<M, I>
 {
     type Error = String;
 
-    fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
-        let module = get_module_from_state::<M>(request)?;
-        let service = module
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let module = try_outcome!(get_module_from_state::<M>(request).await);
+        let service = try_outcome!(module
             .inner()
             .provide()
             .map_err(|e| e.to_string())
-            .into_outcome(Status::InternalServerError)?;
+            .into_outcome(Status::InternalServerError));
 
         Outcome::Success(InjectProvided(service, PhantomData))
     }

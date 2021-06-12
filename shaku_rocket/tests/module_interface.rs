@@ -1,6 +1,5 @@
 //! Module interfaces can be used with `Inject` and `InjectProvided`.
 //! The module itself would be stored in state as `Box<dyn MyModule>`.
-#![feature(decl_macro)]
 #![allow(clippy::unit_arg)]
 
 use shaku::{module, Component, HasComponent, HasProvider, Interface, Provider};

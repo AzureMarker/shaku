@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
 #[macro_use]
 extern crate rocket;
 
@@ -14,7 +12,8 @@ fn index(writer: Inject<AutoFacModule, dyn IDateWriter>) -> String {
     writer.get_date()
 }
 
-fn main() {
+#[rocket::launch]
+async fn rocket() -> _ {
     let module = AutoFacModule::builder()
         .with_component_parameters::<TodayWriter>(TodayWriterParameters {
             today: "June 19".to_string(),
@@ -22,8 +21,7 @@ fn main() {
         })
         .build();
 
-    rocket::ignite()
+    rocket::build()
         .manage(Box::new(module))
         .mount("/", routes![index])
-        .launch();
 }

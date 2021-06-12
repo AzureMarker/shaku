@@ -2,8 +2,6 @@
 members = [
     "shaku",
     "shaku_derive",
-    "shaku_actix"
+    "shaku_actix",
+    "shaku_rocket"
 ]
-# shaku_rocket is excluded because it uses the nightly compiler.
-# It must be separately compiled (cargo check/build/test).
-exclude = ["shaku_rocket"]
