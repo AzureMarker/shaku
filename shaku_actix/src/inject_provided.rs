@@ -70,7 +70,7 @@ impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest for In
     type Config = ();
 
     fn from_request(req: &HttpRequest, _: &mut Payload<PayloadStream>) -> Self::Future {
-        let module = match get_module_from_state::<M>(&req) {
+        let module = match get_module_from_state::<M>(req) {
             Ok(module) => module,
             Err(e) => return future::err(e),
         };
