@@ -4,4 +4,8 @@ error[E0277]: the trait bound `TestModule: HasProvider<dyn ServiceTrait>` is not
 21 |     let _service = HasProvider::<dyn ServiceTrait>::provide(&module);
    |                                                             ^^^^^^^ the trait `HasProvider<dyn ServiceTrait>` is not implemented for `TestModule`
    |
-   = note: required by `shaku::HasProvider::provide`
+note: required by `shaku::HasProvider::provide`
+  --> $DIR/provider.rs:72:5
+   |
+72 |     fn provide(&self) -> Result<Box<I>, Box<dyn Error>>;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

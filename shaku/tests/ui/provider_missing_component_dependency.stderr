@@ -9,8 +9,15 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 27 | | }
    | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-   = note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
+  --> $DIR/provider_missing_component_dependency.rs:14:10
+   |
+14 | #[derive(Provider)]
+   |          ^^^^^^^^
+15 | #[shaku(interface = ProviderTrait)]
+16 | struct ProviderImpl {
+   |        ^^^^^^^^^^^^
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
   --> $DIR/provider_missing_component_dependency.rs:22:1
@@ -28,6 +35,17 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
    |   pub trait Module: ModuleInterface {
    |                     --------------- required by this bound in `Module`
    |
-   = note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
-   = note: required because it appears within the type `TestModule`
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
+  --> $DIR/provider_missing_component_dependency.rs:14:10
+   |
+14 | #[derive(Provider)]
+   |          ^^^^^^^^
+15 | #[shaku(interface = ProviderTrait)]
+16 | struct ProviderImpl {
+   |        ^^^^^^^^^^^^
+note: required because it appears within the type `TestModule`
+  --> $DIR/provider_missing_component_dependency.rs:23:5
+   |
+23 |     TestModule {
+   |     ^^^^^^^^^^
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
