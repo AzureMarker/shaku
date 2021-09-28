@@ -26,7 +26,7 @@ impl ValueService for ValueServiceImpl {
 
 module! {
     TestModule {
-        components = [ValueServiceImpl],
+        components = [ValueServiceImpl as dyn ValueService],
         providers = []
     }
 }

@@ -22,7 +22,7 @@ impl Connection for DbConnection {
 }
 
 #[derive(Component)]
-#[shaku(interface = DbPool<C>)]
+#[shaku(interface = dyn DbPool<C>)]
 struct DbPoolImpl<C: Connection<Database = MyDatabase> + Default> {
     #[shaku(default)]
     connection: C,
@@ -36,7 +36,7 @@ impl<C: Connection<Database = MyDatabase> + Default> DbPool<C> for DbPoolImpl<C>
 
 module! {
     MyModule<C: Connection<Database = MyDatabase> + Default> {
-        components = [DbPoolImpl<C>],
+        components = [DbPoolImpl<C> as dyn DbPool<C>],
         providers = []
     }
 }

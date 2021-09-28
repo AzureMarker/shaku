@@ -25,7 +25,7 @@ impl<C: Interface + Default> DbPool<C> for DbPoolImpl<C> {
 
 module! {
     MyModule<C: Interface + Default> {
-        components = [DbPoolImpl<C>],
+        components = [DbPoolImpl<C> as dyn DbPool<C>],
         providers = []
     }
 }

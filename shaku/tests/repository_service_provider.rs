@@ -32,10 +32,8 @@ impl ConnectionPool for DatabaseConnectionPool {
     }
 }
 
-impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M> for DbConnection {
-    type Interface = DbConnection;
-
-    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
+impl<M: Module + HasComponent<dyn ConnectionPool>> Provider<M, DbConnection> for DbConnection {
+    fn provide(module: &M) -> Result<Box<DbConnection>, Box<dyn Error>> {
         let pool: &dyn ConnectionPool = module.resolve_ref();
 
         Ok(Box::new(pool.get()))
@@ -73,12 +71,12 @@ impl Service for ServiceImpl {
 module! {
     TestModule {
         components = [
-            DatabaseConnectionPool
+            DatabaseConnectionPool as dyn ConnectionPool
         ],
         providers = [
-            DbConnection,
-            RepositoryImpl,
-            ServiceImpl
+            DbConnection as DbConnection,
+            RepositoryImpl as dyn Repository,
+            ServiceImpl as dyn Service
         ]
     }
 }

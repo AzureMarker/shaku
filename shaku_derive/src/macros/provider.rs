@@ -28,26 +28,27 @@ pub fn expand_derive_provider(input: &DeriveInput) -> syn::Result<TokenStream> {
 
     // Provider implementation
     let provider_name = service.metadata.identifier;
-    let interface = service.metadata.interface;
     let (_, generic_tys, generic_where) = service.metadata.generics.split_for_impl();
     let generic_impls_no_parens = &service.metadata.generics.params;
-    let output = quote! {
-        impl<
-            M: ::shaku::Module #(+ #dependencies)*,
-            #generic_impls_no_parens
-        > ::shaku::Provider<M> for #provider_name #generic_tys #generic_where {
-            type Interface = dyn #interface;
+    let mut output = TokenStream::new();
 
-            fn provide(module: &M) -> ::std::result::Result<
-                Box<Self::Interface>,
-                Box<dyn ::std::error::Error>
-            > {
-                Ok(Box::new(Self {
-                    #(#resolve_properties),*
-                }))
+    for interface in service.metadata.interfaces {
+        output.extend(quote! {
+            impl<
+                M: ::shaku::Module #(+ #dependencies)*,
+                #generic_impls_no_parens
+            > ::shaku::Provider<M, #interface> for #provider_name #generic_tys #generic_where {
+                fn provide(module: &M) -> ::std::result::Result<
+                    Box<#interface>,
+                    Box<dyn ::std::error::Error>
+                > {
+                    Ok(Box::new(Self {
+                        #(#resolve_properties),*
+                    }))
+                }
             }
-        }
-    };
+        });
+    }
 
     if debug_level > 0 {
         println!("{}", output);

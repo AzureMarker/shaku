@@ -32,7 +32,7 @@ impl Foo for FooImpl {
 
 module! {
     FooModule {
-        components = [FooImpl],
+        components = [FooImpl as dyn Foo],
         providers = []
     }
 }

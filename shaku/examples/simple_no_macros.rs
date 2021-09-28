@@ -22,11 +22,10 @@ struct SimpleDependencyImpl {
     value: String,
 }
 impl SimpleDependency for SimpleDependencyImpl {}
-impl<M: Module> Component<M> for SimpleDependencyImpl {
-    type Interface = dyn SimpleDependency;
+impl<M: Module> Component<M, dyn SimpleDependency> for SimpleDependencyImpl {
     type Parameters = SimpleDependencyImplParameters;
 
-    fn build(_: &mut ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
+    fn build(_: &mut ModuleBuildContext<M>, params: Self::Parameters) -> Box<dyn SimpleDependency> {
         Box::new(Self {
             value: params.value,
         })
@@ -42,10 +41,10 @@ struct SimpleServiceImpl {
     dependency: Arc<dyn SimpleDependency>,
 }
 impl SimpleService for SimpleServiceImpl {}
-impl<M: Module + HasComponent<dyn SimpleDependency>> Provider<M> for SimpleServiceImpl {
-    type Interface = dyn SimpleService;
-
-    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>> {
+impl<M: Module + HasComponent<dyn SimpleDependency>> Provider<M, dyn SimpleService>
+    for SimpleServiceImpl
+{
+    fn provide(module: &M) -> Result<Box<dyn SimpleService>, Box<dyn Error>> {
         Ok(Box::new(Self {
             dependency: module.resolve(),
         }))
@@ -64,13 +63,13 @@ impl Module for SimpleModule {
     fn build(mut context: ModuleBuildContext<Self>) -> Self {
         Self {
             simple_dependency: Self::build_component(&mut context),
-            simple_service: context.provider_fn::<SimpleServiceImpl>(),
+            simple_service: context.provider_fn::<dyn SimpleService, SimpleServiceImpl>(),
         }
     }
 }
 impl HasComponent<dyn SimpleDependency> for SimpleModule {
     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn SimpleDependency> {
-        context.build_component::<SimpleDependencyImpl>()
+        context.build_component::<dyn SimpleDependency, SimpleDependencyImpl>()
     }
 
     fn resolve(&self) -> Arc<dyn SimpleDependency> {
@@ -93,7 +92,7 @@ fn main() {
         value: "foo".to_string(),
     };
     let module = ModuleBuilder::<SimpleModule>::with_submodules(())
-        .with_component_parameters::<SimpleDependencyImpl>(dependency_params)
+        .with_component_parameters::<dyn SimpleDependency, SimpleDependencyImpl>(dependency_params)
         .build();
 
     let dependency: &dyn SimpleDependency = module.resolve_ref();

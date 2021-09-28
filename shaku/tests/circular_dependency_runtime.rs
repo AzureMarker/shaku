@@ -41,7 +41,7 @@ impl shaku::Module for TestModule {
 }
 impl shaku::HasComponent<dyn Component1Trait> for TestModule {
     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component1Trait> {
-        context.build_component::<Component1>()
+        context.build_component::<dyn Component1Trait, Component1>()
     }
 
     fn resolve(&self) -> Arc<dyn Component1Trait> {
@@ -54,7 +54,7 @@ impl shaku::HasComponent<dyn Component1Trait> for TestModule {
 }
 impl shaku::HasComponent<dyn Component2Trait> for TestModule {
     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<dyn Component2Trait> {
-        context.build_component::<Component2>()
+        context.build_component::<dyn Component2Trait, Component2>()
     }
 
     fn resolve(&self) -> Arc<dyn Component2Trait> {

@@ -17,7 +17,7 @@ impl MyComponent for MyComponentImpl {}
 
 module! {
     TestModule {
-        components = [MyComponentImpl],
+        components = [MyComponentImpl as dyn MyComponent],
         providers = []
     }
 }
@@ -26,7 +26,7 @@ module! {
 #[test]
 fn with_given_parameter() {
     TestModule::builder()
-        .with_component_parameters::<MyComponentImpl>(MyComponentImplParameters {
+        .with_component_parameters::<dyn MyComponent, MyComponentImpl>(MyComponentImplParameters {
             no_default: NoDefault,
         })
         .build();

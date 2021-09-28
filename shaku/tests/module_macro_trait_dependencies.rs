@@ -1,12 +1,12 @@
 //! The module macro should not require any shaku traits to be in scope
 
-use self::services::{MyComponent, MyProviderImpl, ServicesModule};
+use self::services::{MyComponent, MyProvider, MyProviderImpl, ServicesModule};
 use shaku::module;
 
 module! {
     TestModule {
         components = [],
-        providers = [MyProviderImpl],
+        providers = [MyProviderImpl as dyn MyProvider],
 
         use ServicesModule {
             components = [MyComponent],
@@ -33,7 +33,7 @@ mod services {
 
     module! {
         pub ServicesModule {
-            components = [MyComponentImpl],
+            components = [MyComponentImpl as dyn MyComponent],
             providers = []
         }
     }

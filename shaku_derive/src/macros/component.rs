@@ -43,24 +43,10 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
     let component_name = service.metadata.identifier;
     let parameters_name = format_ident!("{}Parameters", component_name);
     let parameters_doc = format!(" Parameters for {}", component_name);
-    let interface = service.metadata.interface;
     let (generic_impls, generic_tys, generic_where) = service.metadata.generics.split_for_impl();
     let generic_impls_no_parens = &service.metadata.generics.params;
-    let output = quote! {
-        impl<
-            M: ::shaku::Module #(+ #dependencies)*,
-            #generic_impls_no_parens
-        > ::shaku::Component<M> for #component_name #generic_tys #generic_where {
-            type Interface = dyn #interface;
-            type Parameters = #parameters_name #generic_tys;
 
-            fn build(context: &mut ::shaku::ModuleBuildContext<M>, params: Self::Parameters) -> Box<Self::Interface> {
-                Box::new(Self {
-                    #(#resolve_properties),*
-                })
-            }
-        }
-
+    let mut output = quote! {
         #[doc = #parameters_doc]
         #visibility struct #parameters_name #generic_impls #generic_where {
             #(#parameters_properties),*
@@ -75,6 +61,23 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
             }
         }
     };
+
+    for interface in service.metadata.interfaces {
+        output.extend(quote! {
+            impl<
+                M: ::shaku::Module #(+ #dependencies)*,
+                #generic_impls_no_parens
+            > ::shaku::Component<M, #interface> for #component_name #generic_tys #generic_where {
+                type Parameters = #parameters_name #generic_tys;
+
+                fn build(context: &mut ::shaku::ModuleBuildContext<M>, params: Self::Parameters) -> Box<#interface> {
+                    Box::new(Self {
+                        #(#resolve_properties),*
+                    })
+                }
+            }
+        })
+    }
 
     if debug_level > 0 {
         println!("{}", output);

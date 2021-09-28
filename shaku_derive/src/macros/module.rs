@@ -1,7 +1,7 @@
 //! Implementation of the `module` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::structures::module::{ComponentItem, ModuleData, Submodule};
+use crate::structures::module::{ComponentItem, ModuleData, ProviderItem, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
@@ -42,7 +42,7 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         .items
         .iter()
         .enumerate()
-        .map(|(i, provider)| has_provider_impl(i, &provider.ty, &module))
+        .map(|(i, provider)| has_provider_impl(i, provider, &module))
         .collect();
 
     let has_subcomponent_impls: Vec<TokenStream> = module
@@ -111,7 +111,7 @@ fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStrea
         .items
         .iter()
         .enumerate()
-        .map(|(i, provider)| provider_property(i, &provider.ty))
+        .map(|(i, provider)| provider_property(i, provider))
         .collect();
 
     let submodule_properties: Vec<TokenStream> = module
@@ -173,7 +173,7 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
         .items
         .iter()
         .enumerate()
-        .map(|(i, provider)| provider_build(i, &provider.ty))
+        .map(|(i, provider)| provider_build(i, provider))
         .collect();
 
     let submodules_init = submodules_init(&module.submodules);
@@ -227,7 +227,7 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 /// Create a property initializer for the component during module build
 fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
     let property = generate_name(index, "component", component.ty.span());
-    let interface = interface_from_component(&component.ty);
+    let interface_ty = &component.interface_ty;
 
     if component.is_lazy() {
         quote! {
@@ -235,17 +235,19 @@ fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
         }
     } else {
         quote! {
-            #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
+            #property: <Self as ::shaku::HasComponent<#interface_ty>>::build_component(&mut context)
         }
     }
 }
 
 /// Create a property initializer for the provider during module build
-fn provider_build(index: usize, provider_ty: &Type) -> TokenStream {
-    let property = generate_name(index, "provider", provider_ty.span());
+fn provider_build(index: usize, provider: &ProviderItem) -> TokenStream {
+    let property = generate_name(index, "provider", provider.ty.span());
+    let provider_ty = &provider.ty;
+    let interface_ty = &provider.interface_ty;
 
     quote! {
-        #property: context.provider_fn::<#provider_ty>()
+        #property: context.provider_fn::<#interface_ty, #provider_ty>()
     }
 }
 
@@ -268,26 +270,26 @@ fn submodules_init(submodules: &Punctuated<Submodule, syn::Token![,]>) -> TokenS
 /// Create the property which holds a component instance
 fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
     let property = generate_name(index, "component", component.ty.span());
-    let interface = interface_from_component(&component.ty);
+    let interface_ty = &component.interface_ty;
 
     if component.is_lazy() {
         quote! {
-            #property: ::shaku::OnceCell<::std::sync::Arc<#interface>>
+            #property: ::shaku::OnceCell<::std::sync::Arc<#interface_ty>>
         }
     } else {
         quote! {
-            #property: ::std::sync::Arc<#interface>
+            #property: ::std::sync::Arc<#interface_ty>
         }
     }
 }
 
 /// Create the property which holds a provider function
-fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
-    let property = generate_name(index, "provider", provider_ty.span());
-    let interface = interface_from_provider(provider_ty);
+fn provider_property(index: usize, provider: &ProviderItem) -> TokenStream {
+    let property = generate_name(index, "provider", provider.ty.span());
+    let interface_ty = &provider.interface_ty;
 
     quote! {
-        #property: ::std::sync::Arc<::shaku::ProviderFn<Self, #interface>>
+        #property: ::std::sync::Arc<::shaku::ProviderFn<Self, #interface_ty>>
     }
 }
 
@@ -305,8 +307,8 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
 /// Create a HasComponent impl
 fn has_component_impl(index: usize, component: &ComponentItem, module: &ModuleData) -> TokenStream {
     let component_ty = &component.ty;
+    let interface_ty = &component.interface_ty;
     let property = generate_name(index, "component", component_ty.span());
-    let interface = interface_from_component(component_ty);
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
@@ -314,7 +316,7 @@ fn has_component_impl(index: usize, component: &ComponentItem, module: &ModuleDa
         quote! {
             let component = self.#property.get_or_init(|| {
                 let mut context = self.build_context.lock().unwrap();
-                <Self as ::shaku::HasComponent<#interface>>::build_component(&mut *context)
+                <Self as ::shaku::HasComponent<#interface_ty>>::build_component(&mut *context)
             });
         }
     } else {
@@ -322,19 +324,19 @@ fn has_component_impl(index: usize, component: &ComponentItem, module: &ModuleDa
     };
 
     quote! {
-        impl #impl_generics ::shaku::HasComponent<#interface> for #module_name #ty_generics #where_clause {
+        impl #impl_generics ::shaku::HasComponent<#interface_ty> for #module_name #ty_generics #where_clause {
             fn build_component(
                 context: &mut ::shaku::ModuleBuildContext<Self>
-            ) -> ::std::sync::Arc<#interface> {
-                context.build_component::<#component_ty>()
+            ) -> ::std::sync::Arc<#interface_ty> {
+                context.build_component::<#interface_ty, #component_ty>()
             }
 
-            fn resolve(&self) -> ::std::sync::Arc<#interface> {
+            fn resolve(&self) -> ::std::sync::Arc<#interface_ty> {
                 #get_ref_code
                 ::std::sync::Arc::clone(component)
             }
 
-            fn resolve_ref(&self) -> &#interface {
+            fn resolve_ref(&self) -> &#interface_ty {
                 #get_ref_code
                 ::std::sync::Arc::as_ref(component)
             }
@@ -343,16 +345,16 @@ fn has_component_impl(index: usize, component: &ComponentItem, module: &ModuleDa
 }
 
 /// Create a HasProvider impl
-fn has_provider_impl(index: usize, provider_ty: &Type, module: &ModuleData) -> TokenStream {
-    let property = generate_name(index, "provider", provider_ty.span());
-    let interface = interface_from_provider(provider_ty);
+fn has_provider_impl(index: usize, provider: &ProviderItem, module: &ModuleData) -> TokenStream {
+    let property = generate_name(index, "provider", provider.ty.span());
+    let interface_ty = &provider.interface_ty;
     let module_name = &module.metadata.identifier;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     quote! {
-        impl #impl_generics ::shaku::HasProvider<#interface> for #module_name #ty_generics #where_clause {
+        impl #impl_generics ::shaku::HasProvider<#interface_ty> for #module_name #ty_generics #where_clause {
             fn provide(&self) -> ::std::result::Result<
-                ::std::boxed::Box<#interface>,
+                ::std::boxed::Box<#interface_ty>,
                 ::std::boxed::Box<dyn ::std::error::Error>
             > {
                 (self.#property)(self)
@@ -417,20 +419,6 @@ fn has_subprovider_impl(
                 ::shaku::HasProvider::provide(::std::sync::Arc::as_ref(&self.#submodule_name))
             }
         }
-    }
-}
-
-/// Get the interface type of a component via projection
-fn interface_from_component(component_ty: &Type) -> TokenStream {
-    quote! {
-        <#component_ty as ::shaku::Component<Self>>::Interface
-    }
-}
-
-/// Get the interface type of a provider via projection
-fn interface_from_provider(provider_ty: &Type) -> TokenStream {
-    quote! {
-        <#provider_ty as ::shaku::Provider<Self>>::Interface
     }
 }
 

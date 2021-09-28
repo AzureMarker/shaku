@@ -9,12 +9,12 @@ trait MyInterface: Interface {
 }
 
 #[derive(Component)]
-#[shaku(interface = MyDependency)]
+#[shaku(interface = dyn MyDependency)]
 struct MyDependencyImpl;
 impl MyDependency for MyDependencyImpl {}
 
 #[derive(Component)]
-#[shaku(interface = MyInterface)]
+#[shaku(interface = dyn MyInterface)]
 struct MyComponent;
 impl MyInterface for MyComponent {
     fn is_mock(&self) -> bool {
@@ -23,7 +23,7 @@ impl MyInterface for MyComponent {
 }
 
 #[derive(Component)]
-#[shaku(interface = MyInterface)]
+#[shaku(interface = dyn MyInterface)]
 struct MockComponent {
     #[shaku(inject)]
     _dep: Arc<dyn MyDependency>,
@@ -36,7 +36,10 @@ impl MyInterface for MockComponent {
 
 module! {
     MyModule {
-        components = [MyDependencyImpl, MyComponent],
+        components = [
+            MyDependencyImpl as dyn MyDependency,
+            MyComponent as dyn MyInterface
+        ],
         providers = []
     }
 }
@@ -54,7 +57,7 @@ fn can_use_mock_with_inject() {
 }
 
 #[derive(Component)]
-#[shaku(interface = MyInterface)]
+#[shaku(interface = dyn MyInterface)]
 struct MockComponentCircular {
     #[shaku(inject)]
     _component: Arc<dyn MyInterface>,
@@ -67,7 +70,7 @@ impl MyInterface for MockComponentCircular {
 
 module! {
     MyCircularModule {
-        components = [MyComponent],
+        components = [MyComponent as dyn MyInterface],
         providers = []
     }
 }

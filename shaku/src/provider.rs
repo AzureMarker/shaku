@@ -13,15 +13,20 @@ use std::error::Error;
 ///
 /// See also the [provider getting started guide].
 ///
+/// ## Generics
+/// * `M` - The module. This is used to require certain things about the module
+///   that this provider is used in, such as requiring dependencies via
+///   [`HasComponent`]/[`HasProvider`].
+/// * `I` - The trait/interface which this provider implements.
+///
 /// [`Component`]: trait.Component.html
+/// [`HasComponent`]: trait.HasComponent.html
+/// [`HasProvider`]: trait.HasProvider.html
 /// [provider getting started guide]: guide/provider/index.html
-pub trait Provider<M: Module>: 'static {
-    /// The trait/interface which this provider implements
-    type Interface: ?Sized;
-
+pub trait Provider<M: Module, I: ?Sized + 'static>: 'static {
     /// Provides the service, possibly resolving other components/providers
     /// to do so.
-    fn provide(module: &M) -> Result<Box<Self::Interface>, Box<dyn Error>>;
+    fn provide(module: &M) -> Result<Box<I>, Box<dyn Error>>;
 }
 
 /// The type signature of [`Provider::provide`]. This is used when overriding a

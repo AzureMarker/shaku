@@ -8,6 +8,7 @@ use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};
 
 pub type ComponentItem = ModuleItem<ComponentAttribute>;
+pub type ProviderItem = ModuleItem<ProviderAttribute>;
 
 mod kw {
     syn::custom_keyword!(components);
@@ -35,10 +36,10 @@ pub struct ModuleMetadata {
 #[derive(Debug)]
 pub struct Submodule {
     pub ty: Type,
-    pub services: ModuleServices,
+    pub services: SubModuleServices,
 }
 
-/// Services associated with a module/submodule
+/// Services associated with a module
 #[derive(Debug)]
 pub struct ModuleServices {
     pub components: ModuleItems<kw::components, ComponentAttribute>,
@@ -47,7 +48,16 @@ pub struct ModuleServices {
     pub trailing_comma: Option<syn::Token![,]>,
 }
 
-/// A list of components/providers
+/// Services associated with a submodule
+#[derive(Debug)]
+pub struct SubModuleServices {
+    pub components: SubModuleItems<kw::components>,
+    pub comma_token: syn::Token![,],
+    pub providers: SubModuleItems<kw::providers>,
+    pub trailing_comma: Option<syn::Token![,]>,
+}
+
+/// A list of components/providers, with "as (interface)"
 #[derive(Debug)]
 pub struct ModuleItems<T: Parse, A: Eq + Hash>
 where
@@ -61,7 +71,18 @@ where
     pub items: Punctuated<ModuleItem<A>, token::Comma>,
 }
 
-/// An annotated component/provider type
+/// A list of components/providers, without "as (interface)"
+#[derive(Debug)]
+pub struct SubModuleItems<T: Parse> {
+    pub keyword_token: T,
+    pub eq_token: token::Eq,
+    pub bracket_token: token::Bracket,
+    // Can't use syn::Token![,] here because of
+    // https://github.com/rust-lang/rust/issues/50676
+    pub items: Punctuated<SubModuleItem, token::Comma>,
+}
+
+/// An annotated component/provider type and interface type
 #[derive(Debug)]
 pub struct ModuleItem<A: Eq + Hash>
 where
@@ -69,6 +90,8 @@ where
 {
     pub attributes: HashSet<A>,
     pub ty: Type,
+    pub as_token: syn::token::As,
+    pub interface_ty: Type,
 }
 
 impl ModuleItem<ComponentAttribute> {
@@ -76,6 +99,12 @@ impl ModuleItem<ComponentAttribute> {
     pub fn is_lazy(&self) -> bool {
         self.attributes.contains(&ComponentAttribute::Lazy)
     }
+}
+
+/// An unannotated component/provider type
+#[derive(Debug)]
+pub struct SubModuleItem {
+    pub ty: Type,
 }
 
 /// Valid component attributes

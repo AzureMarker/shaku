@@ -18,11 +18,10 @@ impl Dependency for DependencyImpl {
     }
 }
 
-impl<M: Module> Component<M> for DependencyImpl {
-    type Interface = dyn Dependency;
+impl<M: Module> Component<M, dyn Dependency> for DependencyImpl {
     type Parameters = Arc<AtomicUsize>;
 
-    fn build(_: &mut ModuleBuildContext<M>, flag: Self::Parameters) -> Box<Self::Interface> {
+    fn build(_: &mut ModuleBuildContext<M>, flag: Self::Parameters) -> Box<dyn Dependency> {
         // Update the flag so the test can track how many times the component is built
         let val = flag.fetch_add(1, Ordering::SeqCst);
 
@@ -44,14 +43,17 @@ impl Service for ServiceImpl {
 
 module! {
     TestModule1 {
-        components = [#[lazy] DependencyImpl],
+        components = [#[lazy] DependencyImpl as dyn Dependency],
         providers = []
     }
 }
 
 module! {
     TestModule2 {
-        components = [#[lazy] DependencyImpl, ServiceImpl],
+        components = [
+            #[lazy] DependencyImpl as dyn Dependency,
+            ServiceImpl as dyn Service
+        ],
         providers = []
     }
 }
@@ -61,7 +63,7 @@ module! {
 fn lazy_component() {
     let flag = Arc::new(AtomicUsize::new(0));
     let module = TestModule1::builder()
-        .with_component_parameters::<DependencyImpl>(Arc::clone(&flag))
+        .with_component_parameters::<dyn Dependency, DependencyImpl>(Arc::clone(&flag))
         .build();
 
     assert_eq!(flag.load(Ordering::SeqCst), 0);
@@ -76,7 +78,7 @@ fn lazy_component() {
 fn lazy_created_due_to_dependency() {
     let flag = Arc::new(AtomicUsize::new(0));
     let _module = TestModule2::builder()
-        .with_component_parameters::<DependencyImpl>(Arc::clone(&flag))
+        .with_component_parameters::<dyn Dependency, DependencyImpl>(Arc::clone(&flag))
         .build();
 
     assert_eq!(flag.load(Ordering::SeqCst), 1);
@@ -89,7 +91,7 @@ fn lazy_created_due_to_dependency() {
 fn lazy_created_only_once() {
     let flag = Arc::new(AtomicUsize::new(0));
     let module = TestModule2::builder()
-        .with_component_parameters::<DependencyImpl>(Arc::clone(&flag))
+        .with_component_parameters::<dyn Dependency, DependencyImpl>(Arc::clone(&flag))
         .build();
 
     let service: &dyn Service = module.resolve_ref();

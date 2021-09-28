@@ -1,6 +1,6 @@
 use crate::module::{ComponentMap, ParameterMap};
 use crate::parameters::ComponentParameters;
-use crate::{Component, HasProvider, Provider, ProviderFn};
+use crate::{Component, HasProvider, Interface, Provider, ProviderFn};
 use crate::{ComponentFn, Module};
 use std::any::{type_name, TypeId};
 use std::fmt::{self, Debug};
@@ -60,23 +60,21 @@ impl<M: Module> ModuleBuildContext<M> {
 
     /// Resolve a component by building it if it is not already resolved or
     /// overridden.
-    pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
+    pub fn build_component<I: Interface + ?Sized, C: Component<M, I>>(&mut self) -> Arc<I> {
         // First check resolved components (which includes overridden component instances)
         self.resolved_components
-            .get::<Arc<C::Interface>>()
+            .get::<Arc<I>>()
             .map(Arc::clone)
             // Second check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
-                let component_fn = self
-                    .component_fn_overrides
-                    .remove::<ComponentFn<M, C::Interface>>()?;
-                self.add_resolve_step::<C>();
+                let component_fn = self.component_fn_overrides.remove::<ComponentFn<M, I>>()?;
+                self.add_resolve_step::<I, C>();
 
                 // Build the component
                 let component = component_fn(self);
                 let component = Arc::from(component);
                 self.resolved_components
-                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
+                    .insert::<Arc<I>>(Arc::clone(&component));
 
                 // Resolution was successful, pop the component off the chain
                 self.resolve_chain.pop();
@@ -85,7 +83,7 @@ impl<M: Module> ModuleBuildContext<M> {
             })
             // Third resolve the concrete component
             .unwrap_or_else(|| {
-                self.add_resolve_step::<C>();
+                self.add_resolve_step::<I, C>();
 
                 // Build the component
                 let parameters = self
@@ -95,7 +93,7 @@ impl<M: Module> ModuleBuildContext<M> {
                 let component = C::build(self, parameters.value);
                 let component = Arc::from(component);
                 self.resolved_components
-                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
+                    .insert::<Arc<I>>(Arc::clone(&component));
 
                 // Resolution was successful, pop the component off the chain
                 self.resolve_chain.pop();
@@ -106,22 +104,22 @@ impl<M: Module> ModuleBuildContext<M> {
 
     /// Get a provider function from the given provider impl, or an overridden
     /// one if configured during module build.
-    pub fn provider_fn<P: Provider<M>>(&self) -> Arc<ProviderFn<M, P::Interface>>
+    pub fn provider_fn<I: ?Sized + 'static, P: Provider<M, I>>(&self) -> Arc<ProviderFn<M, I>>
     where
-        M: HasProvider<P::Interface>,
+        M: HasProvider<I>,
     {
         self.provider_overrides
-            .get::<Arc<ProviderFn<M, P::Interface>>>()
+            .get::<Arc<ProviderFn<M, I>>>()
             .map(Arc::clone)
             .unwrap_or_else(|| Arc::new(Box::new(P::provide)))
     }
 
-    fn add_resolve_step<C: Component<M>>(&mut self) {
+    fn add_resolve_step<I: Interface + ?Sized, C: Component<M, I>>(&mut self) {
         let step = ResolveStep {
             component_type_name: type_name::<C>(),
             component_type_id: TypeId::of::<C>(),
-            interface_type_name: type_name::<C::Interface>(),
-            interface_type_id: TypeId::of::<C::Interface>(),
+            interface_type_name: type_name::<I>(),
+            interface_type_id: TypeId::of::<I>(),
         };
 
         // Check for a circular dependency

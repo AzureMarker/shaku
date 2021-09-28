@@ -13,7 +13,7 @@ impl TestComponent for TestComponentImpl {}
 
 module! {
     TestModule {
-        components = [TestComponentImpl],
+        components = [TestComponentImpl as dyn TestComponent],
         providers = [],
 
         use TestSubmodule {

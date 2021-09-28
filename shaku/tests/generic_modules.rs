@@ -28,8 +28,8 @@ impl<E: Debug + Interface> RegisterProvider for RegisterProviderImpl<E> {}
 
 module! {
     MyModule<E: Debug + Default + Interface> {
-        components = [RegisterServiceImpl<E>],
-        providers = [RegisterProviderImpl<E>]
+        components = [RegisterServiceImpl<E> as dyn RegisterService<E>],
+        providers = [RegisterProviderImpl<E> as dyn RegisterProvider]
     }
 }
 

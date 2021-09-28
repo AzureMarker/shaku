@@ -13,14 +13,14 @@ trait SimpleService: Debug {}
 // Implementations
 
 #[derive(Component, Debug)]
-#[shaku(interface = SimpleDependency)]
+#[shaku(interface = dyn SimpleDependency)]
 struct SimpleDependencyImpl {
     value: String,
 }
 impl SimpleDependency for SimpleDependencyImpl {}
 
 #[derive(Provider, Debug)]
-#[shaku(interface = SimpleService)]
+#[shaku(interface = dyn SimpleService)]
 struct SimpleServiceImpl {
     #[shaku(inject)]
     dependency: Arc<dyn SimpleDependency>,
@@ -32,10 +32,10 @@ impl SimpleService for SimpleServiceImpl {}
 module! {
     SimpleModule {
         components = [
-            SimpleDependencyImpl
+            SimpleDependencyImpl as dyn SimpleDependency
         ],
         providers = [
-            SimpleServiceImpl
+            SimpleServiceImpl as dyn SimpleService
         ]
     }
 }

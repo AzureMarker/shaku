@@ -1,7 +1,7 @@
 use crate::parser::Parser;
 use crate::structures::module::{
     ComponentAttribute, ModuleData, ModuleItem, ModuleItems, ModuleMetadata, ModuleServices,
-    ProviderAttribute, Submodule,
+    ProviderAttribute, SubModuleItem, SubModuleItems, SubModuleServices, Submodule,
 };
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -62,30 +62,10 @@ impl Parse for Submodule {
 
         let content;
         syn::braced!(content in input);
-        let services: ModuleServices = content.parse()?;
+        let services: SubModuleServices = content.parse()?;
 
         if !content.is_empty() {
             return Err(content.error("expected end of input"));
-        }
-
-        // Make sure components don't use attributes
-        for component in &services.components.items {
-            if !component.attributes.is_empty() {
-                return Err(syn::Error::new(
-                    component.ty.span(),
-                    "Submodule components cannot have attributes",
-                ));
-            }
-        }
-
-        // Make sure providers don't use attributes
-        for provider in &services.providers.items {
-            if !provider.attributes.is_empty() {
-                return Err(syn::Error::new(
-                    provider.ty.span(),
-                    "Submodule providers cannot have attributes",
-                ));
-            }
         }
 
         Ok(Submodule { ty, services })
@@ -95,6 +75,17 @@ impl Parse for Submodule {
 impl Parse for ModuleServices {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         Ok(ModuleServices {
+            components: input.parse()?,
+            comma_token: input.parse()?,
+            providers: input.parse()?,
+            trailing_comma: input.parse()?,
+        })
+    }
+}
+
+impl Parse for SubModuleServices {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(SubModuleServices {
             components: input.parse()?,
             comma_token: input.parse()?,
             providers: input.parse()?,
@@ -115,6 +106,19 @@ where
             eq_token: input.parse()?,
             bracket_token: syn::bracketed!(content in input),
             items: content.parse_terminated(ModuleItem::parse)?,
+        })
+    }
+}
+
+impl<T: Parse> Parse for SubModuleItems<T> {
+    #[allow(clippy::eval_order_dependence)]
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let content;
+        Ok(SubModuleItems {
+            keyword_token: input.parse()?,
+            eq_token: input.parse()?,
+            bracket_token: syn::bracketed!(content in input),
+            items: content.parse_terminated(SubModuleItem::parse)?,
         })
     }
 }
@@ -141,7 +145,15 @@ where
         Ok(ModuleItem {
             attributes,
             ty: input.parse()?,
+            as_token: input.parse()?,
+            interface_ty: input.parse()?,
         })
+    }
+}
+
+impl Parse for SubModuleItem {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(SubModuleItem { ty: input.parse()? })
     }
 }
 

@@ -34,7 +34,7 @@ impl Service for ServiceImpl {}
 
 module! {
     ComponentModuleImpl: ComponentModule {
-        components = [ComponentDependencyImpl],
+        components = [ComponentDependencyImpl as dyn ComponentDependency],
         providers = []
     }
 }
@@ -42,14 +42,14 @@ module! {
 module! {
     ProviderModuleImpl: ProviderModule {
         components = [],
-        providers = [ProviderDependencyImpl]
+        providers = [ProviderDependencyImpl as dyn ProviderDependency]
     }
 }
 
 module! {
     TestModule {
         components = [],
-        providers = [ServiceImpl],
+        providers = [ServiceImpl as dyn Service],
 
         use ComponentModule {
             components = [ComponentDependency],

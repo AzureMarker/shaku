@@ -34,9 +34,12 @@ impl<M: Module> ModuleBuilder<M> {
 
     /// Set the parameters of the specified component. If the parameters are not
     /// manually set, the defaults will be used.
-    pub fn with_component_parameters<C: Component<M>>(mut self, params: C::Parameters) -> Self
+    pub fn with_component_parameters<I: Interface + ?Sized, C: Component<M, I>>(
+        mut self,
+        params: C::Parameters,
+    ) -> Self
     where
-        M: HasComponent<C::Interface>,
+        M: HasComponent<I>,
     {
         self.parameters
             .insert(ComponentParameters::<C, C::Parameters>::new(params));

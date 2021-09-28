@@ -43,7 +43,7 @@ impl Bar for BarImpl {
 
 module! {
     TestModule {
-        components = [FooImpl, BarImpl],
+        components = [FooImpl as dyn Foo, BarImpl as dyn Bar],
         providers = []
     }
 }
@@ -61,10 +61,10 @@ fn default_if_not_provided() {
 #[test]
 fn parameters_are_injected() {
     let module = TestModule::builder()
-        .with_component_parameters::<FooImpl>(FooImplParameters {
+        .with_component_parameters::<dyn Foo, FooImpl>(FooImplParameters {
             value: "foo value".to_string(),
         })
-        .with_component_parameters::<BarImpl>(BarImplParameters {
+        .with_component_parameters::<dyn Bar, BarImpl>(BarImplParameters {
             bar_value: "bar value".to_string(),
         })
         .build();

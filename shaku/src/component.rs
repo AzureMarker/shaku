@@ -9,12 +9,17 @@ use std::sync::Arc;
 /// Components provide a service by implementing an interface. They may use
 /// other components as dependencies.
 ///
+/// ## Generics
+/// * `M` - The module. This is used to require certain things about the module
+///   that this component is used in, such as requiring dependencies via
+///   [`HasComponent`].
+/// * `I` - The trait/interface which this component implements.
+///
 /// This trait is normally derived, but if the `derive` feature is turned off
 /// then it will need to be implemented manually.
-pub trait Component<M: Module>: Interface {
-    /// The trait/interface which this component implements
-    type Interface: Interface + ?Sized;
-
+///
+/// [`HasComponent`]: trait.HasComponent.html
+pub trait Component<M: Module, I: Interface + ?Sized>: Interface {
     /// The parameters this component requires. If none are required, use `()`.
     #[cfg(feature = "thread_safe")]
     type Parameters: Default + Send;
@@ -29,8 +34,7 @@ pub trait Component<M: Module>: Interface {
     ///
     /// [`HasComponent`]: trait.HasComponent.html
     /// [`M::build_component`]: trait.HasComponent.html#tymethod.build_component
-    fn build(context: &mut ModuleBuildContext<M>, params: Self::Parameters)
-        -> Box<Self::Interface>;
+    fn build(context: &mut ModuleBuildContext<M>, params: Self::Parameters) -> Box<I>;
 }
 
 #[cfg(not(feature = "thread_safe"))]

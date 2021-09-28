@@ -47,8 +47,8 @@ impl IDateWriter for TodayWriter {
 module! {
     AutoFacModule {
         components = [
-            ConsoleOutput,
-            TodayWriter
+            ConsoleOutput as dyn IOutput,
+            TodayWriter as dyn IDateWriter
         ],
         providers = []
     }
@@ -56,10 +56,10 @@ module! {
 
 fn main() {
     let module = AutoFacModule::builder()
-        .with_component_parameters::<ConsoleOutput>(ConsoleOutputParameters {
+        .with_component_parameters::<dyn IOutput, ConsoleOutput>(ConsoleOutputParameters {
             prefix: "PREFIX > ".to_string(),
         })
-        .with_component_parameters::<TodayWriter>(TodayWriterParameters {
+        .with_component_parameters::<dyn IDateWriter, TodayWriter>(TodayWriterParameters {
             today: "June 19".to_string(),
             year: 2020,
         })

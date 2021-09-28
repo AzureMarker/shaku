@@ -48,9 +48,9 @@ impl IComponent2 for Component2 {
 module! {
     TestModule {
         components = [
-            Dependency,
-            Component1,
-            Component2
+            Dependency as dyn IDependency,
+            Component1 as dyn IComponent1,
+            Component2 as dyn IComponent2
         ],
         providers = []
     }

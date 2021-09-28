@@ -31,8 +31,11 @@ impl MySecondProvider for MySecondProviderImpl {}
 
 module! {
     TestModule {
-        components = [MyComponentImpl],
-        providers = [MyProviderImpl, MySecondProviderImpl]
+        components = [MyComponentImpl as dyn MyComponent],
+        providers = [
+            MyProviderImpl as dyn MyProvider,
+            MySecondProviderImpl as dyn MySecondProvider
+        ]
     }
 }
 

@@ -8,17 +8,17 @@ trait ProviderDependency {}
 trait Service {}
 
 #[derive(Component)]
-#[shaku(interface = ComponentDependency)]
+#[shaku(interface = dyn ComponentDependency)]
 struct ComponentDependencyImpl;
 impl ComponentDependency for ComponentDependencyImpl {}
 
 #[derive(Provider)]
-#[shaku(interface = ProviderDependency)]
+#[shaku(interface = dyn ProviderDependency)]
 struct ProviderDependencyImpl;
 impl ProviderDependency for ProviderDependencyImpl {}
 
 #[derive(Provider)]
-#[shaku(interface = Service)]
+#[shaku(interface = dyn Service)]
 struct ServiceImpl {
     #[shaku(inject)]
     #[allow(dead_code)]
@@ -32,8 +32,8 @@ impl Service for ServiceImpl {}
 
 module! {
     BaseModule {
-        components = [ComponentDependencyImpl],
-        providers = [ProviderDependencyImpl]
+        components = [ComponentDependencyImpl as dyn ComponentDependency],
+        providers = [ProviderDependencyImpl as dyn ProviderDependency]
     }
 }
 
@@ -55,7 +55,7 @@ module! {
         components = [],
         // ServiceImpl requires two dependencies which are transitively sourced
         // via MiddleModule
-        providers = [ServiceImpl],
+        providers = [ServiceImpl as dyn Service],
 
         use MiddleModule {
             components = [ComponentDependency],

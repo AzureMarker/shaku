@@ -46,7 +46,7 @@ where
 
 module! {
     MyModule<A: Animal + Default + Interface> {
-        components = [AnimalServiceImpl<A>],
+        components = [AnimalServiceImpl<A> as dyn AnimalService],
         providers = []
     }
 }

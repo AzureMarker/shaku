@@ -32,8 +32,11 @@ impl ProviderService for ProviderServiceImpl {}
 
 module! {
     BaseModule {
-        components = [ComponentDependencyImpl, ComponentServiceImpl],
-        providers = [ProviderServiceImpl]
+        components = [
+            ComponentDependencyImpl as dyn ComponentDependency,
+            ComponentServiceImpl as dyn ComponentService
+        ],
+        providers = [ProviderServiceImpl as dyn ProviderService]
     }
 }
 
