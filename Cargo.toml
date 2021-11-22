@@ -3,5 +3,6 @@ members = [
     "shaku",
     "shaku_derive",
     "shaku_actix",
+    "shaku_axum",
     "shaku_rocket"
 ]

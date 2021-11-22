@@ -1,0 +1,11 @@
+[package]
+name = "shaku_axum"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+axum = { path = "../../axum/axum" }
+shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
+
+[dev-dependencies]
+tokio = { version = "1.0", features = [ "full" ] }
