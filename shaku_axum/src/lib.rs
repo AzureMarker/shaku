@@ -1,25 +1,43 @@
+//! This crate provides integration between the `shaku` and `axum` crates.
+//!
+//! See [`Inject`] and [`InjectProvided`] for details.
+//!
+//! [`Inject`]: struct.Inject.html
+//! [`InjectProvided`]: struct.InjectProvided.html
+
 mod inject_component;
 mod inject_provided;
 
-use std::sync::Arc;
-
-use axum::extract::rejection::{ExtensionRejection, MissingExtension};
-use axum::extract::RequestParts;
 pub use inject_component::Inject;
 pub use inject_provided::InjectProvided;
+
+use axum::{extract::RequestParts, http::StatusCode};
+use serde_json::{json, Value};
 use shaku::ModuleInterface;
+use std::sync::Arc;
 
 fn get_module_from_state<M: ModuleInterface + ?Sized, B: Send>(
     request: &RequestParts<B>,
-) -> Result<&Arc<M>, ExtensionRejection> {
-    Ok(request
+) -> Result<&Arc<M>, (StatusCode, axum::Json<Value>)> {
+    request
         .extensions()
-        .expect("extension does not exist")
+        .ok_or_else(|| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                axum::Json(json!({ "error": "Extensions have already been consumed." })),
+            )
+        })?
         .get::<Arc<M>>()
         .ok_or_else(|| {
-            MissingExtension::from_err(format!(
-                "Extension of type `{}` was not found. Perhaps you forgot to add it?",
-                std::any::type_name::<M>()
-            ))
-        })?)
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                axum::Json(json!({
+                    "error":
+                        format!(
+                            "No registered module for: {}",
+                            std::any::type_name::<Arc<M>>()
+                        )
+                })),
+            )
+        })
 }

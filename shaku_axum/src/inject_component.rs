@@ -1,13 +1,69 @@
-use axum::async_trait;
-use axum::extract::rejection::ExtensionRejection;
-use axum::extract::{FromRequest, RequestParts};
+use crate::get_module_from_state;
+use axum::{
+    async_trait,
+    extract::{FromRequest, RequestParts},
+    http::StatusCode,
+};
+use serde_json::Value;
+use shaku::{HasComponent, Interface, ModuleInterface};
 
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::sync::Arc;
 
-use shaku::{HasComponent, Interface, ModuleInterface};
-
+/// Used to retrieve a reference to a component from a shaku `Module`.
+/// The module should be stored in an Axum layer, wrapped in an `Arc`.
+/// Use this struct as an extractor.
+///
+/// # Example
+/// ```rust
+/// use axum::{routing::get, AddExtensionLayer, Router};
+/// use shaku::{module, Component, Interface};
+/// use shaku_axum::Inject;
+/// use std::net::SocketAddr;
+/// use std::sync::Arc;
+///
+/// trait HelloWorld: Interface {
+///     fn greet(&self) -> String;
+/// }
+///
+/// #[derive(Component)]
+/// #[shaku(interface = HelloWorld)]
+/// struct HelloWorldImpl;
+///
+/// impl HelloWorld for HelloWorldImpl {
+///     fn greet(&self) -> String {
+///         "Hello, world!".to_owned()
+///     }
+/// }
+///
+/// module! {
+///     HelloModule {
+///         components = [HelloWorldImpl],
+///         providers = []
+///     }
+/// }
+///
+/// async fn hello(hello_world: Inject<HelloModule, dyn HelloWorld>) -> String {
+///     hello_world.greet()
+/// }
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let module = Arc::new(HelloModule::builder().build());
+///
+///     let app = Router::new()
+///         .route("/", get(hello))
+///         .layer(AddExtensionLayer::new(module));
+///
+///     # if false {
+///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
+///         .serve(app.into_make_service())
+///         .await
+///         .unwrap();
+///     # }
+/// }
+/// ```
 pub struct Inject<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized>(
     Arc<I>,
     PhantomData<M>,
@@ -20,10 +76,11 @@ where
     M: ModuleInterface + HasComponent<I> + ?Sized,
     I: Interface + ?Sized,
 {
-    type Rejection = ExtensionRejection;
+    type Rejection = (StatusCode, axum::Json<Value>);
 
     async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-        let module = crate::get_module_from_state::<M, B>(req)?;
+        let module = get_module_from_state::<M, B>(req)?;
+
         let component = module.resolve();
 
         Ok(Self(component, PhantomData))
