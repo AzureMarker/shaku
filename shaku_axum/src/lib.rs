@@ -1,10 +1,12 @@
 mod inject_component;
+mod inject_provided;
 
 use std::sync::Arc;
 
 use axum::extract::rejection::{ExtensionRejection, MissingExtension};
 use axum::extract::RequestParts;
 pub use inject_component::Inject;
+pub use inject_provided::InjectProvided;
 use shaku::ModuleInterface;
 
 fn get_module_from_state<M: ModuleInterface + ?Sized, B: Send>(

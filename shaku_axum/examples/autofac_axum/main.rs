@@ -1,5 +1,5 @@
 use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
-use axum::{AddExtensionLayer, Router, routing::get};
+use axum::{routing::get, AddExtensionLayer, Router};
 use shaku_axum::Inject;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -31,4 +31,3 @@ async fn main() {
         .await
         .unwrap();
 }
-
