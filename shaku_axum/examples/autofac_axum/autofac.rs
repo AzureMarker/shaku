@@ -1,3 +1,6 @@
+//! Example based on the AutoFac 'getting started' example
+//! (http://autofac.readthedocs.io/en/latest/getting-started/index.html)
+
 use shaku::{module, Component, Interface};
 use std::sync::Arc;
 

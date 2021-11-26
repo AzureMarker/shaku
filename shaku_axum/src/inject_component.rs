@@ -4,7 +4,6 @@ use axum::{
     extract::{FromRequest, RequestParts},
     http::StatusCode,
 };
-use serde_json::Value;
 use shaku::{HasComponent, Interface, ModuleInterface};
 
 use std::marker::PhantomData;
@@ -76,7 +75,7 @@ where
     M: ModuleInterface + HasComponent<I> + ?Sized,
     I: Interface + ?Sized,
 {
-    type Rejection = (StatusCode, axum::Json<Value>);
+    type Rejection = (StatusCode, String);
 
     async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
         let module = get_module_from_state::<M, B>(req)?;

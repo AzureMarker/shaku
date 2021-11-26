@@ -2,8 +2,7 @@ use crate::get_module_from_state;
 use axum::async_trait;
 use axum::extract::{FromRequest, RequestParts};
 use axum::http::StatusCode;
-use serde_json::{json, Value};
-use shaku::{HasProvider, Interface, ModuleInterface};
+use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
@@ -19,7 +18,7 @@ use std::ops::Deref;
 /// use std::net::SocketAddr;
 /// use std::sync::Arc;
 ///
-/// trait HelloWorld: Interface {
+/// trait HelloWorld: Send + Sync {
 ///     fn greet(&self) -> String;
 /// }
 ///
@@ -72,14 +71,14 @@ where
     M: ModuleInterface + HasProvider<I> + ?Sized,
     I: ?Sized,
 {
-    type Rejection = (StatusCode, axum::Json<Value>);
+    type Rejection = (StatusCode, String);
 
     async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
         let module = get_module_from_state::<M, B>(req)?;
         let service = module.provide().map_err(|e| {
             (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                axum::Json(json!({ "error": format!("{}", e) })),
+                format!("{}", e),
             )
         })?;
 
@@ -87,7 +86,7 @@ where
     }
 }
 
-impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: Interface + ?Sized> Deref
+impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> Deref
     for InjectProvided<M, I>
 {
     type Target = I;

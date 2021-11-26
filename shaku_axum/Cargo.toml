@@ -5,9 +5,7 @@ edition = "2018"
 
 [dependencies]
 axum = "0.3"
-serde = "1.0"
-serde_json = "1.0"
 shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
 
 [dev-dependencies]
-tokio = { version = "1.0", features = [ "full" ] }
+tokio = { version = "1.0", features = ["full"] }
