@@ -1,4 +1,4 @@
-//! Module interfaces can be used with `Inject and `InjectProvided`.
+//! Module interfaces can be used with `Inject` and `InjectProvided`.
 //! The module itself would be stored in state as `Arc<dyn MyModule>`.
 
 use shaku::{module, Component, HasComponent, HasProvider, Interface, Provider};
