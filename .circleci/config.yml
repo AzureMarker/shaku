@@ -62,11 +62,11 @@ jobs:
       - remove-rust-toolchain
       - install-tools
       - code-check:
-          # Actix and Rocket have a higher MSRV.
-          check-args: "--exclude shaku_actix --exclude shaku_rocket"
+          # The web frameworks have a higher MSRV.
+          check-args: "--exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum"
       - test:
           # Skip compile tests, as compiler messages are different in 1.38.0.
-          test-args: "--exclude shaku_actix --exclude shaku_rocket -- --skip compile_fail"
+          test-args: "--exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum -- --skip compile_fail"
 workflows:
   version: 2
   build:
