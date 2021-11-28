@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2021-11-28]
+### shaku_axum 0.1.0
+- Initial release (thanks [@Dispersia](https://github.com/Dispersia)!).
+  See [#31](https://github.com/AzureMarker/shaku/pull/31).
+
 ## [2021-06-13]
 ### shaku_rocket 0.7.0-rc.1
 #### Breaking Changes
@@ -214,7 +219,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/065433b2ddf7e4269fd1cfc356d8d37c5260246c...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/9cb8edb7b51c9cefd7c8bc1cdf073cb0ebe219ae...HEAD
+[2021-11-28]: https://github.com/AzureMarker/shaku/commit/9cb8edb7b51c9cefd7c8bc1cdf073cb0ebe219ae
 [2021-06-13]: https://github.com/AzureMarker/shaku/commit/065433b2ddf7e4269fd1cfc356d8d37c5260246c
 [2021-04-10]: https://github.com/AzureMarker/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
 [2021-02-09]: https://github.com/AzureMarker/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
