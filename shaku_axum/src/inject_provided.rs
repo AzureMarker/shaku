@@ -75,20 +75,15 @@ where
 
     async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
         let module = get_module_from_state::<M, B>(req)?;
-        let service = module.provide().map_err(|e| {
-            (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                format!("{}", e),
-            )
-        })?;
+        let service = module
+            .provide()
+            .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
         Ok(Self(service, PhantomData))
     }
 }
 
-impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> Deref
-    for InjectProvided<M, I>
-{
+impl<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> Deref for InjectProvided<M, I> {
     type Target = I;
 
     fn deref(&self) -> &Self::Target {
