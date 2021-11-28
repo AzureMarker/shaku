@@ -1,4 +1,4 @@
-//! This crate provides integration between the `shaku` and `rocket` crates.
+//! This crate provides integration between the `shaku` and `actix-web` crates.
 //!
 //! See [`Inject`] and [`InjectProvided`] for details.
 //!
