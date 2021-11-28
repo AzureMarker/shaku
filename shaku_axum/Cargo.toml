@@ -2,6 +2,11 @@
 name = "shaku_axum"
 version = "0.1.0"
 edition = "2018"
+authors = ["Mark Drobnak <mark.drobnak@gmail.com>", "Aaron Housh <dispersias@gmail.com>"]
+description = "Integration between shaku and the axum web framework"
+repository = "https://github.com/AzureMarker/shaku"
+keywords = ["di", "ioc", "dependency", "dependency-injection", "axum"]
+license = "MIT/Apache-2.0"
 
 [dependencies]
 axum = "0.3"
