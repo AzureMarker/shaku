@@ -1,5 +1,5 @@
 error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
@@ -12,7 +12,7 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
    = help: the following implementations were found:
              <TestModule as HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>>
 note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
-  --> $DIR/provider_missing_provider_dependency.rs:13:10
+  --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
    |          ^^^^^^^^
@@ -22,7 +22,7 @@ note: required because of the requirements on the impl of `Provider<TestModule>`
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
@@ -32,7 +32,7 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
 26 | | }
    | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-  ::: $WORKSPACE/shaku/src/module/module_traits.rs
+  ::: src/module/module_traits.rs
    |
    |   pub trait Module: ModuleInterface {
    |                     --------------- required by this bound in `Module`
@@ -40,7 +40,7 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
    = help: the following implementations were found:
              <TestModule as HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>>
 note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
-  --> $DIR/provider_missing_provider_dependency.rs:13:10
+  --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
    |          ^^^^^^^^
@@ -48,7 +48,7 @@ note: required because of the requirements on the impl of `Provider<TestModule>`
 15 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
 note: required because it appears within the type `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:22:5
+  --> tests/ui/provider_missing_provider_dependency.rs:22:5
    |
 22 |     TestModule {
    |     ^^^^^^^^^^
