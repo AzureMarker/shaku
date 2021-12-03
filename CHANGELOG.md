@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2021-12-02]
 ### shaku_axum 0.2.0
 #### Breaking Changes
 - Updated to axum 0.4
@@ -222,7 +224,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/9cb8edb7b51c9cefd7c8bc1cdf073cb0ebe219ae...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/1d3451f5d980d4ad8549b2f8e93874ff40685910...HEAD
+[2021-12-02]: https://github.com/AzureMarker/shaku/commit/1d3451f5d980d4ad8549b2f8e93874ff40685910
 [2021-11-28]: https://github.com/AzureMarker/shaku/commit/9cb8edb7b51c9cefd7c8bc1cdf073cb0ebe219ae
 [2021-06-13]: https://github.com/AzureMarker/shaku/commit/065433b2ddf7e4269fd1cfc356d8d37c5260246c
 [2021-04-10]: https://github.com/AzureMarker/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
