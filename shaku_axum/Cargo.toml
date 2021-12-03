@@ -1,6 +1,6 @@
 [package]
 name = "shaku_axum"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>", "Aaron Housh <dispersias@gmail.com>"]
 description = "Integration between shaku and the axum web framework"
@@ -9,7 +9,7 @@ keywords = ["di", "ioc", "dependency", "dependency-injection", "axum"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-axum = "0.3"
+axum = "0.4"
 shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
 
 [dev-dependencies]
