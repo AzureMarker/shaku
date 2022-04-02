@@ -18,22 +18,13 @@ use std::sync::Arc;
 fn get_module_from_state<M: ModuleInterface + ?Sized, B: Send>(
     request: &RequestParts<B>,
 ) -> Result<&Arc<M>, (StatusCode, String)> {
-    request
-        .extensions()
-        .ok_or_else(|| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Extensions have already been consumed.".to_string(),
-            )
-        })?
-        .get::<Arc<M>>()
-        .ok_or_else(|| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!(
-                    "No registered module for: {}",
-                    std::any::type_name::<Arc<M>>()
-                ),
-            )
-        })
+    request.extensions().get::<Arc<M>>().ok_or_else(|| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!(
+                "No registered module for: {}",
+                std::any::type_name::<Arc<M>>()
+            ),
+        )
+    })
 }
