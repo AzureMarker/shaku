@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [2022-04-01]
+### shaku_actix 0.2.0
+#### Breaking changes
+- Updated to actix 4.0
+
 ### shaku_axum 0.3.0
 #### Breaking Changes
 - Updated to axum 0.5
