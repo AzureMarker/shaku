@@ -30,11 +30,6 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 27 | | }
    | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-  ::: src/module/module_traits.rs
-   |
-   |   pub trait Module: ModuleInterface {
-   |                     --------------- required by this bound in `Module`
-   |
 note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
   --> tests/ui/provider_missing_component_dependency.rs:14:10
    |
@@ -48,4 +43,9 @@ note: required because it appears within the type `TestModule`
    |
 23 |     TestModule {
    |     ^^^^^^^^^^
+note: required by a bound in `Module`
+  --> src/module/module_traits.rs
+   |
+   | pub trait Module: ModuleInterface {
+   |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

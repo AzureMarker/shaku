@@ -17,6 +17,7 @@ impl MyComponent for MyComponentImpl {}
 #[shaku(interface = MyProvider)]
 struct MyProviderImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     my_component: Arc<dyn MyComponent>,
 }
 impl MyProvider for MyProviderImpl {}
@@ -25,6 +26,7 @@ impl MyProvider for MyProviderImpl {}
 #[shaku(interface = MySecondProvider)]
 struct MySecondProviderImpl {
     #[shaku(provide)]
+    #[allow(dead_code)]
     my_provider: Box<dyn MyProvider>,
 }
 impl MySecondProvider for MySecondProviderImpl {}

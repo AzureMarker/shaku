@@ -12,6 +12,7 @@ trait RegisterProvider: Debug {}
 #[shaku(interface = RegisterService<E>)]
 struct RegisterServiceImpl<E: Debug + Default + Interface> {
     #[shaku(default)]
+    #[allow(dead_code)]
     executor: E,
 }
 
@@ -21,6 +22,7 @@ impl<E: Debug + Default + Interface> RegisterService<E> for RegisterServiceImpl<
 #[shaku(interface = RegisterProvider)]
 struct RegisterProviderImpl<E: Debug + Interface> {
     #[shaku(inject)]
+    #[allow(dead_code)]
     register_service: Arc<dyn RegisterService<E>>,
 }
 

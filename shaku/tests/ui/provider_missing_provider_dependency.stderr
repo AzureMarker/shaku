@@ -32,11 +32,6 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
 26 | | }
    | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-  ::: src/module/module_traits.rs
-   |
-   |   pub trait Module: ModuleInterface {
-   |                     --------------- required by this bound in `Module`
-   |
    = help: the following implementations were found:
              <TestModule as HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>>
 note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
@@ -52,4 +47,9 @@ note: required because it appears within the type `TestModule`
    |
 22 |     TestModule {
    |     ^^^^^^^^^^
+note: required by a bound in `Module`
+  --> src/module/module_traits.rs
+   |
+   | pub trait Module: ModuleInterface {
+   |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -16,7 +16,8 @@ use std::sync::Arc;
 ///
 /// # Example
 /// ```rust
-/// use axum::{routing::get, AddExtensionLayer, Router};
+/// use axum::{routing::get, Router};
+/// use axum::extract::Extension;
 /// use shaku::{module, Component, Interface};
 /// use shaku_axum::Inject;
 /// use std::net::SocketAddr;
@@ -53,7 +54,7 @@ use std::sync::Arc;
 ///
 ///     let app = Router::new()
 ///         .route("/", get(hello))
-///         .layer(AddExtensionLayer::new(module));
+///         .layer(Extension(module));
 ///
 ///     # if false {
 ///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))

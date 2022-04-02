@@ -32,11 +32,6 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 27 | | }
    | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-  ::: src/module/module_traits.rs
-   |
-   |   pub trait Module: ModuleInterface {
-   |                     --------------- required by this bound in `Module`
-   |
    = help: the following implementations were found:
              <TestModule as HasComponent<<ComponentImpl as shaku::Component<TestModule>>::Interface>>
 note: required because of the requirements on the impl of `shaku::Component<TestModule>` for `ComponentImpl`
@@ -52,4 +47,9 @@ note: required because it appears within the type `TestModule`
    |
 23 |     TestModule {
    |     ^^^^^^^^^^
+note: required by a bound in `Module`
+  --> src/module/module_traits.rs
+   |
+   | pub trait Module: ModuleInterface {
+   |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

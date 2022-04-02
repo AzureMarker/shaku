@@ -15,6 +15,7 @@ trait SimpleService: Debug {}
 #[derive(Component, Debug)]
 #[shaku(interface = SimpleDependency)]
 struct SimpleDependencyImpl {
+    #[allow(dead_code)]
     value: String,
 }
 impl SimpleDependency for SimpleDependencyImpl {}
@@ -23,6 +24,7 @@ impl SimpleDependency for SimpleDependencyImpl {}
 #[shaku(interface = SimpleService)]
 struct SimpleServiceImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     dependency: Arc<dyn SimpleDependency>,
 }
 impl SimpleService for SimpleServiceImpl {}

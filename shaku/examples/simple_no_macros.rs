@@ -19,6 +19,7 @@ trait SimpleService: Debug {}
 
 #[derive(Debug)]
 struct SimpleDependencyImpl {
+    #[allow(dead_code)]
     value: String,
 }
 impl SimpleDependency for SimpleDependencyImpl {}
@@ -39,6 +40,7 @@ struct SimpleDependencyImplParameters {
 
 #[derive(Debug)]
 struct SimpleServiceImpl {
+    #[allow(dead_code)]
     dependency: Arc<dyn SimpleDependency>,
 }
 impl SimpleService for SimpleServiceImpl {}

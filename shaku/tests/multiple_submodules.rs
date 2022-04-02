@@ -25,9 +25,11 @@ impl ProviderDependency for ProviderDependencyImpl {}
 #[shaku(interface = Service)]
 struct ServiceImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     component_dependency: Arc<dyn ComponentDependency>,
 
     #[shaku(provide)]
+    #[allow(dead_code)]
     provider_dependency: Box<dyn ProviderDependency>,
 }
 impl Service for ServiceImpl {}
