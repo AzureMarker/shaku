@@ -1,5 +1,5 @@
 use crate::get_module_from_state;
-use actix_web::dev::{Payload, PayloadStream};
+use actix_web::dev::Payload;
 use actix_web::{Error, FromRequest, HttpRequest};
 use futures_util::future;
 use shaku::{HasComponent, Interface, ModuleInterface};
@@ -69,9 +69,8 @@ impl<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + ?Sized> FromR
 {
     type Error = Error;
     type Future = future::Ready<Result<Self, Error>>;
-    type Config = ();
 
-    fn from_request(req: &HttpRequest, _: &mut Payload<PayloadStream>) -> Self::Future {
+    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         let module = match get_module_from_state::<M>(req) {
             Ok(module) => module,
             Err(e) => return future::err(e),
