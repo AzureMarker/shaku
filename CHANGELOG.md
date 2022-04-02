@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2022-04-01]
+### shaku_axum 0.3.0
+#### Breaking Changes
+- Updated to axum 0.5
+
 ## [2021-12-02]
 ### shaku_axum 0.2.0
 #### Breaking Changes
@@ -224,7 +229,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/1d3451f5d980d4ad8549b2f8e93874ff40685910...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/896beb182058b4db9b9643551c80016f9a76430b...HEAD
+[2022-04-01]: https://github.com/AzureMarker/shaku/commit/896beb182058b4db9b9643551c80016f9a76430b
 [2021-12-02]: https://github.com/AzureMarker/shaku/commit/1d3451f5d980d4ad8549b2f8e93874ff40685910
 [2021-11-28]: https://github.com/AzureMarker/shaku/commit/9cb8edb7b51c9cefd7c8bc1cdf073cb0ebe219ae
 [2021-06-13]: https://github.com/AzureMarker/shaku/commit/065433b2ddf7e4269fd1cfc356d8d37c5260246c
