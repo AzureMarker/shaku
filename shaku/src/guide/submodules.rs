@@ -38,8 +38,8 @@
 //!         components = [MyComponentImpl],
 //!         providers = [],
 //!
-//!         use AuthModule {
-//!             components = [AuthManager],
+//!         use dyn AuthModule {
+//!             components = [dyn AuthManager],
 //!             providers = []
 //!         }
 //!     }
@@ -72,7 +72,7 @@
 //! # module! {
 //! #     RootModule {
 //! #         components = [MyComponentImpl], providers = [],
-//! #         use AuthModule { components = [AuthManager], providers = [] }
+//! #         use dyn AuthModule { components = [dyn AuthManager], providers = [] }
 //! #     }
 //! # }
 //! #
