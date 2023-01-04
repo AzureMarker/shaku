@@ -61,12 +61,15 @@ jobs:
       - checkout
       - remove-rust-toolchain
       - install-tools
+      - run:
+          name: "Use MSRV Cargo.lock"
+          command: cp Cargo.lock.msrv Cargo.lock
       - code-check:
           # The web frameworks have a higher MSRV.
-          check-args: "--exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum"
+          check-args: "--locked --exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum"
       - test:
           # Skip compile tests, as compiler messages are different in 1.38.0.
-          test-args: "--exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum -- --skip compile_fail"
+          test-args: "--locked --exclude shaku_actix --exclude shaku_rocket --exclude shaku_axum -- --skip compile_fail"
 workflows:
   version: 2
   build:
