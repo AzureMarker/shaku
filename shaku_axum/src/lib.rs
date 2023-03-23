@@ -11,14 +11,14 @@ mod inject_provided;
 pub use inject_component::Inject;
 pub use inject_provided::InjectProvided;
 
-use axum::{extract::RequestParts, http::StatusCode};
+use axum::http::{request::Parts, StatusCode};
 use shaku::ModuleInterface;
 use std::sync::Arc;
 
-fn get_module_from_state<M: ModuleInterface + ?Sized, B: Send>(
-    request: &RequestParts<B>,
+fn get_module_from_state<M: ModuleInterface + ?Sized>(
+    request: &Parts,
 ) -> Result<&Arc<M>, (StatusCode, String)> {
-    request.extensions().get::<Arc<M>>().ok_or_else(|| {
+    request.extensions.get::<Arc<M>>().ok_or_else(|| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             format!(

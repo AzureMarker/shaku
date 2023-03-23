@@ -1,8 +1,8 @@
 use crate::get_module_from_state;
 use axum::{
     async_trait,
-    extract::{FromRequest, RequestParts},
-    http::StatusCode,
+    extract::FromRequestParts,
+    http::{request::Parts, StatusCode},
 };
 use shaku::{HasComponent, Interface, ModuleInterface};
 
@@ -70,7 +70,7 @@ pub struct Inject<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + 
 );
 
 #[async_trait]
-impl<B, M, I> FromRequest<B> for Inject<M, I>
+impl<B, M, I> FromRequestParts<B> for Inject<M, I>
 where
     B: Send,
     M: ModuleInterface + HasComponent<I> + ?Sized,
@@ -78,8 +78,8 @@ where
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-        let module = get_module_from_state::<M, B>(req)?;
+    async fn from_request_parts(req: &mut Parts, _state: &B) -> Result<Self, Self::Rejection> {
+        let module = get_module_from_state::<M>(req)?;
 
         let component = module.resolve();
 

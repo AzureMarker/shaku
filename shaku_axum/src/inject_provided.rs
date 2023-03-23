@@ -1,6 +1,7 @@
 use crate::get_module_from_state;
 use axum::async_trait;
-use axum::extract::{FromRequest, RequestParts};
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use axum::http::StatusCode;
 use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
@@ -66,7 +67,7 @@ pub struct InjectProvided<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Size
 );
 
 #[async_trait]
-impl<B, M, I> FromRequest<B> for InjectProvided<M, I>
+impl<B, M, I> FromRequestParts<B> for InjectProvided<M, I>
 where
     B: Send,
     M: ModuleInterface + HasProvider<I> + ?Sized,
@@ -74,8 +75,8 @@ where
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
-        let module = get_module_from_state::<M, B>(req)?;
+    async fn from_request_parts(req: &mut Parts, _state: &B) -> Result<Self, Self::Rejection> {
+        let module = get_module_from_state::<M>(req)?;
         let service = module
             .provide()
             .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
