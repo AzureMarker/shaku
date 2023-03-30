@@ -1,11 +1,11 @@
-use crate::get_module_from_state;
 use axum::async_trait;
-use axum::extract::FromRequestParts;
+use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
 use axum::http::StatusCode;
 use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
+use std::sync::Arc;
 
 /// Used to create a provided service from a shaku `Module`.
 /// The module should be stored in Axum layer, wrapped in an `Arc`.
@@ -51,7 +51,7 @@ use std::ops::Deref;
 ///
 ///     let app = Router::new()
 ///         .route("/", get(hello))
-///         .layer(Extension(module));
+///         .with_state(module);
 ///
 ///     # if false {
 ///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
@@ -67,17 +67,17 @@ pub struct InjectProvided<M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Size
 );
 
 #[async_trait]
-impl<B, M, I> FromRequestParts<B> for InjectProvided<M, I>
+impl<S, M, I> FromRequestParts<S> for InjectProvided<M, I>
 where
-    B: Send,
+    S: Send + Sync,
     M: ModuleInterface + HasProvider<I> + ?Sized,
     I: ?Sized,
+    Arc<M>: FromRef<S>,
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request_parts(req: &mut Parts, _state: &B) -> Result<Self, Self::Rejection> {
-        let module = get_module_from_state::<M>(req)?;
-        let service = module
+    async fn from_request_parts(_req: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let service = Arc::<M>::from_ref(state)
             .provide()
             .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 

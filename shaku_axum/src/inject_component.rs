@@ -1,7 +1,6 @@
-use crate::get_module_from_state;
 use axum::{
     async_trait,
-    extract::FromRequestParts,
+    extract::{FromRef, FromRequestParts},
     http::{request::Parts, StatusCode},
 };
 use shaku::{HasComponent, Interface, ModuleInterface};
@@ -54,7 +53,7 @@ use std::sync::Arc;
 ///
 ///     let app = Router::new()
 ///         .route("/", get(hello))
-///         .layer(Extension(module));
+///         .with_state(module);
 ///
 ///     # if false {
 ///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
@@ -70,18 +69,17 @@ pub struct Inject<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + 
 );
 
 #[async_trait]
-impl<B, M, I> FromRequestParts<B> for Inject<M, I>
+impl<S, M, I> FromRequestParts<S> for Inject<M, I>
 where
-    B: Send,
+    S: Send + Sync,
     M: ModuleInterface + HasComponent<I> + ?Sized,
     I: Interface + ?Sized,
+    Arc<M>: FromRef<S>,
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request_parts(req: &mut Parts, _state: &B) -> Result<Self, Self::Rejection> {
-        let module = get_module_from_state::<M>(req)?;
-
-        let component = module.resolve();
+    async fn from_request_parts(_req: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let component = Arc::<M>::from_ref(state).resolve();
 
         Ok(Self(component, PhantomData))
     }

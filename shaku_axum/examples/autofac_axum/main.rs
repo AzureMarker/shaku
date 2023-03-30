@@ -1,5 +1,4 @@
 use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParameters};
-use axum::extract::Extension;
 use axum::{routing::get, Router};
 use shaku_axum::Inject;
 use std::net::SocketAddr;
@@ -23,9 +22,7 @@ async fn main() {
             .build(),
     );
 
-    let app = Router::new()
-        .route("/", get(index))
-        .layer(Extension(module));
+    let app = Router::new().route("/", get(index)).with_state(module);
 
     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
         .serve(app.into_make_service())
