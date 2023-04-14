@@ -107,7 +107,6 @@ impl<T: Parse, A: Eq + Hash> Parse for ModuleItems<T, A>
 where
     Attribute: Parser<A>,
 {
-    #[allow(clippy::eval_order_dependence)]
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(ModuleItems {

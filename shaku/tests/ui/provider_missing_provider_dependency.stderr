@@ -9,36 +9,29 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
 26 | | }
    | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-   = help: the following implementations were found:
-             <TestModule as HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>>
-note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
+   = help: the trait `HasProvider<<ProviderImpl as shaku::Provider<TestModule>>::Interface>` is implemented for `TestModule`
+note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
   --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
-   |          ^^^^^^^^
+   |          ^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
 14 | #[shaku(interface = ProviderTrait)]
 15 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
-   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> tests/ui/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:22:5
    |
-21 | / module! {
-22 | |     TestModule {
-23 | |         components = [],
-24 | |         providers = [ProviderImpl]
-25 | |     }
-26 | | }
-   | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+22 |     TestModule {
+   |     ^^^^^^^^^^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
    |
-   = help: the following implementations were found:
-             <TestModule as HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>>
-note: required because of the requirements on the impl of `Provider<TestModule>` for `ProviderImpl`
+   = help: the trait `HasProvider<<ProviderImpl as shaku::Provider<TestModule>>::Interface>` is implemented for `TestModule`
+note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
   --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
-   |          ^^^^^^^^
+   |          ^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
 14 | #[shaku(interface = ProviderTrait)]
 15 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
@@ -47,9 +40,10 @@ note: required because it appears within the type `TestModule`
    |
 22 |     TestModule {
    |     ^^^^^^^^^^
+   = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
   --> src/module/module_traits.rs
    |
    | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
-   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)

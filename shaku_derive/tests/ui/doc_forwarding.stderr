@@ -1,11 +1,15 @@
 error: missing documentation for a struct field
-  --> $DIR/doc_forwarding.rs:14:1
+  --> tests/ui/doc_forwarding.rs:14:1
    |
-14 | pub struct MyComponentImpl {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 | / pub struct MyComponentImpl {
+15 | |     /// This field has docs
+16 | |     field1: usize,
+17 | |     // This field does not (will fail missing_docs lint)
+18 | |     field2: usize
+   | |_________________^
    |
 note: the lint level is defined here
-  --> $DIR/doc_forwarding.rs:3:9
+  --> tests/ui/doc_forwarding.rs:3:9
    |
 3  | #![deny(missing_docs)]
    |         ^^^^^^^^^^^^

@@ -1,6 +1,6 @@
 //! Tests related to component parameters
 
-#![allow(clippy::blacklisted_name)]
+#![allow(clippy::disallowed_names)]
 
 use shaku::{module, Component, HasComponent, Interface};
 use std::sync::Arc;
