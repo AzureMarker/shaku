@@ -1,4 +1,4 @@
-#![allow(clippy::blacklisted_name, clippy::mutex_atomic)]
+#![allow(clippy::disallowed_names, clippy::mutex_atomic)]
 #![cfg(feature = "thread_safe")]
 
 use rand::Rng;
