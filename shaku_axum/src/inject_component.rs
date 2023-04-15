@@ -10,7 +10,8 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 /// Used to retrieve a reference to a component from a shaku `Module`.
-/// The module should be stored in an Axum layer, wrapped in an `Arc`.
+/// The module should be stored in Axum state, wrapped in an `Arc`.
+/// This `Arc` must be `impl FromRef<S> for Arc<M>`
 /// Use this struct as an extractor.
 ///
 /// # Example
