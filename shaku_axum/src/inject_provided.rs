@@ -8,14 +8,15 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 /// Used to create a provided service from a shaku `Module`.
-/// The module should be stored in Axum state, wrapped in an `Arc`.
-/// This `Arc` must be `impl FromRef<S> for Arc<M>`
+/// The module should be stored in Axum state, wrapped in an `Arc` (`Arc<MyModule>`).
+/// This `Arc<MyModule>` must implement `FromRef<S>` where `S` is the Axum state type.
+///
 /// Use this struct as an extractor.
 ///
 /// # Example
 /// ```rust
 /// use axum::{routing::get, Router};
-/// use axum::extract::Extension;
+/// use axum::extract::{Extension, FromRef};
 /// use shaku::{module, Interface, Provider};
 /// use shaku_axum::InjectProvided;
 /// use std::net::SocketAddr;
@@ -42,6 +43,17 @@ use std::sync::Arc;
 ///     }
 /// }
 ///
+/// #[derive(Clone)]
+/// struct AppState {
+///     module: Arc<HelloModule>,
+/// }
+///
+/// impl FromRef<AppState> for Arc<HelloModule> {
+///     fn from_ref(app_state: &AppState) -> Arc<HelloModule> {
+///         app_state.module.clone()
+///     }
+/// }
+///
 /// async fn hello(hello_world: InjectProvided<HelloModule, dyn HelloWorld>) -> String {
 ///     hello_world.greet()
 /// }
@@ -49,10 +61,11 @@ use std::sync::Arc;
 /// #[tokio::main]
 /// async fn main() {
 ///     let module = Arc::new(HelloModule::builder().build());
+///     let state = AppState { module };
 ///
 ///     let app = Router::new()
 ///         .route("/", get(hello))
-///         .with_state(module);
+///         .with_state(state);
 ///
 ///     # if false {
 ///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
