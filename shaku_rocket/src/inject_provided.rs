@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use rocket::outcome::{try_outcome};
+use rocket::outcome::try_outcome;
 use rocket::request::{FromRequest, Outcome};
 use rocket::{http::Status, Request};
-
 use shaku::{HasProvider, ModuleInterface};
 
 use crate::get_module_from_state;
@@ -74,12 +73,10 @@ impl<'r, M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest<'r
 
         let service_result = module.inner().provide();
 
-        let outcome = match service_result {
+        match service_result {
             Ok(service) => Outcome::Success(InjectProvided(service, PhantomData)),
             Err(e) => Outcome::Error((Status::InternalServerError, e.to_string())),
-        };
-
-        outcome
+        }
     }
 }
 

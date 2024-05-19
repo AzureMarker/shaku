@@ -5,15 +5,15 @@
 //! [`Inject`]: struct.Inject.html
 //! [`InjectProvided`]: struct.InjectProvided.html
 
-use rocket::{Request, State};
-use rocket::request::Outcome;
+mod inject_component;
+mod inject_provided;
 
 pub use inject_component::Inject;
 pub use inject_provided::InjectProvided;
-use shaku::ModuleInterface;
 
-mod inject_component;
-mod inject_provided;
+use rocket::request::Outcome;
+use rocket::{Request, State};
+use shaku::ModuleInterface;
 
 #[allow(clippy::needless_lifetimes)] // false positive
 async fn get_module_from_state<'r, M: ModuleInterface + ?Sized>(
