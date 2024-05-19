@@ -64,7 +64,7 @@ impl<M: Module> ModuleBuildContext<M> {
         // First check resolved components (which includes overridden component instances)
         self.resolved_components
             .get::<Arc<C::Interface>>()
-            .map(Arc::clone)
+            .cloned()
             // Second check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
                 let component_fn = self
@@ -112,7 +112,7 @@ impl<M: Module> ModuleBuildContext<M> {
     {
         self.provider_overrides
             .get::<Arc<ProviderFn<M, P::Interface>>>()
-            .map(Arc::clone)
+            .cloned()
             .unwrap_or_else(|| Arc::new(Box::new(P::provide)))
     }
 

@@ -7,7 +7,7 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 25 | |         providers = []
 26 | |     }
 27 | | }
-   | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `ComponentImpl: shaku::Component<TestModule>`
    |
    = help: the trait `HasComponent<<ComponentImpl as shaku::Component<TestModule>>::Interface>` is implemented for `TestModule`
 note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
@@ -20,12 +20,13 @@ note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
    |        ^^^^^^^^^^^^^
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+error[E0277]: `TestModule` cannot be shared between threads safely
   --> tests/ui/component_missing_dependency.rs:23:5
    |
 23 |     TestModule {
-   |     ^^^^^^^^^^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   |     ^^^^^^^^^^ `TestModule` cannot be shared between threads safely
    |
+   = help: the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `TestModule: ModuleInterface`
    = help: the trait `HasComponent<<ComponentImpl as shaku::Component<TestModule>>::Interface>` is implemented for `TestModule`
 note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
   --> tests/ui/component_missing_dependency.rs:14:10

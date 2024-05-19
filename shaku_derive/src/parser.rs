@@ -7,7 +7,7 @@ mod module;
 mod properties_from_input;
 mod property_from_field;
 
-pub(self) use self::key_value::KeyValue;
+use self::key_value::KeyValue;
 
 /// Generic parser for syn structures
 // Note: Can't use `std::convert::From` here because we don't want to consume `T`

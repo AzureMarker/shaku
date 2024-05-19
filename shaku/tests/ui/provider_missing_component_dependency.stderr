@@ -7,10 +7,10 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 25 | |         providers = [ProviderImpl]
 26 | |     }
 27 | | }
-   | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `ProviderImpl: Provider<TestModule>`
    |
-   = help: the trait `shaku::Provider<M>` is implemented for `ProviderImpl`
-note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
+   = help: the trait `Provider<M>` is implemented for `ProviderImpl`
+note: required for `ProviderImpl` to implement `Provider<TestModule>`
   --> tests/ui/provider_missing_component_dependency.rs:14:10
    |
 14 | #[derive(Provider)]
@@ -20,13 +20,14 @@ note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
    |        ^^^^^^^^^^^^
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
+error[E0277]: `TestModule` cannot be shared between threads safely
   --> tests/ui/provider_missing_component_dependency.rs:23:5
    |
 23 |     TestModule {
-   |     ^^^^^^^^^^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   |     ^^^^^^^^^^ `TestModule` cannot be shared between threads safely
    |
-note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
+   = help: the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `TestModule: ModuleInterface`
+note: required for `ProviderImpl` to implement `Provider<TestModule>`
   --> tests/ui/provider_missing_component_dependency.rs:14:10
    |
 14 | #[derive(Provider)]

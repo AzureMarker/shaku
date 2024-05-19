@@ -7,10 +7,10 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
 24 | |         providers = [ProviderImpl]
 25 | |     }
 26 | | }
-   | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   | |_^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `ProviderImpl: Provider<TestModule>`
    |
-   = help: the trait `HasProvider<<ProviderImpl as shaku::Provider<TestModule>>::Interface>` is implemented for `TestModule`
-note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
+   = help: the trait `HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>` is implemented for `TestModule`
+note: required for `ProviderImpl` to implement `Provider<TestModule>`
   --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
@@ -20,14 +20,15 @@ note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
    |        ^^^^^^^^^^^^
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
 
-error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
+error[E0277]: `TestModule` cannot be shared between threads safely
   --> tests/ui/provider_missing_provider_dependency.rs:22:5
    |
 22 |     TestModule {
-   |     ^^^^^^^^^^ the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
+   |     ^^^^^^^^^^ `TestModule` cannot be shared between threads safely
    |
-   = help: the trait `HasProvider<<ProviderImpl as shaku::Provider<TestModule>>::Interface>` is implemented for `TestModule`
-note: required for `ProviderImpl` to implement `shaku::Provider<TestModule>`
+   = help: the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `TestModule: ModuleInterface`
+   = help: the trait `HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>` is implemented for `TestModule`
+note: required for `ProviderImpl` to implement `Provider<TestModule>`
   --> tests/ui/provider_missing_provider_dependency.rs:13:10
    |
 13 | #[derive(Provider)]
