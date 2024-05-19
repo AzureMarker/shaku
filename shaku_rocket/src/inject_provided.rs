@@ -1,10 +1,13 @@
-use crate::get_module_from_state;
-use rocket::outcome::{try_outcome, IntoOutcome};
-use rocket::request::{FromRequest, Outcome};
-use rocket::{http::Status, Request};
-use shaku::{HasProvider, ModuleInterface};
 use std::marker::PhantomData;
 use std::ops::Deref;
+
+use rocket::outcome::{try_outcome};
+use rocket::request::{FromRequest, Outcome};
+use rocket::{http::Status, Request};
+
+use shaku::{HasProvider, ModuleInterface};
+
+use crate::get_module_from_state;
 
 /// Used to create a provided service from a shaku `Module`.
 /// The module should be stored in Rocket's state, in a `Box` (It could be
@@ -68,13 +71,15 @@ impl<'r, M: ModuleInterface + HasProvider<I> + ?Sized, I: ?Sized> FromRequest<'r
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         let module = try_outcome!(get_module_from_state::<M>(request).await);
-        let service = try_outcome!(module
-            .inner()
-            .provide()
-            .map_err(|e| e.to_string())
-            .into_outcome(Status::InternalServerError));
 
-        Outcome::Success(InjectProvided(service, PhantomData))
+        let service_result = module.inner().provide();
+
+        let outcome = match service_result {
+            Ok(service) => Outcome::Success(InjectProvided(service, PhantomData)),
+            Err(e) => Outcome::Error((Status::InternalServerError, e.to_string())),
+        };
+
+        outcome
     }
 }
 
