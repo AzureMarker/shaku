@@ -1,5 +1,5 @@
 error: Unknown attribute
-  --> $DIR/unknown_module_attribute.rs:12:23
+  --> tests/ui/unknown_module_attribute.rs:12:23
    |
 12 |         components = [#[unknown] ComponentImpl],
-   |                       ^
+   |                       ^^^^^^^^^^

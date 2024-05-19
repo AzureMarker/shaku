@@ -1,5 +1,5 @@
 error: Providers cannot have attributes
-  --> $DIR/provider_attributes.rs:15:22
+  --> tests/ui/provider_attributes.rs:15:22
    |
 15 |         providers = [#[lazy] ProviderImpl]
-   |                      ^
+   |                      ^^^^^^^
