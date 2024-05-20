@@ -21,6 +21,7 @@ use std::sync::Arc;
 /// use shaku_axum::InjectProvided;
 /// use std::net::SocketAddr;
 /// use std::sync::Arc;
+/// use tokio::net::TcpListener;
 ///
 /// trait HelloWorld: Send + Sync {
 ///     fn greet(&self) -> String;
@@ -68,8 +69,8 @@ use std::sync::Arc;
 ///         .with_state(state);
 ///
 ///     # if false {
-///     axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
-///         .serve(app.into_make_service())
+///     let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+///     axum::serve(listener, app.into_make_service())
 ///         .await
 ///         .unwrap();
 ///     }

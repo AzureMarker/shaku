@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Breaking Changes
 - Updated to support Rocket 0.5.0 (thanks [@BennyPLS](https://github.com/BennyPLS))
 
+### shaku_axum
+#### Breaking Changes
+- Updated to axum 0.7
+
 ## [2023-04-20]
 ### shaku_axum 0.4.0
 #### Breaking Changes

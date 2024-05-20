@@ -2,8 +2,8 @@ use crate::autofac::{AutoFacModule, IDateWriter, TodayWriter, TodayWriterParamet
 use axum::extract::FromRef;
 use axum::{routing::get, Router};
 use shaku_axum::Inject;
-use std::net::SocketAddr;
 use std::sync::Arc;
+use tokio::net::TcpListener;
 
 mod autofac;
 
@@ -38,8 +38,8 @@ async fn main() {
 
     let app = Router::new().route("/", get(index)).with_state(state);
 
-    axum::Server::bind(&SocketAddr::from(([127, 0, 0, 1], 8080)))
-        .serve(app.into_make_service())
+    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 }
