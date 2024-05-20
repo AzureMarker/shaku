@@ -8,4 +8,4 @@ error: Providers cannot have attributes
   --> tests/ui/submodule_service_attributes.rs:44:26
    |
 44 |             providers = [#[lazy] ProviderTrait]
-   |                          ^^^^^^^
+   |                          ^

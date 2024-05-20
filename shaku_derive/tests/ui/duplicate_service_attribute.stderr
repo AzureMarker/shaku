@@ -2,4 +2,4 @@ error: Duplicate attribute
   --> tests/ui/duplicate_service_attribute.rs:12:31
    |
 12 |         components = [#[lazy] #[lazy] ComponentImpl],
-   |                               ^^^^^^^
+   |                               ^
