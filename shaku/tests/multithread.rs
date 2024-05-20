@@ -4,7 +4,7 @@
 use rand::Rng;
 use shaku::{module, Component, HasComponent, Interface};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
@@ -80,7 +80,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
     // Build module
     let module = FooModule::builder().build();
     let shared_module = Arc::new(module);
-    let latest_data: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(FOO_DEFAULT_VALUE));
+    let latest_data: Arc<Mutex<usize>> = Arc::new(Mutex::new(FOO_DEFAULT_VALUE));
 
     // Launch a few threads where each will try to resolve `Foo`
     let mut handles = Vec::new();
@@ -105,7 +105,8 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
 
-                        latest_data.store(new_value, Ordering::SeqCst);
+                        let mut latest_data_lock = latest_data.lock().unwrap();
+                        *latest_data_lock = new_value;
 
                         println!(
                             "In thread {:?} > resolve ok > value changed to {}",
@@ -115,7 +116,8 @@ fn simple_multithreaded_resolve_ref_n_mut() {
                     } else {
                         // Read the data and check against the expected value
                         let foo: &dyn Foo = shared_module.resolve_ref();
-                        let data = latest_data.load(Ordering::SeqCst);
+                        let latest_data_lock = latest_data.lock().unwrap();
+                        let data = *latest_data_lock;
 
                         println!(
                             "In thread {:?} > resolve ok > value should be {}",
