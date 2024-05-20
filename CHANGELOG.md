@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### shaku_rocket
+
+## [2024-05-19]
+### shaku_rocket 0.7.0
 #### Breaking Changes
 - Updated to support Rocket 0.5.0 (thanks [@BennyPLS](https://github.com/BennyPLS))
 
-### shaku_axum
+### shaku_axum 0.5.0
 #### Breaking Changes
 - Updated to axum 0.7
 
@@ -246,7 +248,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/c33b8e5258f6440b47ee8532168d7cdc91eb263b...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/318619b80311266ecf66caa7d49e19b46a86c040...HEAD
+[2024-05-19]: https://github.com/AzureMarker/shaku/commit/318619b80311266ecf66caa7d49e19b46a86c040
 [2023-04-20]: https://github.com/AzureMarker/shaku/commit/c33b8e5258f6440b47ee8532168d7cdc91eb263b
 [2022-04-01]: https://github.com/AzureMarker/shaku/commit/896beb182058b4db9b9643551c80016f9a76430b
 [2021-12-02]: https://github.com/AzureMarker/shaku/commit/1d3451f5d980d4ad8549b2f8e93874ff40685910
