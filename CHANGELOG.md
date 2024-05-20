@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### shaku_rocket
+#### Breaking Changes
+- Updated to support Rocket 0.5.0 (thanks [@BennyPLS](https://github.com/BennyPLS))
 
 ## [2023-04-20]
 ### shaku_axum 0.4.0
@@ -78,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ModuleBuilder::with_component_override_fn`. This will allow you to
   override a component with a mock that has injected fields (i.e. is a
   `Component`). See [#24](https://github.com/AzureMarker/shaku/issues/24).
-  
+
 ### Misc
 - Added links to the guides to the readme.
 - Added a section to the readme on `Component` vs `Provider`.
@@ -115,19 +118,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ```
   Now `ServiceImpl` will not be created until `resolve` or `resolve_ref` is
   called to access it, or until it is required by another component/provider.
-  
+
 ### Changed
 - Improved macro error messages by highlighting the relevant piece of code in
   the error (via `syn::Error`).
-  
+
 ### Fixed
 - Fixed accidentally importing `syn::export::Hash`, which is not part of the
   public API.
-  
+
 ### shaku_actix 0.1.0
 - New crate added to support Actix Web. It functions similarly to shaku_rocket.
   It works with both shaku 0.5 and 0.6.
-  
+
 ### shaku_rocket 0.5.1
 - This version supports both shaku 0.5 and 0.6. This crate is now independently
   versioned from the main shaku crate.
@@ -200,6 +203,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - shaku_rocket now ensures that the thread_safe feature is enabled.
 
 [module macro]: https://docs.rs/shaku/0.4.0/shaku/macro.module.html
+
 [submodule guide]: https://docs.rs/shaku/0.4.0/shaku/guide/submodules/index.html
 
 ## [0.3.1] - 2020-05-11
