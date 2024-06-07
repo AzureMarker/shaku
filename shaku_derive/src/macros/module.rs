@@ -1,7 +1,8 @@
 //! Implementation of the `module` procedural macro
 
 use crate::debug::get_debug_level;
-use crate::structures::module::{ComponentItem, ModuleData, Submodule};
+use crate::structures::module::InterfaceAttribute::Implementations;
+use crate::structures::module::{ComponentItem, InterfaceItem, ModuleData, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
@@ -45,6 +46,28 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         .map(|(i, provider)| has_provider_impl(i, &provider.ty, &module))
         .collect();
 
+    let mut implementations: Vec<Type> = vec![];
+    let _ = module.services.interfaces.items.iter().for_each(|x| {
+        x.attributes.iter().for_each(|y| match y {
+            Implementations(x) => implementations.extend(x.iter().cloned()),
+        })
+    });
+
+    let has_implementation_impls: Vec<TokenStream> = implementations
+        .iter()
+        .enumerate()
+        .map(|(i, ty)| has_implementation_impl(i, ty, &module))
+        .collect();
+
+    let has_interfaces_impls: Vec<TokenStream> = module
+        .services
+        .interfaces
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, ty)| has_interfaces_impl(i, ty, &module))
+        .collect();
+
     let has_subcomponent_impls: Vec<TokenStream> = module
         .submodules
         .iter()
@@ -81,6 +104,8 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         #module_trait_impl
         #module_builder
         #module_impl
+        #(#has_implementation_impls)*
+        #(#has_interfaces_impls)*
         #(#has_component_impls)*
         #(#has_provider_impls)*
         #(#has_subcomponent_impls)*
@@ -114,6 +139,26 @@ fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStrea
         .map(|(i, provider)| provider_property(i, &provider.ty))
         .collect();
 
+    let mut implementations = vec![];
+    let _ = module.services.interfaces.items.iter().for_each(|x| {
+        x.attributes.iter().for_each(|y| match y {
+            Implementations(x) => implementations.extend(x),
+        })
+    });
+    let implementation_properties: Vec<TokenStream> = implementations
+        .iter()
+        .enumerate()
+        .map(|(i, implementation)| implementation_property(i, implementation))
+        .collect();
+
+    let interfaces_properties: Vec<TokenStream> = module
+        .services
+        .interfaces
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, interfaces)| interfaces_property(i, interfaces))
+        .collect();
     let submodule_properties: Vec<TokenStream> = module
         .submodules
         .iter()
@@ -136,6 +181,8 @@ fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStrea
         #visibility struct #module_name #module_generics #where_clause {
             #(#component_properties,)*
             #(#provider_properties,)*
+            #(#implementation_properties,)*
+            #(#interfaces_properties,)*
             #(#submodule_properties,)*
             #build_context_property
         }
@@ -176,6 +223,28 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
         .map(|(i, provider)| provider_build(i, &provider.ty))
         .collect();
 
+    let mut implementations = vec![];
+    let _ = module.services.interfaces.items.iter().for_each(|x| {
+        x.attributes.iter().for_each(|y| match y {
+            Implementations(x) => implementations.extend(x.clone()),
+        })
+    });
+
+    let implementation_builders: Vec<TokenStream> = implementations
+        .iter()
+        .enumerate()
+        .map(|(i, implementation)| implementation_build(i, &implementation))
+        .collect();
+
+    let interfaces_builders: Vec<TokenStream> = module
+        .services
+        .interfaces
+        .items
+        .iter()
+        .enumerate()
+        .map(|(i, interfaces)| interfaces_build(i, &interfaces))
+        .collect();
+
     let submodules_init = submodules_init(&module.submodules);
     let submodule_names = submodule_names(&module.submodules);
     let submodule_types: Vec<&Type> = module.submodules.iter().map(|sub| &sub.ty).collect();
@@ -196,6 +265,8 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
                 Self {
                     #(#component_builders,)*
                     #(#provider_builders,)*
+                    #(#implementation_builders,)*
+                    #(#interfaces_builders,)*
                     #(#submodule_names,)*
                     #build_context_init
                 }
@@ -249,6 +320,25 @@ fn provider_build(index: usize, provider_ty: &Type) -> TokenStream {
     }
 }
 
+/// Create a property initializer for the implementation during module build
+fn implementation_build(index: usize, implementation: &Type) -> TokenStream {
+    let property = generate_name(index, "implementation", implementation.span());
+    let interface = interface_from_component(&implementation);
+
+    quote! {
+        #property: <Self as ::shaku::HasVariant<#implementation, #interface>>::build_variant(&mut context)
+    }
+}
+
+fn interfaces_build(index: usize, interface: &InterfaceItem) -> TokenStream {
+    let impltype = &interface.ty;
+    let property = generate_name(index, "interfaces", interface.ty.span());
+
+    quote! {
+        #property: <Self as ::shaku::HasComponents<#impltype>>::collect(&mut context)
+    }
+}
+
 /// Create a list of statements to initialize the submodule variables during module build
 fn submodules_init(submodules: &Punctuated<Submodule, syn::Token![,]>) -> TokenStream {
     if submodules.is_empty() {
@@ -281,6 +371,24 @@ fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
     }
 }
 
+fn implementation_property(index: usize, implementation: &Type) -> TokenStream {
+    let property = generate_name(index, "implementation", implementation.span());
+    let interface = interface_from_component(&implementation);
+
+    quote! {
+        #property: ::std::sync::Arc<#interface>
+    }
+}
+
+fn interfaces_property(index: usize, interface: &InterfaceItem) -> TokenStream {
+    let property = generate_name(index, "interfaces", interface.ty.span());
+    let interface = &interface.ty;
+
+    quote! {
+        #property: Vec<::std::sync::Arc<#interface>>
+    }
+}
+
 /// Create the property which holds a provider function
 fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
     let property = generate_name(index, "provider", provider_ty.span());
@@ -299,6 +407,75 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
     quote! {
         #[allow(bare_trait_objects)]
         #property: ::std::sync::Arc<#submodule_ty>
+    }
+}
+
+fn has_interfaces_impl(
+    _index: usize,
+    interfaces: &InterfaceItem,
+    module: &ModuleData,
+) -> TokenStream {
+    let implementation_ty = &interfaces.ty;
+    let module_name = &module.metadata.identifier;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+    let mut deps = vec![];
+    for inter in interfaces.attributes.iter() {
+        match inter {
+            Implementations(types) => {
+                for typed in types {
+                    deps.push(generate_dep_build_call(typed));
+                }
+            }
+        }
+    }
+
+    quote! {
+        impl #impl_generics ::shaku::HasComponents<#implementation_ty> for #module_name #ty_generics #where_clause {
+            fn collect(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> Vec<::std::sync::Arc<#implementation_ty>> {
+                #(#deps)*
+                context.collect::<#implementation_ty>()
+            }
+        }
+    }
+}
+
+fn generate_dep_build_call(implementation_ty: &Type) -> TokenStream {
+    quote! {
+        context.build_variant::<#implementation_ty>();
+    }
+}
+
+fn has_implementation_impl(
+    index: usize,
+    implementation_ty: &Type,
+    module: &ModuleData,
+) -> TokenStream {
+    let property = generate_name(index, "implementation", implementation_ty.span());
+
+    let interface = interface_from_component(implementation_ty);
+    let module_name = &module.metadata.identifier;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    quote! {
+        impl #impl_generics ::shaku::HasVariant<#implementation_ty, #interface> for #module_name #ty_generics #where_clause {
+            fn build_variant(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> ::std::sync::Arc<#interface> {
+                context.build_variant::<#implementation_ty>()
+            }
+
+            fn resolve(&self) -> ::std::sync::Arc<#interface> {
+                let component = &self.#property;
+                ::std::sync::Arc::clone(component)
+            }
+
+            fn resolve_ref(&self) -> &#interface {
+                let component = &self.#property;
+                ::std::sync::Arc::as_ref(component)
+            }
+        }
     }
 }
 

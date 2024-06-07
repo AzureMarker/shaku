@@ -4,9 +4,10 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
 28 | / module! {
 29 | |     TestModule {
 30 | |         components = [Component1, Component2],
-31 | |         providers = []
-32 | |     }
-33 | | }
+31 | |         providers = [],
+32 | |         interfaces = [],
+33 | |     }
+34 | | }
    | |_^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
@@ -52,9 +53,10 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
 28 | / module! {
 29 | |     TestModule {
 30 | |         components = [Component1, Component2],
-31 | |         providers = []
-32 | |     }
-33 | | }
+31 | |         providers = [],
+32 | |         interfaces = [],
+33 | |     }
+34 | | }
    | |_^
    |
 note: required for `Component1` to implement `shaku::Component<TestModule>`

@@ -22,7 +22,8 @@ impl ComponentTrait for ComponentImpl {}
 module! {
     TestModule {
         components = [ComponentImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

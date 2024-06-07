@@ -22,7 +22,8 @@ impl ProviderTrait for ProviderImpl {}
 module! {
     TestModule {
         components = [],
-        providers = [ProviderImpl]
+        providers = [ProviderImpl],
+        interfaces = []
     }
 }
 

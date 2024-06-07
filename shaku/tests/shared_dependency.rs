@@ -52,7 +52,8 @@ module! {
             Component1,
             Component2
         ],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

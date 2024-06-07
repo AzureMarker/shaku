@@ -28,7 +28,8 @@ impl Component2Trait for Component2 {}
 module! {
     TestModule {
         components = [Component1, Component2],
-        providers = []
+        providers = [],
+        interfaces = [],
     }
 }
 

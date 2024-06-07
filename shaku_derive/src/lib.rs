@@ -69,7 +69,8 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// module! {
 ///     MyModule<T: Interface> where T: Default {
 ///         components = [MyComponentImpl<T>],
-///         providers = []
+///         providers = [],
+///         interfaces = [],
 ///     }
 /// }
 /// # fn main() {}
@@ -101,7 +102,8 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// module! {
 ///     MyModule {
 ///         components = [#[lazy] ServiceImpl],
-///         providers = []
+///         providers = [],
+///         interfaces = [],
 ///     }
 /// }
 /// # fn main() {}
@@ -123,7 +125,8 @@ pub fn provider(input: TokenStream) -> TokenStream {
 /// module! {
 ///     MyModuleImpl: MyModule {
 ///         components = [MyComponentImpl],
-///         providers = []
+///         providers = [],
+///         interfaces = [],
 ///     }
 /// }
 ///
@@ -133,10 +136,11 @@ pub fn provider(input: TokenStream) -> TokenStream {
 ///     MySecondModule {
 ///         components = [],
 ///         providers = [],
-///
+///         interfaces = [],
 ///         use MyModule {
 ///             components = [MyComponent],
-///             providers = []
+///             providers = [],
+///             interfaces = [],
 ///         }
 ///     }
 /// }

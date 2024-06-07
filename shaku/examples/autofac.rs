@@ -50,7 +50,8 @@ module! {
             ConsoleOutput,
             TodayWriter
         ],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

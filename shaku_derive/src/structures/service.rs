@@ -34,6 +34,7 @@ pub enum PropertyType {
     Parameter,
     Component,
     Provided,
+    MultipleComponents,
 }
 
 /// Holds information about a service property.
@@ -51,7 +52,9 @@ pub struct Property {
 impl Property {
     pub fn is_service(&self) -> bool {
         match self.property_type {
-            PropertyType::Component | PropertyType::Provided => true,
+            PropertyType::Component | PropertyType::Provided | PropertyType::MultipleComponents => {
+                true
+            }
             PropertyType::Parameter => false,
         }
     }

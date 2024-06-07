@@ -1,13 +1,15 @@
 use crate::parser::Parser;
 use crate::structures::module::{
-    ComponentAttribute, ModuleData, ModuleItem, ModuleItems, ModuleMetadata, ModuleServices,
-    ProviderAttribute, Submodule,
+    ComponentAttribute, InterfaceAttribute, ModuleData, ModuleItem, ModuleItems, ModuleMetadata,
+    ModuleServices, ProviderAttribute, Submodule,
 };
 use std::collections::HashSet;
 use std::hash::Hash;
 use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
-use syn::{Attribute, Error, Generics};
+use syn::token::Comma;
+use syn::{Attribute, Error, Generics, Type};
 
 impl Parse for ModuleData {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -71,7 +73,7 @@ impl Parse for Submodule {
         // Make sure components don't use attributes
         for component in &services.components.items {
             if !component.attributes.is_empty() {
-                return Err(syn::Error::new(
+                return Err(Error::new(
                     component.ty.span(),
                     "Submodule components cannot have attributes",
                 ));
@@ -81,7 +83,7 @@ impl Parse for Submodule {
         // Make sure providers don't use attributes
         for provider in &services.providers.items {
             if !provider.attributes.is_empty() {
-                return Err(syn::Error::new(
+                return Err(Error::new(
                     provider.ty.span(),
                     "Submodule providers cannot have attributes",
                 ));
@@ -98,6 +100,8 @@ impl Parse for ModuleServices {
             components: input.parse()?,
             comma_token: input.parse()?,
             providers: input.parse()?,
+            comma_token2: input.parse()?,
+            interfaces: input.parse()?,
             trailing_comma: input.parse()?,
         })
     }
@@ -131,11 +135,12 @@ where
             let attr = unparsed_attr.parse_as()?;
 
             if attributes.contains(&attr) {
-                return Err(syn::Error::new(unparsed_attr.span(), "Duplicate attribute"));
+                return Err(Error::new(unparsed_attr.span(), "Duplicate attribute"));
             }
 
             attributes.insert(attr);
         }
+        //parse data
 
         Ok(ModuleItem {
             attributes,
@@ -157,5 +162,24 @@ impl Parser<ComponentAttribute> for Attribute {
 impl Parser<ProviderAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ProviderAttribute> {
         Err(Error::new(self.span(), "Providers cannot have attributes"))
+    }
+}
+
+impl Parser<InterfaceAttribute> for Attribute {
+    fn parse_as(&self) -> syn::Result<InterfaceAttribute> {
+        if self.path.is_ident("implementations") {
+            let tokens = self.tokens.clone();
+
+            let parser = Punctuated::<Type, Comma>::parse_terminated;
+            let implementations = ::syn::parse::Parser::parse2(parser, tokens)?;
+            let mut vec: Vec<Type> = vec![];
+            for x in implementations.iter() {
+                vec.push(Type::from(x.clone()));
+            }
+
+            Ok(InterfaceAttribute::Implementations(vec))
+        } else {
+            Err(Error::new(self.span(), "Unknown attribute".to_string()))
+        }
     }
 }

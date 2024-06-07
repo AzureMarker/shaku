@@ -34,6 +34,7 @@ module! {
     BaseModule {
         components = [ComponentDependencyImpl],
         providers = [ProviderDependencyImpl]
+        , interfaces = []
     }
 }
 
@@ -41,11 +42,13 @@ module! {
     MiddleModule {
         components = [],
         providers = [],
+        interfaces = [],
 
         // Re-export BaseModule
         use BaseModule {
             components = [ComponentDependency],
-            providers = [ProviderDependency]
+            providers = [ProviderDependency],
+            interfaces = []
         }
     }
 }
@@ -56,10 +59,12 @@ module! {
         // ServiceImpl requires two dependencies which are transitively sourced
         // via MiddleModule
         providers = [ServiceImpl],
+        interfaces = [],
 
         use MiddleModule {
             components = [ComponentDependency],
-            providers = [ProviderDependency]
+            providers = [ProviderDependency],
+            interfaces = []
         }
     }
 }

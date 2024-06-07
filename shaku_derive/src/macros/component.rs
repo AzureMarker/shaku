@@ -2,7 +2,7 @@
 
 use crate::debug::get_debug_level;
 use crate::macros::common_output::create_dependency;
-use crate::structures::service::{Property, PropertyDefault, ServiceData};
+use crate::structures::service::{Property, PropertyDefault, PropertyType, ServiceData};
 use proc_macro2::TokenStream;
 use syn::{DeriveInput, Ident, Visibility};
 
@@ -86,14 +86,16 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
 fn create_resolve_property(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
 
-    if property.is_service() {
-        quote! {
+    match property.property_type {
+        PropertyType::Component | PropertyType::Provided => quote! {
             #property_name: M::build_component(context)
-        }
-    } else {
-        quote! {
+        },
+        PropertyType::MultipleComponents => quote! {
+            #property_name: M::collect(context)
+        },
+        _ => quote! {
             #property_name: params.#property_name
-        }
+        },
     }
 }
 
@@ -103,7 +105,8 @@ fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<T
     }
 
     let property_name = &property.property_name;
-    let property_type = &property.ty;
+    let property_ty = &property.ty;
+    let property_type = quote! { #property_ty };
     let doc_comment = &property.doc_comment;
 
     Some(quote! {
@@ -116,25 +119,28 @@ fn create_parameters_default(property: &Property, component_ident: &Ident) -> Op
     if property.is_service() {
         return None;
     }
-
     let property_name = &property.property_name;
-
-    match &property.default {
-        PropertyDefault::Provided(default_expr) => Some(quote! {
-            #property_name: #default_expr
+    match property.property_type {
+        PropertyType::MultipleComponents => Some(quote! {
+            #property_name: vec![]
         }),
-        PropertyDefault::NotProvided => Some(quote! {
-            #property_name: Default::default()
-        }),
-        PropertyDefault::NoDefault => {
-            let unreachable_msg = format!(
-                "There is no default value for `{}::{}`",
-                component_ident, property_name
-            );
+        _ => match &property.default {
+            PropertyDefault::Provided(default_expr) => Some(quote! {
+                #property_name: #default_expr
+            }),
+            PropertyDefault::NotProvided => Some(quote! {
+                #property_name: Default::default()
+            }),
+            PropertyDefault::NoDefault => {
+                let unreachable_msg = format!(
+                    "There is no default value for `{}::{}`",
+                    component_ident, property_name
+                );
 
-            Some(quote! {
-                #property_name: unreachable!(#unreachable_msg)
-            })
-        }
+                Some(quote! {
+                    #property_name: unreachable!(#unreachable_msg)
+                })
+            }
+        },
     }
 }

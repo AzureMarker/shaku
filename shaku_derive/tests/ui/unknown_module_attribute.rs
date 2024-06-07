@@ -10,7 +10,8 @@ impl ComponentTrait for ComponentImpl {}
 module! {
     TestModule {
         components = [#[unknown] ComponentImpl],
-        providers = []
+        providers = [],
+        interfaces = [],
     }
 }
 

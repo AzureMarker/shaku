@@ -4,9 +4,10 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
 22 | / module! {
 23 | |     TestModule {
 24 | |         components = [],
-25 | |         providers = [ProviderImpl]
-26 | |     }
-27 | | }
+25 | |         providers = [ProviderImpl],
+26 | |         interfaces = []
+27 | |     }
+28 | | }
    | |_^ the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`, which is required by `ProviderImpl: Provider<TestModule>`
    |
    = help: the trait `Provider<M>` is implemented for `ProviderImpl`

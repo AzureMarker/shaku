@@ -79,7 +79,8 @@ module! {
             DbConnection,
             RepositoryImpl,
             ServiceImpl
-        ]
+        ],
+        interfaces = []
     }
 }
 

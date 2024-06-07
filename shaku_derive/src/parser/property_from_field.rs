@@ -2,7 +2,7 @@ use crate::consts;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
 use syn::spanned::Spanned;
-use syn::{Attribute, Error, Expr, Field, GenericArgument, Path, PathArguments, Type};
+use syn::{Attribute, Error, Expr, Field, GenericArgument, Path, PathArguments, Type, TypePath};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
@@ -13,8 +13,29 @@ fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     })
 }
 
+fn extract_from_generic(path: &TypePath) -> Option<&Type> {
+    path.path
+        .segments
+        // The type parameter should be the last segment.
+        // ex. Arc<dyn Trait>, std::boxed::Box<dyn Trait>, etc
+        .last()
+        // Make sure this segment is the one with the generic parameter
+        .and_then(|segment| match &segment.arguments {
+            // There is only one generic parameter on Arc/Box, so we
+            // can just grab the first.
+            PathArguments::AngleBracketed(abpd) => abpd.args.first(),
+            _ => None,
+        })
+        // Extract the type (for Arc/Box, none of the other
+        // GenericArgument variants should be possible)
+        .and_then(|generic_argument| match generic_argument {
+            GenericArgument::Type(ty) => Some(ty),
+            _ => None,
+        })
+}
 impl Parser<Property> for Field {
     fn parse_as(&self) -> syn::Result<Property> {
+        let is_find = check_for_attr(consts::FIND_ATTR_NAME, &self.attrs);
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
         let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
@@ -29,8 +50,8 @@ impl Parser<Property> for Field {
             .cloned()
             .collect();
 
-        let property_type = match (is_injected, is_provided) {
-            (false, false) => {
+        let property_type = match (is_injected, is_provided, is_find) {
+            (false, false, false) => {
                 let property_default = get_shaku_attribute(&self.attrs)
                     .map(|attr| match attr.parse_args::<KeyValue<Expr>>().ok() {
                         Some(inner) => {
@@ -65,9 +86,10 @@ impl Parser<Property> for Field {
                     doc_comment,
                 });
             }
-            (false, true) => PropertyType::Provided,
-            (true, false) => PropertyType::Component,
-            (true, true) => {
+            (false, true, false) => PropertyType::Provided,
+            (true, false, false) => PropertyType::Component,
+            (false, false, true) => PropertyType::MultipleComponents,
+            _ => {
                 return Err(Error::new(
                     property_name.span(),
                     "Cannot inject and provide the same property",
@@ -83,37 +105,38 @@ impl Parser<Property> for Field {
                     match property_type {
                         PropertyType::Component => name == "Arc",
                         PropertyType::Provided => name == "Box",
+                        PropertyType::MultipleComponents => name == "Vec",
                         PropertyType::Parameter => unreachable!(),
                     }
                 } =>
             {
                 // Get the interface type from the wrapper's generic type parameter
-                let interface_type = path
-                    .path
-                    .segments
-                    // The type parameter should be the last segment.
-                    // ex. Arc<dyn Trait>, std::boxed::Box<dyn Trait>, etc
-                    .last()
-                    // Make sure this segment is the one with the generic parameter
-                    .and_then(|segment| match &segment.arguments {
-                        // There is only one generic parameter on Arc/Box, so we
-                        // can just grab the first.
-                        PathArguments::AngleBracketed(abpd) => abpd.args.first(),
-                        _ => None,
-                    })
-                    // Extract the type (for Arc/Box, none of the other
-                    // GenericArgument variants should be possible)
-                    .and_then(|generic_argument| {
-                        match generic_argument {
-                            GenericArgument::Type(ty) => Some(ty),
-                            _ => None
+                let interface_type =
+                    match property_type {
+                        PropertyType::MultipleComponents => {
+                            let x = extract_from_generic(path)
+                                .ok_or_else(|| Error::new(path.span(), format!(
+                                    "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
+                                    property_name
+                                )))?;
+                            match x {
+                                Type::Path(y) => {
+                                    extract_from_generic(y)
+                                        .ok_or_else(|| Error::new(path.span(), format!(
+                                            "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
+                                            property_name)))?
+                                }
+                                _ => unreachable!()
+                            }
                         }
-                    })
-                    .ok_or_else(|| Error::new(path.span(), format!(
-                        "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
-                        property_name
-                    )))?;
-
+                        _ => {
+                            extract_from_generic(path)
+                                .ok_or_else(|| Error::new(path.span(), format!(
+                                    "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
+                                    property_name
+                                )))?
+                        }
+                    };
                 Ok(Property {
                     property_name,
                     ty: (*interface_type).clone(),
@@ -124,6 +147,14 @@ impl Parser<Property> for Field {
             }
 
             _ => match property_type {
+                PropertyType::MultipleComponents => Err(Error::new(
+                    property_name.span(),
+                    format!(
+                        "Found non-Vec type annotated with #[{}({})]",
+                        consts::ATTR_NAME,
+                        consts::FIND_ATTR_NAME
+                    ),
+                )),
                 PropertyType::Component => Err(Error::new(
                     property_name.span(),
                     format!(

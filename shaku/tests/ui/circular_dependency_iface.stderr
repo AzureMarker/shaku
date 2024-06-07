@@ -1,0 +1,13 @@
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/ui/circular_dependency_iface.rs:53:2
+   |
+53 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/ui/circular_dependency_iface.rs`
+
+warning: unused import: `HasComponent`
+ --> tests/ui/circular_dependency_iface.rs:1:43
+  |
+1 | use shaku::{module, Component, Interface, HasComponent};
+  |                                           ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default

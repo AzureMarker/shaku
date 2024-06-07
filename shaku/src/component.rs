@@ -95,7 +95,8 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// # module! {
     /// #     TestModule {
     /// #         components = [FooImpl],
-    /// #         providers = []
+    /// #         providers = [],
+    /// #         interfaces = []
     /// #     }
     /// # }
     /// #
@@ -124,7 +125,7 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// # module! {
     /// #     TestModule {
     /// #         components = [FooImpl],
-    /// #         providers = []
+    /// #         providers = [], interfaces = []
     /// #     }
     /// # }
     /// #
@@ -135,4 +136,80 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// # }
     /// ```
     fn resolve_ref(&self) -> &I;
+}
+
+pub trait HasVariant<C, I: Interface + ?Sized> {
+    /// Build the component during module build. Usually this involves calling
+    /// [`ModuleBuildContext::build_variant`] with the implementation.
+    ///
+    /// [`ModuleBuildContext::build_variant`]: struct.ModuleBuildContext.html#method.build_variant
+    fn build_variant(context: &mut ModuleBuildContext<Self>) -> Arc<I>
+    where
+        Self: Module + Sized;
+
+    /// Get a reference to the component. The ownership of the component is
+    /// shared via `Arc`.
+    ///
+    /// # Example
+    /// ```
+    /// # use shaku::{module, Component, Interface, HasComponent};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: Interface {}
+    /// #
+    /// # #[derive(Component)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # module! {
+    /// #     TestModule {
+    /// #         components = [FooImpl],
+    /// #         providers = [], interfaces = []
+    /// #     }
+    /// # }
+    /// #
+    /// # fn main() {
+    /// # let module = TestModule::builder().build();
+    /// #
+    /// let foo: Arc<dyn Foo> = module.resolve();
+    /// # }
+    /// ```
+    fn resolve(&self) -> Arc<I>;
+
+    /// Get a reference to the component.
+    ///
+    /// # Example
+    /// ```
+    /// # use shaku::{module, Component, Interface, HasComponent};
+    /// # use std::sync::Arc;
+    /// #
+    /// # trait Foo: Interface {}
+    /// #
+    /// # #[derive(Component)]
+    /// # #[shaku(interface = Foo)]
+    /// # struct FooImpl;
+    /// # impl Foo for FooImpl {}
+    /// #
+    /// # module! {
+    /// #     TestModule {
+    /// #         components = [FooImpl],
+    /// #         providers = [],
+    /// #         interfaces = []
+    /// #     }
+    /// # }
+    /// #
+    /// # fn main() {
+    /// # let module = TestModule::builder().build();
+    /// #
+    /// # let foo: &dyn Foo = module.resolve_ref();
+    /// # }
+    /// ```
+    fn resolve_ref(&self) -> &I;
+}
+
+pub trait HasComponents<I: Interface + ?Sized>: ModuleInterface {
+    fn collect(context: &mut ModuleBuildContext<Self>) -> Vec<Arc<I>>
+    where
+        Self: Module + Sized;
 }

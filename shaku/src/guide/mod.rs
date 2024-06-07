@@ -172,7 +172,7 @@
 //! module! {
 //!     MyModule {
 //!         components = [LoggerImpl, DateLoggerImpl],
-//!         providers = []
+//!         providers = [], interfaces = []
 //!     }
 //! }
 //! ```
@@ -218,7 +218,7 @@
 //! # module! {
 //! #     MyModule {
 //! #         components = [LoggerImpl, DateLoggerImpl],
-//! #         providers = []
+//! #         providers = [], interfaces = []
 //! #     }
 //! # }
 //! # fn main() {
@@ -270,7 +270,7 @@
 //! # module! {
 //! #     MyModule {
 //! #         components = [LoggerImpl, DateLoggerImpl],
-//! #         providers = []
+//! #         providers = [], interfaces = []
 //! #     }
 //! # }
 //! #
@@ -321,7 +321,7 @@
 //! # module! {
 //! #     MyModule {
 //! #         components = [LoggerImpl, DateLoggerImpl],
-//! #         providers = []
+//! #         providers = [], interfaces = []
 //! #     }
 //! # }
 //! #
@@ -379,7 +379,7 @@
 //! # module! {
 //! #     MyModule {
 //! #         components = [LoggerImpl, DateLoggerImpl],
-//! #         providers = []
+//! #         providers = [], interfaces = []
 //! #     }
 //! # }
 //! #
@@ -450,7 +450,8 @@
 //! module! {
 //!     MyModule {
 //!         components = [LoggerImpl, DateLoggerImpl],
-//!         providers = []
+//!         providers = [],
+//!         interfaces = []
 //!     }
 //! }
 //!

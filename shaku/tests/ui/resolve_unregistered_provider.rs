@@ -12,7 +12,8 @@ impl ServiceTrait for ServiceImpl {}
 module! {
     TestModule {
         components = [],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

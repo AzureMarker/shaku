@@ -14,5 +14,8 @@ pub fn create_dependency(property: &Property) -> Option<TokenStream> {
         PropertyType::Provided => Some(quote! {
             ::shaku::HasProvider<#property_ty>
         }),
+        PropertyType::MultipleComponents => Some(quote! {
+            ::shaku::HasComponents<#property_ty>
+        }),
     }
 }

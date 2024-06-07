@@ -31,7 +31,8 @@ impl<E: Debug + Interface> RegisterProvider for RegisterProviderImpl<E> {}
 module! {
     MyModule<E: Debug + Default + Interface> {
         components = [RegisterServiceImpl<E>],
-        providers = [RegisterProviderImpl<E>]
+        providers = [RegisterProviderImpl<E>],
+        interfaces = []
     }
 }
 

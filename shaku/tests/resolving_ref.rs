@@ -27,7 +27,8 @@ impl ValueService for ValueServiceImpl {
 module! {
     TestModule {
         components = [ValueServiceImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

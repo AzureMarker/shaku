@@ -45,14 +45,16 @@ impl Service for ServiceImpl {
 module! {
     TestModule1 {
         components = [#[lazy] DependencyImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 
 module! {
     TestModule2 {
         components = [#[lazy] DependencyImpl, ServiceImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

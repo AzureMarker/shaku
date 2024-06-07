@@ -66,6 +66,9 @@ fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::Provided => Ok(quote! {
             #property_name: module.provide()?
         }),
+        PropertyType::MultipleComponents => Ok(quote! {
+            #property_name: module.collect()
+        }),
         PropertyType::Parameter => Err(Error::new(
             property.property_name.span(),
             "Parameters are not allowed in Providers",

@@ -37,14 +37,16 @@ impl Service for ServiceImpl {}
 module! {
     ComponentModuleImpl: ComponentModule {
         components = [ComponentDependencyImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 
 module! {
     ProviderModuleImpl: ProviderModule {
         components = [],
-        providers = [ProviderDependencyImpl]
+        providers = [ProviderDependencyImpl],
+        interfaces = []
     }
 }
 
@@ -52,14 +54,17 @@ module! {
     TestModule {
         components = [],
         providers = [ServiceImpl],
+        interfaces = [],
 
         use ComponentModule {
             components = [ComponentDependency],
-            providers = []
+            providers = [],
+            interfaces = [],
         },
         use ProviderModule {
             components = [],
-            providers = [ProviderDependency]
+            providers = [ProviderDependency],
+            interfaces = [],
         }
     }
 }

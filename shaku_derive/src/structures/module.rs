@@ -8,10 +8,12 @@ use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};
 
 pub type ComponentItem = ModuleItem<ComponentAttribute>;
+pub type InterfaceItem = ModuleItem<InterfaceAttribute>;
 
 mod kw {
     syn::custom_keyword!(components);
     syn::custom_keyword!(providers);
+    syn::custom_keyword!(interfaces);
 }
 
 /// The main module data structure, parsed from the macro input
@@ -44,6 +46,8 @@ pub struct ModuleServices {
     pub components: ModuleItems<kw::components, ComponentAttribute>,
     pub comma_token: syn::Token![,],
     pub providers: ModuleItems<kw::providers, ProviderAttribute>,
+    pub comma_token2: syn::Token![,],
+    pub interfaces: ModuleItems<kw::interfaces, InterfaceAttribute>,
     pub trailing_comma: Option<syn::Token![,]>,
 }
 
@@ -88,4 +92,9 @@ pub enum ComponentAttribute {
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum ProviderAttribute {
     // None currently
+}
+
+#[derive(Debug, Eq, PartialEq, Hash)]
+pub enum InterfaceAttribute {
+    Implementations(Vec<Type>),
 }

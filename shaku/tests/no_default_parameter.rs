@@ -18,7 +18,8 @@ impl MyComponent for MyComponentImpl {}
 module! {
     TestModule {
         components = [MyComponentImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

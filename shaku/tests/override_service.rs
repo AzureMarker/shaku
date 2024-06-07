@@ -34,7 +34,8 @@ impl MySecondProvider for MySecondProviderImpl {}
 module! {
     TestModule {
         components = [MyComponentImpl],
-        providers = [MyProviderImpl, MySecondProviderImpl]
+        providers = [MyProviderImpl, MySecondProviderImpl],
+        interfaces = []
     }
 }
 

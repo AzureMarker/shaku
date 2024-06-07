@@ -1,7 +1,7 @@
 error[E0277]: the trait bound `TestModule: HasComponent<(dyn ServiceTrait + 'static)>` is not satisfied
-  --> tests/ui/resolve_unregistered_component.rs:21:66
+  --> tests/ui/resolve_unregistered_component.rs:22:66
    |
-21 |     let _service = HasComponent::<dyn ServiceTrait>::resolve_ref(&module);
+22 |     let _service = HasComponent::<dyn ServiceTrait>::resolve_ref(&module);
    |                    --------------------------------------------- ^^^^^^^ the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
    |                    |
    |                    required by a bound introduced by this call

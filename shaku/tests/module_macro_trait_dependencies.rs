@@ -7,10 +7,12 @@ module! {
     TestModule {
         components = [],
         providers = [MyProviderImpl],
+        interfaces = [],
 
         use ServicesModule {
             components = [MyComponent],
-            providers = []
+            providers = [],
+            interfaces = [],
         }
     }
 }
@@ -34,7 +36,8 @@ mod services {
     module! {
         pub ServicesModule {
             components = [MyComponentImpl],
-            providers = []
+            providers = [],
+            interfaces = []
         }
     }
 }

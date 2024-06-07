@@ -59,7 +59,8 @@ pub trait HasProvider<I: ?Sized>: ModuleInterface {
     /// # module! {
     /// #     TestModule {
     /// #         components = [],
-    /// #         providers = [FooImpl]
+    /// #         providers = [FooImpl],
+    /// #         interfaces = []
     /// #     }
     /// # }
     /// #

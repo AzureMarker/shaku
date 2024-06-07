@@ -10,7 +10,8 @@ impl ComponentTrait for ComponentImpl {}
 module! {
     TestModule {
         components = [#[lazy] #[lazy] ComponentImpl],
-        providers = []
+        providers = [],
+        intterfaces = [],
     }
 }
 

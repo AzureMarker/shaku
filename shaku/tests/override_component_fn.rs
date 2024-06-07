@@ -37,7 +37,8 @@ impl MyInterface for MockComponent {
 module! {
     MyModule {
         components = [MyDependencyImpl, MyComponent],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 
@@ -68,7 +69,8 @@ impl MyInterface for MockComponentCircular {
 module! {
     MyCircularModule {
         components = [MyComponent],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

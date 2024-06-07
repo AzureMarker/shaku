@@ -33,7 +33,8 @@ impl Foo for FooImpl {
 module! {
     FooModule {
         components = [FooImpl],
-        providers = []
+        providers = [],
+        interfaces = []
     }
 }
 

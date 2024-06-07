@@ -38,7 +38,8 @@ module! {
         ],
         providers = [
             SimpleServiceImpl
-        ]
+        ],
+        interfaces = []
     }
 }
 

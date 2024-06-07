@@ -18,7 +18,8 @@ impl ProviderTrait for ProviderImpl {}
 module! {
     TestSubModule {
         components = [ComponentImpl],
-        providers = [ProviderImpl]
+        providers = [ProviderImpl],
+        interfaces = [],
     }
 }
 
@@ -26,10 +27,12 @@ module! {
     TestModule1 {
         components = [],
         providers = [],
+        interfaces = [],
 
         use TestSubModule {
             components = [#[lazy] ComponentTrait],
-            providers = []
+            providers = [],
+            interfaces = [],
         }
     }
 }
@@ -38,10 +41,12 @@ module! {
     TestModule2 {
         components = [],
         providers = [],
+        interfaces = [],
 
         use TestSubModule {
             components = [],
-            providers = [#[lazy] ProviderTrait]
+            providers = [#[lazy] ProviderTrait],
+            interfaces = [],
         }
     }
 }

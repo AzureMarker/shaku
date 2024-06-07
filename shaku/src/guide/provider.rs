@@ -214,7 +214,8 @@
 //! module! {
 //!     ExampleModule {
 //!         components = [DatabaseConnectionPool],
-//!         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+//!         providers = [DBConnection, RepositoryImpl, ServiceImpl],
+//!         interfaces = []
 //!     }
 //! }
 //! ```
@@ -264,7 +265,8 @@
 //! # module! {
 //! #     ExampleModule {
 //! #         components = [DatabaseConnectionPool],
-//! #         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+//! #         providers = [DBConnection, RepositoryImpl, ServiceImpl],
+//! #         interfaces = []
 //! #     }
 //! # }
 //! #
@@ -324,7 +326,8 @@
 //! # module! {
 //! #     ExampleModule {
 //! #         components = [DatabaseConnectionPool],
-//! #         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+//! #         providers = [DBConnection, RepositoryImpl, ServiceImpl],
+//! #         interfaces = []
 //! #     }
 //! # }
 //! #
@@ -427,7 +430,8 @@
 //! module! {
 //!     ExampleModule {
 //!         components = [DatabaseConnectionPool],
-//!         providers = [DBConnection, RepositoryImpl, ServiceImpl]
+//!         providers = [DBConnection, RepositoryImpl, ServiceImpl],
+//!         interfaces = []
 //!     }
 //! }
 //!
