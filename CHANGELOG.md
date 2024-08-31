@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2024-08-31
+### Fixed
+- Switched from `anymap` to `anymap2` to fix a possible soundness bug.
+  See [RUSTSEC-2021-0065](https://rustsec.org/advisories/RUSTSEC-2021-0065.html)
+  (thanks [@wolpert](https://github.com/wolpert))
+
 ## [2024-05-19]
 ### shaku_rocket 0.7.0
 #### Breaking Changes
@@ -257,6 +263,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2021-06-13]: https://github.com/AzureMarker/shaku/commit/065433b2ddf7e4269fd1cfc356d8d37c5260246c
 [2021-04-10]: https://github.com/AzureMarker/shaku/commit/5eee11ef073d179215265fb60f2d506e28716f96
 [2021-02-09]: https://github.com/AzureMarker/shaku/commit/342673133b06ea2fa5414a2458fa066e338b828e
+[0.6.2]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.2
 [0.6.1]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.1
 [0.6.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.0
 [0.5.0]: https://github.com/AzureMarker/shaku/releases/tag/v0.5.0
