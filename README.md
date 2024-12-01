@@ -80,6 +80,15 @@ For more details on `Component` and `Provider`, see the
 [getting started guide][component-guide] and the
 [provider getting started guide][provider-guide].
 
+## Web Framework Integrations
+Shaku provides crates to integrate with the following popular web frameworks:
+
+* [Rocket] - [Example][rocket-example]
+* [Axum] - [Example][axum-example]
+* [Actix] - [Example][actix-example]
+
+
+
 ## Minimum Supported Rust Version
 Shaku supports the latest stable release of Rust, plus the previous two versions
 at minimum (but possibly more). Changes to the minimum supported version will be
@@ -107,6 +116,12 @@ guidance of [@bgbahoue] and [@U007D]. Their work inspired the current maintainer
 [component-guide]: https://docs.rs/shaku/*/shaku/guide/index.html
 [provider-guide]: https://docs.rs/shaku/*/shaku/guide/provider/index.html
 [submodules-guide]: https://docs.rs/shaku/*/shaku/guide/submodules/index.html
+[Rocket]: https://rocket.rs
+[Axum]: https://docs.rs/axum/latest/axum/
+[Actix]: https://actix.rs
+[rocket-example]: https://github.com/AzureMarker/shaku/tree/master/shaku_rocket/examples/autofac_rocket
+[axum-example]: https://github.com/AzureMarker/shaku/tree/master/shaku_axum/examples/autofac_axum
+[actix-example]: https://github.com/AzureMarker/shaku/tree/master/shaku_actix/examples/autofac_actix
 [@bgbahoue]: https://github.com/bgbahoue
 [@U007D]: https://github.com/U007D
 [@AzureMarker]: https://github.com/AzureMarker
