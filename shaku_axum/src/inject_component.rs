@@ -1,5 +1,4 @@
 use axum::{
-    async_trait,
     extract::{FromRef, FromRequestParts},
     http::{request::Parts, StatusCode},
 };
@@ -83,7 +82,6 @@ pub struct Inject<M: ModuleInterface + HasComponent<I> + ?Sized, I: Interface + 
     PhantomData<M>,
 );
 
-#[async_trait]
 impl<S, M, I> FromRequestParts<S> for Inject<M, I>
 where
     S: Send + Sync,
