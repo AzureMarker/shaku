@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### shaku_axum 0.6.0
+#### Breaking Changes
+- Updated to axum 0.8 (thanks [@ethanhann](https://github.com/ethanhann))
 
 ## [0.6.2] - 2024-08-31
 ### Fixed
