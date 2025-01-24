@@ -234,7 +234,7 @@
 //!
 //! Note that if you don't pass in parameters, the parameters' default values will be used. You can
 //! override the default value by annotating the property with `#[shaku(default = ...)]`. If the
-//! parameter should not have a default value, annotate it with `#[shaku(no_default)]`. This will
+//! parameter should not have a default value, do not annotate it. This will
 //! cause module creation to panic if no value is provided for the parameter.
 //!
 //! ```
