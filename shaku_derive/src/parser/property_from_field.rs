@@ -6,7 +6,7 @@ use syn::{Attribute, Error, Expr, Field, GenericArgument, Path, PathArguments, T
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
-        a.path.is_ident(consts::ATTR_NAME)
+        a.path().is_ident(consts::ATTR_NAME)
             && a.parse_args::<Path>()
                 .map(|p| p.is_ident(attr_name))
                 .unwrap_or(false)
@@ -25,7 +25,7 @@ impl Parser<Property> for Field {
         let doc_comment = self
             .attrs
             .iter()
-            .filter(|attr| attr.path.is_ident("doc"))
+            .filter(|attr| attr.path().is_ident("doc"))
             .cloned()
             .collect();
 
@@ -47,10 +47,26 @@ impl Parser<Property> for Field {
                             if has_default {
                                 Ok(PropertyDefault::NotProvided)
                             } else {
-                                Err(Error::new(
-                                    attr.span(),
-                                    format!("Unknown attribute: 'shaku{}'", attr.tokens),
-                                ))
+                                let path = match &attr.meta {
+                                    syn::Meta::Path(p) => p,
+                                    syn::Meta::List(l) => &l.path,
+                                    syn::Meta::NameValue(nv) => &nv.path,
+                                };
+                                let attr_name =
+                                    path.get_ident().map_or(String::new(), |i| i.to_string());
+
+                                let message = match &attr.meta {
+                                    syn::Meta::Path(_) => {
+                                        format!("Unknown shaku attribute: '{attr_name}'")
+                                    }
+                                    syn::Meta::List(_) => format!(
+                                        "Unknown shaku attribute with parameters: '{attr_name}'"
+                                    ),
+                                    syn::Meta::NameValue(_) => {
+                                        format!("Unknown shaku attribute with value: '{attr_name}'")
+                                    }
+                                };
+                                Err(Error::new(attr.span(), message))
                             }
                         }
                     })
