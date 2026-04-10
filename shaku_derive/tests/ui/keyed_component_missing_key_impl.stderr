@@ -1,11 +1,14 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0277]: the trait bound `FooAlpha: Keyed<(dyn Foo + 'static), FooKind>` is not satisfied
-  --> tests/ui/keyed_component_missing_key_impl.rs:21:13
+  --> $DIR/keyed_component_missing_key_impl.rs:21:13
    |
 21 |             FooAlpha
    |             ^^^^^^^^ unsatisfied trait bound
    |
 help: the trait `Keyed<(dyn Foo + 'static), FooKind>` is not implemented for `FooAlpha`
-  --> tests/ui/keyed_component_missing_key_impl.rs:14:1
+  --> $DIR/keyed_component_missing_key_impl.rs:14:1
    |
 14 | struct FooAlpha;
    | ^^^^^^^^^^^^^^^

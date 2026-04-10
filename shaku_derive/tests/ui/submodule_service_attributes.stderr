@@ -1,11 +1,14 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Submodule components cannot have attributes
-  --> tests/ui/submodule_service_attributes.rs:31:35
+  --> $DIR/submodule_service_attributes.rs:31:35
    |
 31 |             components = [#[lazy] ComponentTrait],
    |                                   ^^^^^^^^^^^^^^
 
 error: Providers cannot have attributes
-  --> tests/ui/submodule_service_attributes.rs:44:26
+  --> $DIR/submodule_service_attributes.rs:44:26
    |
 44 |             providers = [#[lazy] ProviderTrait]
    |                          ^

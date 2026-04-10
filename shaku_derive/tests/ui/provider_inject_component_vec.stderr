@@ -1,17 +1,20 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Ordered component collection injection is not yet supported in Providers
-  --> tests/ui/provider_inject_component_vec.rs:18:5
+  --> $DIR/provider_inject_component_vec.rs:18:5
    |
 18 |     foos: Vec<Arc<dyn Foo>>,
    |     ^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
-  --> tests/ui/provider_inject_component_vec.rs:28:2
+  --> $DIR/provider_inject_component_vec.rs:28:2
    |
 28 | }
    |  ^ consider adding a `main` function to `$DIR/tests/ui/provider_inject_component_vec.rs`
 
 error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfied
-  --> tests/ui/provider_inject_component_vec.rs:23:1
+  --> $DIR/provider_inject_component_vec.rs:23:1
    |
 23 | / module! {
 24 | |     TestModule {
@@ -22,60 +25,60 @@ error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfi
    | |_^ unsatisfied trait bound
    |
 help: the trait `Provider<TestModule>` is not implemented for `FooProvider`
-  --> tests/ui/provider_inject_component_vec.rs:16:1
+  --> $DIR/provider_inject_component_vec.rs:16:1
    |
 16 | struct FooProvider {
    | ^^^^^^^^^^^^^^^^^^
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfied in `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:24:5
+  --> $DIR/provider_inject_component_vec.rs:24:5
    |
 24 |     TestModule {
    |     ^^^^^^^^^^ unsatisfied trait bound
    |
 help: within `TestModule`, the trait `Provider<TestModule>` is not implemented for `FooProvider`
-  --> tests/ui/provider_inject_component_vec.rs:16:1
+  --> $DIR/provider_inject_component_vec.rs:16:1
    |
 16 | struct FooProvider {
    | ^^^^^^^^^^^^^^^^^^
 note: required because it appears within the type `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:24:5
+  --> $DIR/provider_inject_component_vec.rs:24:5
    |
 24 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
-  --> $WORKSPACE/shaku/src/module/module_traits.rs
+  --> $DIR/module_traits.rs:36:19
    |
-   | pub trait Module: ModuleInterface {
+36 | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
 
 error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfied in `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:24:5
+  --> $DIR/provider_inject_component_vec.rs:24:5
    |
 24 |     TestModule {
    |     ^^^^^^^^^^ unsatisfied trait bound
    |
 help: within `TestModule`, the trait `Provider<TestModule>` is not implemented for `FooProvider`
-  --> tests/ui/provider_inject_component_vec.rs:16:1
+  --> $DIR/provider_inject_component_vec.rs:16:1
    |
 16 | struct FooProvider {
    | ^^^^^^^^^^^^^^^^^^
 note: required because it appears within the type `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:24:5
+  --> $DIR/provider_inject_component_vec.rs:24:5
    |
 24 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `HasComponent`
-  --> $WORKSPACE/shaku/src/component.rs
+  --> $DIR/component.rs:73:48
    |
-   | pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
+73 | pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
    |                                                ^^^^^^^^^^^^^^^ required by this bound in `HasComponent`
 
 error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfied in `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:23:1
+  --> $DIR/provider_inject_component_vec.rs:23:1
    |
 23 | / module! {
 24 | |     TestModule {
@@ -86,22 +89,22 @@ error[E0277]: the trait bound `FooProvider: Provider<TestModule>` is not satisfi
    | |_^ unsatisfied trait bound
    |
 help: within `TestModule`, the trait `Provider<TestModule>` is not implemented for `FooProvider`
-  --> tests/ui/provider_inject_component_vec.rs:16:1
+  --> $DIR/provider_inject_component_vec.rs:16:1
    |
 16 | struct FooProvider {
    | ^^^^^^^^^^^^^^^^^^
 note: required because it appears within the type `TestModule`
-  --> tests/ui/provider_inject_component_vec.rs:24:5
+  --> $DIR/provider_inject_component_vec.rs:24:5
    |
 24 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `build_component`
-  --> $WORKSPACE/shaku/src/component.rs
+  --> $DIR/component.rs:73:48
    |
-   | pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
+73 | pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
    |                                                ^^^^^^^^^^^^^^^ required by this bound in `HasComponent::build_component`
 ...
-   |     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<I>
+78 |     fn build_component(context: &mut ModuleBuildContext<Self>) -> Arc<I>
    |        --------------- required by a bound in this associated function
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

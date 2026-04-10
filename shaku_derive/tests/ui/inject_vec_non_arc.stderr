@@ -1,11 +1,14 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Found unsupported injected type for `foos`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
-  --> tests/ui/inject_vec_non_arc.rs:18:5
+  --> $DIR/inject_vec_non_arc.rs:18:5
    |
 18 |     foos: Vec<Box<dyn Foo>>,
    |     ^^^^
 
 error[E0601]: `main` function not found in crate `$CRATE`
-  --> tests/ui/inject_vec_non_arc.rs:21:25
+  --> $DIR/inject_vec_non_arc.rs:21:25
    |
 21 | impl Foo for NeedsVec {}
    |                         ^ consider adding a `main` function to `$DIR/tests/ui/inject_vec_non_arc.rs`

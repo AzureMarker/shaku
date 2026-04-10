@@ -1,5 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Duplicate attribute
-  --> tests/ui/duplicate_service_attribute.rs:12:31
+  --> $DIR/duplicate_service_attribute.rs:12:31
    |
 12 |         components = [#[lazy] #[lazy] ComponentImpl],
    |                               ^

@@ -1,5 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0277]: the trait bound `TestModule: HasProvider<dyn ServiceTrait>` is not satisfied
-  --> tests/ui/resolve_unregistered_provider.rs:21:61
+  --> $DIR/resolve_unregistered_provider.rs:21:61
    |
 21 |     let _service = HasProvider::<dyn ServiceTrait>::provide(&module);
    |                    ---------------------------------------- ^^^^^^^ unsatisfied trait bound
@@ -7,7 +10,7 @@ error[E0277]: the trait bound `TestModule: HasProvider<dyn ServiceTrait>` is not
    |                    required by a bound introduced by this call
    |
 help: the trait `HasProvider<dyn ServiceTrait>` is not implemented for `TestModule`
-  --> tests/ui/resolve_unregistered_provider.rs:12:1
+  --> $DIR/resolve_unregistered_provider.rs:12:1
    |
 12 | / module! {
 13 | |     TestModule {

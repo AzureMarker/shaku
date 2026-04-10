@@ -1,5 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> tests/ui/circular_dependency_compile_time.rs:28:1
+  --> $DIR/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -10,7 +13,7 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> tests/ui/circular_dependency_compile_time.rs:19:10
+  --> $DIR/circular_dependency_compile_time.rs:19:10
    |
 19 | #[derive(Component)]
    |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
@@ -20,13 +23,13 @@ note: required for `Component2` to implement `shaku::Component<TestModule>`
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> tests/ui/circular_dependency_compile_time.rs:29:5
+  --> $DIR/circular_dependency_compile_time.rs:29:5
    |
 29 |     TestModule {
    |     ^^^^^^^^^^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> tests/ui/circular_dependency_compile_time.rs:19:10
+  --> $DIR/circular_dependency_compile_time.rs:19:10
    |
 19 | #[derive(Component)]
    |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
@@ -34,20 +37,20 @@ note: required for `Component2` to implement `shaku::Component<TestModule>`
 21 | struct Component2 {
    |        ^^^^^^^^^^
 note: required because it appears within the type `TestModule`
-  --> tests/ui/circular_dependency_compile_time.rs:29:5
+  --> $DIR/circular_dependency_compile_time.rs:29:5
    |
 29 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
-  --> src/module/module_traits.rs
+  --> $DIR/module_traits.rs:36:19
    |
-   | pub trait Module: ModuleInterface {
+36 | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
    = note: this error originates in the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> tests/ui/circular_dependency_compile_time.rs:28:1
+  --> $DIR/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -58,7 +61,7 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> tests/ui/circular_dependency_compile_time.rs:19:10
+  --> $DIR/circular_dependency_compile_time.rs:19:10
    |
 19 | #[derive(Component)]
    |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
@@ -70,7 +73,7 @@ note: required for `Component2` to implement `shaku::Component<TestModule>`
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component2Trait + 'static)>`
-  --> tests/ui/circular_dependency_compile_time.rs:28:1
+  --> $DIR/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -81,7 +84,7 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component1` to implement `shaku::Component<TestModule>`
-  --> tests/ui/circular_dependency_compile_time.rs:10:10
+  --> $DIR/circular_dependency_compile_time.rs:10:10
    |
 10 | #[derive(Component)]
    |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro

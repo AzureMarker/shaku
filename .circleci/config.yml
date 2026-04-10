@@ -41,7 +41,7 @@ commands:
 jobs:
   shaku:
     docker:
-      - image: rust:1.78.0
+      - image: rust:1.94.1
     steps:
       - checkout
       - remove-rust-toolchain

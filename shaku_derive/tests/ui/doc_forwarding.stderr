@@ -1,5 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: missing documentation for a struct field
-  --> tests/ui/doc_forwarding.rs:14:1
+  --> $DIR/doc_forwarding.rs:14:1
    |
 14 | / pub struct MyComponentImpl {
 15 | |     /// This field has docs
@@ -9,7 +12,7 @@ error: missing documentation for a struct field
    | |_________________^
    |
 note: the lint level is defined here
-  --> tests/ui/doc_forwarding.rs:3:9
+  --> $DIR/doc_forwarding.rs:3:9
    |
  3 | #![deny(missing_docs)]
    |         ^^^^^^^^^^^^
