@@ -1,0 +1,5 @@
+error: Keyed component-map injection is not yet supported in Providers
+  --> tests/ui/provider_inject_component_map.rs:24:5
+   |
+24 |     dependencies: HashMap<DependencyKind, Arc<dyn DependencyTrait>>,
+   |     ^^^^^^^^^^^^

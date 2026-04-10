@@ -2,7 +2,10 @@ use crate::consts;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
 use syn::spanned::Spanned;
-use syn::{Attribute, Error, Expr, Field, GenericArgument, Path, PathArguments, Type};
+use syn::{
+    AngleBracketedGenericArguments, Attribute, Error, Expr, Field, GenericArgument, Path,
+    PathArguments, Type, TypePath,
+};
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
@@ -60,6 +63,7 @@ impl Parser<Property> for Field {
                 return Ok(Property {
                     property_name,
                     ty: self.ty.clone(),
+                    key_ty: None,
                     property_type: PropertyType::Parameter,
                     default: property_default,
                     doc_comment,
@@ -75,73 +79,119 @@ impl Parser<Property> for Field {
             }
         };
 
-        match &self.ty {
-            Type::Path(path)
-                if {
-                    // Make sure it has the right wrapper type
-                    let name = &path.path.segments[0].ident;
-                    match property_type {
-                        PropertyType::Component => name == "Arc",
-                        PropertyType::Provided => name == "Box",
-                        PropertyType::Parameter => unreachable!(),
-                    }
-                } =>
-            {
-                // Get the interface type from the wrapper's generic type parameter
-                let interface_type = path
-                    .path
-                    .segments
-                    // The type parameter should be the last segment.
-                    // ex. Arc<dyn Trait>, std::boxed::Box<dyn Trait>, etc
-                    .last()
-                    // Make sure this segment is the one with the generic parameter
-                    .and_then(|segment| match &segment.arguments {
-                        // There is only one generic parameter on Arc/Box, so we
-                        // can just grab the first.
-                        PathArguments::AngleBracketed(abpd) => abpd.args.first(),
-                        _ => None,
-                    })
-                    // Extract the type (for Arc/Box, none of the other
-                    // GenericArgument variants should be possible)
-                    .and_then(|generic_argument| {
-                        match generic_argument {
-                            GenericArgument::Type(ty) => Some(ty),
-                            _ => None
-                        }
-                    })
-                    .ok_or_else(|| Error::new(path.span(), format!(
-                        "Failed to find interface trait in {}. Make sure the type is Arc<dyn Trait>",
-                        property_name
-                    )))?;
+        match property_type {
+            PropertyType::Component => {
+                if let Some(interface_ty) = parse_vec_arc_interface(&self.ty) {
+                    return Ok(Property {
+                        property_name,
+                        ty: interface_ty,
+                        key_ty: None,
+                        property_type: PropertyType::ComponentVec,
+                        default: PropertyDefault::NotProvided,
+                        doc_comment,
+                    });
+                }
+
+                if let Some((key_ty, interface_ty)) = parse_hash_map_arc_interface(&self.ty) {
+                    return Ok(Property {
+                        property_name,
+                        ty: interface_ty,
+                        key_ty: Some(key_ty),
+                        property_type: PropertyType::ComponentMap,
+                        default: PropertyDefault::NotProvided,
+                        doc_comment,
+                    });
+                }
+
+                let interface_ty = parse_wrapper_interface(&self.ty, "Arc").ok_or_else(|| {
+                    Error::new(
+                        property_name.span(),
+                        format!(
+                            "Found unsupported injected type for `{}`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>",
+                            property_name
+                        ),
+                    )
+                })?;
 
                 Ok(Property {
                     property_name,
-                    ty: (*interface_type).clone(),
+                    ty: interface_ty,
+                    key_ty: None,
                     property_type,
                     default: PropertyDefault::NotProvided,
                     doc_comment,
                 })
             }
+            PropertyType::Provided => {
+                let interface_ty = parse_wrapper_interface(&self.ty, "Box").ok_or_else(|| {
+                    Error::new(
+                        property_name.span(),
+                        format!(
+                            "Found non-Box type annotated with #[{}({})]",
+                            consts::ATTR_NAME,
+                            consts::PROVIDE_ATTR_NAME
+                        ),
+                    )
+                })?;
 
-            _ => match property_type {
-                PropertyType::Component => Err(Error::new(
-                    property_name.span(),
-                    format!(
-                        "Found non-Arc type annotated with #[{}({})]",
-                        consts::ATTR_NAME,
-                        consts::INJECT_ATTR_NAME
-                    ),
-                )),
-                PropertyType::Provided => Err(Error::new(
-                    property_name.span(),
-                    format!(
-                        "Found non-Box type annotated with #[{}({})]",
-                        consts::ATTR_NAME,
-                        consts::PROVIDE_ATTR_NAME
-                    ),
-                )),
-                PropertyType::Parameter => unreachable!(),
-            },
+                Ok(Property {
+                    property_name,
+                    ty: interface_ty,
+                    key_ty: None,
+                    property_type,
+                    default: PropertyDefault::NotProvided,
+                    doc_comment,
+                })
+            }
+            PropertyType::Parameter | PropertyType::ComponentVec | PropertyType::ComponentMap => {
+                unreachable!()
+            }
         }
     }
+}
+
+fn parse_vec_arc_interface(ty: &Type) -> Option<Type> {
+    let args = angle_bracketed_args(ty, "Vec")?;
+    let value_ty = type_arg(args, 0)?;
+    parse_wrapper_interface(value_ty, "Arc")
+}
+
+fn parse_hash_map_arc_interface(ty: &Type) -> Option<(Type, Type)> {
+    let args = angle_bracketed_args(ty, "HashMap")?;
+    let key_ty = type_arg(args, 0)?;
+    let value_ty = type_arg(args, 1)?;
+    let interface_ty = parse_wrapper_interface(value_ty, "Arc")?;
+    Some((key_ty.clone(), interface_ty))
+}
+
+fn parse_wrapper_interface(ty: &Type, wrapper_name: &str) -> Option<Type> {
+    let args = angle_bracketed_args(ty, wrapper_name)?;
+    type_arg(args, 0).cloned()
+}
+
+fn angle_bracketed_args<'a>(
+    ty: &'a Type,
+    wrapper_name: &str,
+) -> Option<&'a AngleBracketedGenericArguments> {
+    let Type::Path(TypePath { path, .. }) = ty else {
+        return None;
+    };
+    let segment = path.segments.last()?;
+    if segment.ident != wrapper_name {
+        return None;
+    }
+    match &segment.arguments {
+        PathArguments::AngleBracketed(args) => Some(args),
+        _ => None,
+    }
+}
+
+fn type_arg(args: &AngleBracketedGenericArguments, index: usize) -> Option<&Type> {
+    args.args
+        .iter()
+        .nth(index)
+        .and_then(|generic_argument| match generic_argument {
+            GenericArgument::Type(ty) => Some(ty),
+            _ => None,
+        })
 }

@@ -1,13 +1,13 @@
 use crate::parser::Parser;
 use crate::structures::module::{
-    ComponentAttribute, ModuleData, ModuleItem, ModuleItems, ModuleMetadata, ModuleServices,
-    ProviderAttribute, Submodule,
+    ComponentAttribute, KeyedComponentAttribute, ModuleData, ModuleItem, ModuleItems,
+    ModuleMetadata, ModuleServices, OrderedComponentAttribute, ProviderAttribute, Submodule,
 };
 use std::collections::HashSet;
 use std::hash::Hash;
 use syn::parse::{Parse, ParseStream};
 use syn::spanned::Spanned;
-use syn::{Attribute, Error, Generics};
+use syn::{Attribute, Error, Generics, Type};
 
 impl Parse for ModuleData {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -94,8 +94,10 @@ impl Parse for Submodule {
 
 impl Parse for ModuleServices {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let components: ModuleItems<_, _> = input.parse()?;
+
         Ok(ModuleServices {
-            components: input.parse()?,
+            components,
             comma_token: input.parse()?,
             providers: input.parse()?,
             trailing_comma: input.parse()?,
@@ -148,6 +150,17 @@ impl Parser<ComponentAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ComponentAttribute> {
         if self.path.is_ident("lazy") && self.tokens.is_empty() {
             Ok(ComponentAttribute::Lazy)
+        } else if self.path.is_ident("ordered") {
+            let interface: Type = self.parse_args()?;
+            Ok(ComponentAttribute::Ordered(OrderedComponentAttribute::new(
+                interface,
+            )))
+        } else if self.path.is_ident("keyed") {
+            let args: KeyedComponentAttributeArgs = self.parse_args()?;
+            Ok(ComponentAttribute::Keyed(KeyedComponentAttribute::new(
+                args.interface,
+                args.key_ty,
+            )))
         } else {
             Err(Error::new(self.span(), "Unknown attribute".to_string()))
         }
@@ -157,5 +170,22 @@ impl Parser<ComponentAttribute> for Attribute {
 impl Parser<ProviderAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ProviderAttribute> {
         Err(Error::new(self.span(), "Providers cannot have attributes"))
+    }
+}
+
+struct KeyedComponentAttributeArgs {
+    interface: Type,
+    key_ty: Type,
+}
+
+impl Parse for KeyedComponentAttributeArgs {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let interface = input.parse()?;
+        input.parse::<syn::Token![,]>()?;
+        let key_ty = input.parse()?;
+        if !input.is_empty() {
+            return Err(input.error("expected end of input"));
+        }
+        Ok(Self { interface, key_ty })
     }
 }

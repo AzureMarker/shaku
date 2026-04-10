@@ -1,8 +1,10 @@
 //! Structures to hold useful module data
 
 use crate::parser::Parser;
+use quote::ToTokens;
 use std::collections::HashSet;
 use std::hash::Hash;
+use std::hash::Hasher;
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};
@@ -76,12 +78,99 @@ impl ModuleItem<ComponentAttribute> {
     pub fn is_lazy(&self) -> bool {
         self.attributes.contains(&ComponentAttribute::Lazy)
     }
+
+    pub fn ordered(&self) -> Option<&OrderedComponentAttribute> {
+        self.attributes
+            .iter()
+            .find_map(|attribute| match attribute {
+                ComponentAttribute::Ordered(ordered) => Some(ordered),
+                ComponentAttribute::Keyed(_) | ComponentAttribute::Lazy => None,
+            })
+    }
+
+    pub fn keyed(&self) -> Option<&KeyedComponentAttribute> {
+        self.attributes
+            .iter()
+            .find_map(|attribute| match attribute {
+                ComponentAttribute::Keyed(keyed) => Some(keyed),
+                ComponentAttribute::Ordered(_) | ComponentAttribute::Lazy => None,
+            })
+    }
+
+    pub fn is_multibound(&self) -> bool {
+        self.ordered().is_some() || self.keyed().is_some()
+    }
 }
 
 /// Valid component attributes
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum ComponentAttribute {
     Lazy,
+    Ordered(OrderedComponentAttribute),
+    Keyed(KeyedComponentAttribute),
+}
+
+#[derive(Clone, Debug)]
+pub struct OrderedComponentAttribute {
+    pub interface: Type,
+    repr: String,
+}
+
+impl OrderedComponentAttribute {
+    pub fn new(interface: Type) -> Self {
+        let repr = interface.to_token_stream().to_string();
+        Self { interface, repr }
+    }
+}
+
+impl PartialEq for OrderedComponentAttribute {
+    fn eq(&self, other: &Self) -> bool {
+        self.repr == other.repr
+    }
+}
+
+impl Eq for OrderedComponentAttribute {}
+
+impl Hash for OrderedComponentAttribute {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.repr.hash(state);
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct KeyedComponentAttribute {
+    pub interface: Type,
+    pub key_ty: Type,
+    repr: String,
+}
+
+impl KeyedComponentAttribute {
+    pub fn new(interface: Type, key_ty: Type) -> Self {
+        let repr = format!(
+            "{}=>{}",
+            interface.to_token_stream(),
+            key_ty.to_token_stream()
+        );
+        Self {
+            interface,
+            key_ty,
+            repr,
+        }
+    }
+}
+
+impl PartialEq for KeyedComponentAttribute {
+    fn eq(&self, other: &Self) -> bool {
+        self.repr == other.repr
+    }
+}
+
+impl Eq for KeyedComponentAttribute {}
+
+impl Hash for KeyedComponentAttribute {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.repr.hash(state);
+    }
 }
 
 /// Valid provider attributes

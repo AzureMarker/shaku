@@ -2,7 +2,7 @@
 
 use crate::debug::get_debug_level;
 use crate::macros::common_output::create_dependency;
-use crate::structures::service::{Property, PropertyDefault, ServiceData};
+use crate::structures::service::{Property, PropertyDefault, PropertyType, ServiceData};
 use proc_macro2::TokenStream;
 use syn::{DeriveInput, Ident, Visibility};
 
@@ -86,14 +86,32 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
 fn create_resolve_property(property: &Property) -> TokenStream {
     let property_name = &property.property_name;
 
-    if property.is_service() {
-        quote! {
-            #property_name: M::build_component(context)
-        }
-    } else {
-        quote! {
+    match property.property_type {
+        PropertyType::Parameter => quote! {
             #property_name: params.#property_name
+        },
+        PropertyType::Component => quote! {
+            #property_name: M::build_component(context)
+        },
+        PropertyType::ComponentVec => {
+            let interface_ty = &property.ty;
+            quote! {
+                #property_name: <M as ::shaku::BuildComponents<#interface_ty>>::build_components(context)
+            }
         }
+        PropertyType::ComponentMap => {
+            let key_ty = property
+                .key_ty
+                .as_ref()
+                .expect("component-map properties must carry a key type");
+            let interface_ty = &property.ty;
+            quote! {
+                #property_name: <M as ::shaku::BuildComponentMap<#key_ty, #interface_ty>>::build_component_map(context)
+            }
+        }
+        PropertyType::Provided => quote! {
+            #property_name: params.#property_name
+        },
     }
 }
 

@@ -1,0 +1,5 @@
+error: Found unsupported injected type for `dependencies`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
+  --> tests/ui/inject_hash_map_non_arc.rs:23:5
+   |
+23 |     dependencies: HashMap<DependencyKind, Box<dyn DependencyTrait>>,
+   |     ^^^^^^^^^^^^

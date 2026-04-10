@@ -4,6 +4,7 @@ use crate::{Component, HasProvider, Provider, ProviderFn};
 use crate::{ComponentFn, Module};
 use std::any::{type_name, TypeId};
 use std::fmt::{self, Debug};
+use std::marker::PhantomData;
 use std::sync::Arc;
 
 /// Builds a [`Module`] and its associated components. Build context, such as
@@ -12,11 +13,17 @@ use std::sync::Arc;
 /// [`Module`]: trait.Module.html
 pub struct ModuleBuildContext<M: Module> {
     resolved_components: ComponentMap,
+    component_overrides: ComponentMap,
     component_fn_overrides: ComponentMap,
     provider_overrides: ComponentMap,
     parameters: ParameterMap,
     submodules: M::Submodules,
     resolve_chain: Vec<ResolveStep>,
+}
+
+struct ResolvedComponent<C: 'static, I: ?Sized> {
+    value: Arc<I>,
+    _marker: PhantomData<C>,
 }
 
 /// Tracks the current resolution chain. Used to detect circular dependencies.
@@ -44,7 +51,8 @@ impl<M: Module> ModuleBuildContext<M> {
         submodules: M::Submodules,
     ) -> Self {
         ModuleBuildContext {
-            resolved_components: component_overrides,
+            resolved_components: ComponentMap::new(),
+            component_overrides,
             component_fn_overrides,
             provider_overrides,
             parameters,
@@ -63,9 +71,21 @@ impl<M: Module> ModuleBuildContext<M> {
     pub fn build_component<C: Component<M>>(&mut self) -> Arc<C::Interface> {
         // First check resolved components (which includes overridden component instances)
         self.resolved_components
-            .get::<Arc<C::Interface>>()
-            .cloned()
+            .get::<ResolvedComponent<C, C::Interface>>()
+            .map(|resolved| Arc::clone(&resolved.value))
+            // Second check overridden component instances. Overrides remain keyed by interface and
+            // are only valid for unique bindings.
             // Second check overridden component fn set (will be placed into resolved components)
+            .or_else(|| {
+                let component = self.component_overrides.get::<Arc<C::Interface>>()?.clone();
+                self.resolved_components
+                    .insert(ResolvedComponent::<C, C::Interface> {
+                        value: Arc::clone(&component),
+                        _marker: PhantomData,
+                    });
+                Some(component)
+            })
+            // Third check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
                 let component_fn = self
                     .component_fn_overrides
@@ -76,14 +96,17 @@ impl<M: Module> ModuleBuildContext<M> {
                 let component = component_fn(self);
                 let component = Arc::from(component);
                 self.resolved_components
-                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
+                    .insert(ResolvedComponent::<C, C::Interface> {
+                        value: Arc::clone(&component),
+                        _marker: PhantomData,
+                    });
 
                 // Resolution was successful, pop the component off the chain
                 self.resolve_chain.pop();
 
                 Some(component)
             })
-            // Third resolve the concrete component
+            // Fourth resolve the concrete component
             .unwrap_or_else(|| {
                 self.add_resolve_step::<C>();
 
@@ -95,7 +118,10 @@ impl<M: Module> ModuleBuildContext<M> {
                 let component = C::build(self, parameters.value);
                 let component = Arc::from(component);
                 self.resolved_components
-                    .insert::<Arc<C::Interface>>(Arc::clone(&component));
+                    .insert(ResolvedComponent::<C, C::Interface> {
+                        value: Arc::clone(&component),
+                        _marker: PhantomData,
+                    });
 
                 // Resolution was successful, pop the component off the chain
                 self.resolve_chain.pop();

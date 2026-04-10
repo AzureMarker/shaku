@@ -11,5 +11,5 @@ error: missing documentation for a struct field
 note: the lint level is defined here
   --> tests/ui/doc_forwarding.rs:3:9
    |
-3  | #![deny(missing_docs)]
+ 3 | #![deny(missing_docs)]
    |         ^^^^^^^^^^^^

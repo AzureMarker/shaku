@@ -3,6 +3,7 @@
 use crate::debug::get_debug_level;
 use crate::structures::module::{ComponentItem, ModuleData, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
+use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
@@ -33,7 +34,18 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         .items
         .iter()
         .enumerate()
+        .filter(|(_, component)| !component.is_multibound())
         .map(|(i, ty)| has_component_impl(i, ty, &module))
+        .collect();
+
+    let has_components_impls: Vec<TokenStream> = ordered_component_groups(&module)
+        .into_iter()
+        .map(|group| has_components_impl(group, &module))
+        .collect();
+
+    let has_component_map_impls: Vec<TokenStream> = keyed_component_groups(&module)
+        .into_iter()
+        .map(|group| has_component_map_impl(group, &module))
         .collect();
 
     let has_provider_impls: Vec<TokenStream> = module
@@ -82,6 +94,8 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
         #module_builder
         #module_impl
         #(#has_component_impls)*
+        #(#has_components_impls)*
+        #(#has_component_map_impls)*
         #(#has_provider_impls)*
         #(#has_subcomponent_impls)*
         #(#has_subprovider_impls)*
@@ -114,6 +128,18 @@ fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStrea
         .map(|(i, provider)| provider_property(i, &provider.ty))
         .collect();
 
+    let ordered_group_properties: Vec<TokenStream> = ordered_component_groups(module)
+        .into_iter()
+        .enumerate()
+        .map(|(i, group)| ordered_group_property(i, &group))
+        .collect();
+
+    let keyed_group_properties: Vec<TokenStream> = keyed_component_groups(module)
+        .into_iter()
+        .enumerate()
+        .map(|(i, group)| keyed_group_property(i, &group))
+        .collect();
+
     let submodule_properties: Vec<TokenStream> = module
         .submodules
         .iter()
@@ -136,6 +162,8 @@ fn module_struct(module: &ModuleData, capture_build_context: bool) -> TokenStrea
         #visibility struct #module_name #module_generics #where_clause {
             #(#component_properties,)*
             #(#provider_properties,)*
+            #(#ordered_group_properties,)*
+            #(#keyed_group_properties,)*
             #(#submodule_properties,)*
             #build_context_property
         }
@@ -176,6 +204,23 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
         .map(|(i, provider)| provider_build(i, &provider.ty))
         .collect();
 
+    let ordered_group_builders: Vec<TokenStream> = ordered_component_groups(module)
+        .into_iter()
+        .enumerate()
+        .map(|(i, _)| ordered_group_build(i))
+        .collect();
+
+    let keyed_group_builders: Vec<TokenStream> = keyed_component_groups(module)
+        .into_iter()
+        .enumerate()
+        .map(|(i, _)| keyed_group_build(i))
+        .collect();
+
+    let keyed_group_validations: Vec<TokenStream> = keyed_component_groups(module)
+        .into_iter()
+        .map(validate_keyed_component_group)
+        .collect();
+
     let submodules_init = submodules_init(&module.submodules);
     let submodule_names = submodule_names(&module.submodules);
     let submodule_types: Vec<&Type> = module.submodules.iter().map(|sub| &sub.ty).collect();
@@ -192,10 +237,13 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
 
             fn build(mut context: ::shaku::ModuleBuildContext<Self>) -> Self {
                 #submodules_init
+                #(#keyed_group_validations)*
 
                 Self {
                     #(#component_builders,)*
                     #(#provider_builders,)*
+                    #(#ordered_group_builders,)*
+                    #(#keyed_group_builders,)*
                     #(#submodule_names,)*
                     #build_context_init
                 }
@@ -228,14 +276,210 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
     let property = generate_name(index, "component", component.ty.span());
     let interface = interface_from_component(&component.ty);
+    let component_ty = &component.ty;
 
     if component.is_lazy() {
         quote! {
             #property: ::shaku::OnceCell::new()
         }
+    } else if component.is_multibound() {
+        quote! {
+            #property: context.build_component::<#component_ty>()
+        }
     } else {
         quote! {
             #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
+        }
+    }
+}
+
+fn resolve_multibound_component(index: usize, component: &ComponentItem) -> TokenStream {
+    let component_ty = &component.ty;
+    let property = generate_name(index, "component", component.ty.span());
+
+    if component.is_lazy() {
+        quote! {
+            let component = self.#property.get_or_init(|| {
+                let mut context = self.build_context.lock().unwrap();
+                context.build_component::<#component_ty>()
+            });
+        }
+    } else {
+        quote! {
+            let component = &self.#property;
+        }
+    }
+}
+
+struct KeyedComponentGroup<'a> {
+    repr: String,
+    interface: TokenStream,
+    key_ty: Type,
+    components: Vec<(usize, &'a ComponentItem)>,
+}
+
+struct OrderedComponentGroup<'a> {
+    repr: String,
+    interface: TokenStream,
+    components: Vec<(usize, &'a ComponentItem)>,
+}
+
+fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentGroup<'a>> {
+    let mut groups: Vec<OrderedComponentGroup<'a>> = Vec::new();
+
+    for (index, component) in module.services.components.items.iter().enumerate() {
+        let Some(ordered) = component.ordered() else {
+            continue;
+        };
+        let repr = ordered.interface.to_token_stream().to_string();
+        if let Some(group) = groups.iter_mut().find(|group| group.repr == repr.as_str()) {
+            group.components.push((index, component));
+            continue;
+        }
+        groups.push(OrderedComponentGroup {
+            repr,
+            interface: ordered.interface.to_token_stream(),
+            components: vec![(index, component)],
+        });
+    }
+
+    groups
+}
+
+fn has_components_impl(group: OrderedComponentGroup<'_>, module: &ModuleData) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let group_property =
+        ordered_group_name(group.repr.as_str(), group.components[0].1.ty.span(), module);
+    let interface = group.interface;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    let build_entries: Vec<TokenStream> = group
+        .components
+        .iter()
+        .map(|(_, component)| {
+            let component_ty = &component.ty;
+            quote! {
+                components.push(context.build_component::<#component_ty>());
+            }
+        })
+        .collect();
+
+    let resolve_entries: Vec<TokenStream> = group
+        .components
+        .iter()
+        .map(|(index, component)| {
+            let resolve_component = resolve_multibound_component(*index, component);
+            quote! {
+                #resolve_component
+                components.push(::std::sync::Arc::clone(component));
+            }
+        })
+        .collect();
+
+    quote! {
+        impl #impl_generics ::shaku::BuildComponents<#interface> for #module_name #ty_generics #where_clause {
+            fn build_components(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> ::std::vec::Vec<::std::sync::Arc<#interface>> {
+                let mut components = ::std::vec::Vec::new();
+                #(#build_entries)*
+                components
+            }
+        }
+
+        impl #impl_generics ::shaku::HasComponents<#interface> for #module_name #ty_generics #where_clause {
+            fn resolve_all(&self) -> &[::std::sync::Arc<#interface>] {
+                self.#group_property.get_or_init(|| {
+                    let mut components = ::std::vec::Vec::new();
+                    #(#resolve_entries)*
+                    components
+                }).as_slice()
+            }
+        }
+    }
+}
+
+fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup<'a>> {
+    let mut groups: Vec<KeyedComponentGroup<'a>> = Vec::new();
+
+    for (index, component) in module.services.components.items.iter().enumerate() {
+        let Some(keyed) = component.keyed() else {
+            continue;
+        };
+        let repr = format!(
+            "{}=>{}",
+            keyed.interface.to_token_stream(),
+            keyed.key_ty.to_token_stream()
+        );
+        if let Some(group) = groups.iter_mut().find(|group| group.repr == repr.as_str()) {
+            group.components.push((index, component));
+            continue;
+        }
+        groups.push(KeyedComponentGroup {
+            repr,
+            interface: keyed.interface.to_token_stream(),
+            key_ty: keyed.key_ty.clone(),
+            components: vec![(index, component)],
+        });
+    }
+
+    groups
+}
+
+fn has_component_map_impl(group: KeyedComponentGroup<'_>, module: &ModuleData) -> TokenStream {
+    let module_name = &module.metadata.identifier;
+    let group_property =
+        keyed_group_name(group.repr.as_str(), group.components[0].1.ty.span(), module);
+    let interface = group.interface;
+    let key_ty = group.key_ty;
+    let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
+
+    let build_entries: Vec<TokenStream> = group
+        .components
+        .iter()
+        .map(|(_, component)| {
+            let component_ty = &component.ty;
+            quote! {
+                let key = <#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key();
+                let component = context.build_component::<#component_ty>();
+                map.insert(key, component);
+            }
+        })
+        .collect();
+
+    let resolve_entries: Vec<TokenStream> = group
+        .components
+        .iter()
+        .map(|(index, component)| {
+            let component_ty = &component.ty;
+            let resolve_component = resolve_multibound_component(*index, component);
+            quote! {
+                #resolve_component
+                let key = <#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key();
+                map.insert(key, ::std::sync::Arc::clone(component));
+            }
+        })
+        .collect();
+
+    quote! {
+        impl #impl_generics ::shaku::BuildComponentMap<#key_ty, #interface> for #module_name #ty_generics #where_clause {
+            fn build_component_map(
+                context: &mut ::shaku::ModuleBuildContext<Self>
+            ) -> ::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>> {
+                let mut map = ::std::collections::HashMap::new();
+                #(#build_entries)*
+                map
+            }
+        }
+
+        impl #impl_generics ::shaku::HasComponentMap<#key_ty, #interface> for #module_name #ty_generics #where_clause {
+            fn resolve_map(&self) -> &::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>> {
+                self.#group_property.get_or_init(|| {
+                    let mut map = ::std::collections::HashMap::new();
+                    #(#resolve_entries)*
+                    map
+                })
+            }
         }
     }
 }
@@ -281,6 +525,25 @@ fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
     }
 }
 
+fn ordered_group_property(index: usize, group: &OrderedComponentGroup<'_>) -> TokenStream {
+    let property = generate_name(index, "ordered_group", group.components[0].1.ty.span());
+    let interface = &group.interface;
+
+    quote! {
+        #property: ::shaku::OnceCell<::std::vec::Vec<::std::sync::Arc<#interface>>>
+    }
+}
+
+fn keyed_group_property(index: usize, group: &KeyedComponentGroup<'_>) -> TokenStream {
+    let property = generate_name(index, "keyed_group", group.components[0].1.ty.span());
+    let interface = &group.interface;
+    let key_ty = &group.key_ty;
+
+    quote! {
+        #property: ::shaku::OnceCell<::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>>>
+    }
+}
+
 /// Create the property which holds a provider function
 fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
     let property = generate_name(index, "provider", provider_ty.span());
@@ -288,6 +551,48 @@ fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
 
     quote! {
         #property: ::std::sync::Arc<::shaku::ProviderFn<Self, #interface>>
+    }
+}
+
+fn ordered_group_build(index: usize) -> TokenStream {
+    let property = generate_name(index, "ordered_group", Span::call_site());
+
+    quote! {
+        #property: ::shaku::OnceCell::new()
+    }
+}
+
+fn keyed_group_build(index: usize) -> TokenStream {
+    let property = generate_name(index, "keyed_group", Span::call_site());
+
+    quote! {
+        #property: ::shaku::OnceCell::new()
+    }
+}
+
+fn validate_keyed_component_group(group: KeyedComponentGroup<'_>) -> TokenStream {
+    let interface = group.interface;
+    let key_ty = group.key_ty;
+    let inserts: Vec<TokenStream> = group
+        .components
+        .iter()
+        .map(|(_, component)| {
+            let component_ty = &component.ty;
+            quote! {
+                assert!(
+                    keys.insert(<#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key()),
+                    "duplicate keyed component key for interface {}",
+                    ::std::any::type_name::<#interface>()
+                );
+            }
+        })
+        .collect();
+
+    quote! {
+        {
+            let mut keys = ::std::collections::HashSet::<#key_ty>::new();
+            #(#inserts)*
+        }
     }
 }
 
@@ -441,6 +746,22 @@ fn submodule_names(submodules: &Punctuated<Submodule, syn::Token![,]>) -> Vec<Id
         .enumerate()
         .map(|(i, sub)| generate_name(i, "submodule", sub.ty.span()))
         .collect()
+}
+
+fn ordered_group_name(repr: &str, span: Span, module: &ModuleData) -> Ident {
+    let index = ordered_component_groups(module)
+        .iter()
+        .position(|group| group.repr == repr)
+        .expect("ordered component group must exist");
+    generate_name(index, "ordered_group", span)
+}
+
+fn keyed_group_name(repr: &str, span: Span, module: &ModuleData) -> Ident {
+    let index = keyed_component_groups(module)
+        .iter()
+        .position(|group| group.repr == repr)
+        .expect("keyed component group must exist");
+    generate_name(index, "keyed_group", span)
 }
 
 /// Generate an identifier for a module property.

@@ -1,11 +1,11 @@
-error: Found non-Arc type annotated with #[shaku(inject)]
-  --> $DIR/inject_non_arc.rs:18:5
+error: Found unsupported injected type for `dependency`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
+  --> tests/ui/inject_non_arc.rs:18:5
    |
 18 |     dependency: Box<dyn DependencyTrait>,
    |     ^^^^^^^^^^
 
-error: Found non-Arc type annotated with #[shaku(inject)]
-  --> $DIR/inject_non_arc.rs:26:5
+error: Found unsupported injected type for `dependency`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
+  --> tests/ui/inject_non_arc.rs:26:5
    |
 26 |     dependency: Box<dyn DependencyTrait>,
    |     ^^^^^^^^^^

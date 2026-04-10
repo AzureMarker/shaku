@@ -2,6 +2,14 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn ServiceTrait + 'sta
   --> tests/ui/resolve_unregistered_component.rs:21:66
    |
 21 |     let _service = HasComponent::<dyn ServiceTrait>::resolve_ref(&module);
-   |                    --------------------------------------------- ^^^^^^^ the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
+   |                    --------------------------------------------- ^^^^^^^ unsatisfied trait bound
    |                    |
    |                    required by a bound introduced by this call
+   |
+help: the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
+  --> tests/ui/resolve_unregistered_component.rs:12:1
+   |
+12 | / module! {
+13 | |     TestModule {
+   | |______________^
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
