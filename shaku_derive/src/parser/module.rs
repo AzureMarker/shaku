@@ -152,14 +152,13 @@ impl Parser<ComponentAttribute> for Attribute {
             Ok(ComponentAttribute::Lazy)
         } else if self.path.is_ident("ordered") {
             let interface: Type = self.parse_args()?;
-            Ok(ComponentAttribute::Ordered(OrderedComponentAttribute::new(
-                interface,
+            Ok(ComponentAttribute::Ordered(Box::new(
+                OrderedComponentAttribute::new(interface),
             )))
         } else if self.path.is_ident("keyed") {
             let args: KeyedComponentAttributeArgs = self.parse_args()?;
-            Ok(ComponentAttribute::Keyed(KeyedComponentAttribute::new(
-                args.interface,
-                args.key_ty,
+            Ok(ComponentAttribute::Keyed(Box::new(
+                KeyedComponentAttribute::new(args.interface, args.key_ty),
             )))
         } else {
             Err(Error::new(self.span(), "Unknown attribute".to_string()))

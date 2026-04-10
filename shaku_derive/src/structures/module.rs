@@ -83,7 +83,7 @@ impl ModuleItem<ComponentAttribute> {
         self.attributes
             .iter()
             .find_map(|attribute| match attribute {
-                ComponentAttribute::Ordered(ordered) => Some(ordered),
+                ComponentAttribute::Ordered(ordered) => Some(ordered.as_ref()),
                 ComponentAttribute::Keyed(_) | ComponentAttribute::Lazy => None,
             })
     }
@@ -92,7 +92,7 @@ impl ModuleItem<ComponentAttribute> {
         self.attributes
             .iter()
             .find_map(|attribute| match attribute {
-                ComponentAttribute::Keyed(keyed) => Some(keyed),
+                ComponentAttribute::Keyed(keyed) => Some(keyed.as_ref()),
                 ComponentAttribute::Ordered(_) | ComponentAttribute::Lazy => None,
             })
     }
@@ -106,8 +106,8 @@ impl ModuleItem<ComponentAttribute> {
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum ComponentAttribute {
     Lazy,
-    Ordered(OrderedComponentAttribute),
-    Keyed(KeyedComponentAttribute),
+    Ordered(Box<OrderedComponentAttribute>),
+    Keyed(Box<KeyedComponentAttribute>),
 }
 
 #[derive(Clone, Debug)]

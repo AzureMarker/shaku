@@ -62,7 +62,11 @@ struct RunnerImpl {
 
 impl Runner for RunnerImpl {
     fn names(&self) -> Vec<&'static str> {
-        let mut names = self.foos.values().map(|foo| foo.name()).collect::<Vec<_>>();
+        let mut names = self
+            .foos
+            .values()
+            .map(|component| component.name())
+            .collect::<Vec<_>>();
         names.sort_unstable();
         names
     }

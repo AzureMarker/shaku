@@ -43,7 +43,7 @@ struct RunnerImpl {
 
 impl Runner for RunnerImpl {
     fn names(&self) -> Vec<&'static str> {
-        self.foos.iter().map(|foo| foo.name()).collect()
+        self.foos.iter().map(|component| component.name()).collect()
     }
 }
 
@@ -98,7 +98,9 @@ fn resolves_ordered_component_vec() {
 
     let foos: &[Arc<dyn Foo>] = module.resolve_all();
     assert_eq!(
-        foos.iter().map(|foo| foo.name()).collect::<Vec<_>>(),
+        foos.iter()
+            .map(|component| component.name())
+            .collect::<Vec<_>>(),
         vec!["alpha", "beta"]
     );
 
@@ -117,7 +119,9 @@ fn lazy_ordered_component_builds_on_first_collection_resolution() {
     let foos: &[Arc<dyn Foo>] = module.resolve_all();
     assert_eq!(LAZY_ORDERED_BUILDS.load(Ordering::SeqCst), 1);
     assert_eq!(
-        foos.iter().map(|foo| foo.name()).collect::<Vec<_>>(),
+        foos.iter()
+            .map(|component| component.name())
+            .collect::<Vec<_>>(),
         vec!["alpha"]
     );
 
