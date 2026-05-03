@@ -276,20 +276,15 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 /// Create a property initializer for the component during module build
 fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
     let property = generate_name(index, "component", component.ty.span());
-    let interface = interface_from_component(&component.ty);
     let component_ty = &component.ty;
 
     if component.is_lazy() {
         quote! {
             #property: ::shaku::OnceCell::new()
         }
-    } else if component.is_multibound() {
-        quote! {
-            #property: context.build_component::<#component_ty>()
-        }
     } else {
         quote! {
-            #property: <Self as ::shaku::HasComponent<#interface>>::build_component(&mut context)
+            #property: context.build_component::<#component_ty>()
         }
     }
 }
