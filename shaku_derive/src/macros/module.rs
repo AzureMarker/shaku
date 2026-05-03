@@ -40,12 +40,14 @@ pub fn expand_module_macro(module: ModuleData) -> syn::Result<TokenStream> {
 
     let has_components_impls: Vec<TokenStream> = ordered_component_groups(&module)
         .into_iter()
-        .map(|group| has_components_impl(group, &module))
+        .enumerate()
+        .map(|(i, group)| has_components_impl(i, group, &module))
         .collect();
 
     let has_component_map_impls: Vec<TokenStream> = keyed_component_groups(&module)
         .into_iter()
-        .map(|group| has_component_map_impl(group, &module))
+        .enumerate()
+        .map(|(i, group)| has_component_map_impl(i, group, &module))
         .collect();
 
     let has_provider_impls: Vec<TokenStream> = module
@@ -347,10 +349,13 @@ fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentG
     groups
 }
 
-fn has_components_impl(group: OrderedComponentGroup<'_>, module: &ModuleData) -> TokenStream {
+fn has_components_impl(
+    index: usize,
+    group: OrderedComponentGroup<'_>,
+    module: &ModuleData,
+) -> TokenStream {
     let module_name = &module.metadata.identifier;
-    let group_property =
-        ordered_group_name(group.repr.as_str(), group.components[0].1.ty.span(), module);
+    let group_property = generate_name(index, "ordered_group", group.components[0].1.ty.span());
     let interface = group.interface;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
@@ -426,10 +431,13 @@ fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup
     groups
 }
 
-fn has_component_map_impl(group: KeyedComponentGroup<'_>, module: &ModuleData) -> TokenStream {
+fn has_component_map_impl(
+    index: usize,
+    group: KeyedComponentGroup<'_>,
+    module: &ModuleData,
+) -> TokenStream {
     let module_name = &module.metadata.identifier;
-    let group_property =
-        keyed_group_name(group.repr.as_str(), group.components[0].1.ty.span(), module);
+    let group_property = generate_name(index, "keyed_group", group.components[0].1.ty.span());
     let interface = group.interface;
     let key_ty = group.key_ty;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
@@ -744,22 +752,6 @@ fn submodule_names(submodules: &Punctuated<Submodule, syn::Token![,]>) -> Vec<Id
         .enumerate()
         .map(|(i, sub)| generate_name(i, "submodule", sub.ty.span()))
         .collect()
-}
-
-fn ordered_group_name(repr: &str, span: Span, module: &ModuleData) -> Ident {
-    let index = ordered_component_groups(module)
-        .iter()
-        .position(|group| group.repr == repr)
-        .expect("ordered component group must exist");
-    generate_name(index, "ordered_group", span)
-}
-
-fn keyed_group_name(repr: &str, span: Span, module: &ModuleData) -> Ident {
-    let index = keyed_component_groups(module)
-        .iter()
-        .position(|group| group.repr == repr)
-        .expect("keyed component group must exist");
-    generate_name(index, "keyed_group", span)
 }
 
 /// Generate an identifier for a module property.
