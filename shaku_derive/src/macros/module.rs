@@ -328,8 +328,9 @@ fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentG
     let mut groups: Vec<OrderedComponentGroup<'a>> = Vec::new();
 
     for (index, component) in module.services.components.items.iter().enumerate() {
-        let Some(ordered) = component.ordered() else {
-            continue;
+        let ordered = match component.ordered() {
+            Some(ordered) => ordered,
+            None => continue,
         };
         let repr = ordered.interface.to_token_stream().to_string();
         if let Some(group) = groups.iter_mut().find(|group| group.repr == repr.as_str()) {
@@ -403,8 +404,9 @@ fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup
     let mut groups: Vec<KeyedComponentGroup<'a>> = Vec::new();
 
     for (index, component) in module.services.components.items.iter().enumerate() {
-        let Some(keyed) = component.keyed() else {
-            continue;
+        let keyed = match component.keyed() {
+            Some(keyed) => keyed,
+            None => continue,
         };
         let repr = format!(
             "{}=>{}",

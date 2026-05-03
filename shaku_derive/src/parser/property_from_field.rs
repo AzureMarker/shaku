@@ -173,8 +173,9 @@ fn angle_bracketed_args<'a>(
     ty: &'a Type,
     wrapper_name: &str,
 ) -> Option<&'a AngleBracketedGenericArguments> {
-    let Type::Path(TypePath { path, .. }) = ty else {
-        return None;
+    let path = match ty {
+        Type::Path(TypePath { path, .. }) => path,
+        _ => return None,
     };
     let segment = path.segments.last()?;
     if segment.ident != wrapper_name {
