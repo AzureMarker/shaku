@@ -96,7 +96,7 @@ fn create_resolve_property(property: &Property) -> TokenStream {
         PropertyType::ComponentVec => {
             let interface_ty = &property.ty;
             quote! {
-                #property_name: <M as ::shaku::BuildComponents<#interface_ty>>::build_components(context)
+                #property_name: <M as ::shaku::HasComponents<#interface_ty>>::build_components(context)
             }
         }
         PropertyType::ComponentMap => {
@@ -106,7 +106,7 @@ fn create_resolve_property(property: &Property) -> TokenStream {
                 .expect("component-map properties must carry a key type");
             let interface_ty = &property.ty;
             quote! {
-                #property_name: <M as ::shaku::BuildComponentMap<#key_ty, #interface_ty>>::build_component_map(context)
+                #property_name: <M as ::shaku::HasComponentMap<#key_ty, #interface_ty>>::build_component_map(context)
             }
         }
         PropertyType::Provided => quote! {

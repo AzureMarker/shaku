@@ -378,7 +378,7 @@ fn has_components_impl(group: OrderedComponentGroup<'_>, module: &ModuleData) ->
         .collect();
 
     quote! {
-        impl #impl_generics ::shaku::BuildComponents<#interface> for #module_name #ty_generics #where_clause {
+        impl #impl_generics ::shaku::HasComponents<#interface> for #module_name #ty_generics #where_clause {
             fn build_components(
                 context: &mut ::shaku::ModuleBuildContext<Self>
             ) -> ::std::vec::Vec<::std::sync::Arc<#interface>> {
@@ -386,9 +386,7 @@ fn has_components_impl(group: OrderedComponentGroup<'_>, module: &ModuleData) ->
                 #(#build_entries)*
                 components
             }
-        }
 
-        impl #impl_generics ::shaku::HasComponents<#interface> for #module_name #ty_generics #where_clause {
             fn resolve_all(&self) -> &[::std::sync::Arc<#interface>] {
                 self.#group_property.get_or_init(|| {
                     let mut components = ::std::vec::Vec::new();
@@ -464,7 +462,7 @@ fn has_component_map_impl(group: KeyedComponentGroup<'_>, module: &ModuleData) -
         .collect();
 
     quote! {
-        impl #impl_generics ::shaku::BuildComponentMap<#key_ty, #interface> for #module_name #ty_generics #where_clause {
+        impl #impl_generics ::shaku::HasComponentMap<#key_ty, #interface> for #module_name #ty_generics #where_clause {
             fn build_component_map(
                 context: &mut ::shaku::ModuleBuildContext<Self>
             ) -> ::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>> {
@@ -472,9 +470,7 @@ fn has_component_map_impl(group: KeyedComponentGroup<'_>, module: &ModuleData) -
                 #(#build_entries)*
                 map
             }
-        }
 
-        impl #impl_generics ::shaku::HasComponentMap<#key_ty, #interface> for #module_name #ty_generics #where_clause {
             fn resolve_map(&self) -> &::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>> {
                 self.#group_property.get_or_init(|| {
                     let mut map = ::std::collections::HashMap::new();

@@ -12,7 +12,7 @@ pub fn create_dependency(property: &Property) -> Option<TokenStream> {
             ::shaku::HasComponent<#property_ty>
         }),
         PropertyType::ComponentVec => Some(quote! {
-            ::shaku::BuildComponents<#property_ty>
+            ::shaku::HasComponents<#property_ty>
         }),
         PropertyType::ComponentMap => {
             let key_ty = property
@@ -20,7 +20,7 @@ pub fn create_dependency(property: &Property) -> Option<TokenStream> {
                 .as_ref()
                 .expect("component-map properties must carry a key type");
             Some(quote! {
-                ::shaku::BuildComponentMap<#key_ty, #property_ty>
+                ::shaku::HasComponentMap<#key_ty, #property_ty>
             })
         }
         PropertyType::Provided => Some(quote! {

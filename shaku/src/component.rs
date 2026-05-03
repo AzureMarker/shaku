@@ -140,9 +140,8 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
 }
 
 /// Indicates that a module contains multiple components which implement the same interface and can
-/// build a keyed map during component construction.
-#[doc(hidden)]
-pub trait BuildComponentMap<K, I: Interface + ?Sized>: ModuleInterface
+/// be resolved as a keyed map.
+pub trait HasComponentMap<K, I: Interface + ?Sized>: ModuleInterface
 where
     K: Eq + Hash,
 {
@@ -150,31 +149,19 @@ where
     fn build_component_map(context: &mut ModuleBuildContext<Self>) -> HashMap<K, Arc<I>>
     where
         Self: Module + Sized;
-}
 
-/// Indicates that a module contains multiple components which implement the same interface and can
-/// be resolved as a keyed map.
-pub trait HasComponentMap<K, I: Interface + ?Sized>: ModuleInterface
-where
-    K: Eq + Hash,
-{
     /// Get all registered components for the interface keyed by their key.
     fn resolve_map(&self) -> &HashMap<K, Arc<I>>;
 }
 
 /// Indicates that a module contains multiple components which implement the same interface and can
-/// build an ordered collection during component construction.
-#[doc(hidden)]
-pub trait BuildComponents<I: Interface + ?Sized>: ModuleInterface {
+/// be resolved as an ordered collection.
+pub trait HasComponents<I: Interface + ?Sized>: ModuleInterface {
     /// Build the ordered components during module build.
     fn build_components(context: &mut ModuleBuildContext<Self>) -> Vec<Arc<I>>
     where
         Self: Module + Sized;
-}
 
-/// Indicates that a module contains multiple components which implement the same interface and can
-/// be resolved as an ordered collection.
-pub trait HasComponents<I: Interface + ?Sized>: ModuleInterface {
     /// Get all registered components for the interface in declaration order.
     fn resolve_all(&self) -> &[Arc<I>];
 }
