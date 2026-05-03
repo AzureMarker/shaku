@@ -94,10 +94,8 @@ impl Parse for Submodule {
 
 impl Parse for ModuleServices {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let components: ModuleItems<_, _> = input.parse()?;
-
         Ok(ModuleServices {
-            components,
+            components: input.parse()?,
             comma_token: input.parse()?,
             providers: input.parse()?,
             trailing_comma: input.parse()?,
