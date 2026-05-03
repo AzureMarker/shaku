@@ -3,7 +3,6 @@
 use crate::debug::get_debug_level;
 use crate::structures::module::{ComponentItem, ModuleData, Submodule};
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::ToTokens;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::Type;
@@ -314,15 +313,13 @@ fn resolve_multibound_component(index: usize, component: &ComponentItem) -> Toke
 }
 
 struct KeyedComponentGroup<'a> {
-    repr: String,
-    interface: TokenStream,
+    interface: Type,
     key_ty: Type,
     components: Vec<(usize, &'a ComponentItem)>,
 }
 
 struct OrderedComponentGroup<'a> {
-    repr: String,
-    interface: TokenStream,
+    interface: Type,
     components: Vec<(usize, &'a ComponentItem)>,
 }
 
@@ -334,14 +331,15 @@ fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentG
             Some(ordered) => ordered,
             None => continue,
         };
-        let repr = ordered.interface.to_token_stream().to_string();
-        if let Some(group) = groups.iter_mut().find(|group| group.repr == repr.as_str()) {
+        if let Some(group) = groups
+            .iter_mut()
+            .find(|group| group.interface == ordered.interface)
+        {
             group.components.push((index, component));
             continue;
         }
         groups.push(OrderedComponentGroup {
-            repr,
-            interface: ordered.interface.to_token_stream(),
+            interface: ordered.interface.clone(),
             components: vec![(index, component)],
         });
     }
@@ -356,7 +354,7 @@ fn has_components_impl(
 ) -> TokenStream {
     let module_name = &module.metadata.identifier;
     let group_property = generate_name(index, "ordered_group", group.components[0].1.ty.span());
-    let interface = group.interface;
+    let interface = &group.interface;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     let build_entries: Vec<TokenStream> = group
@@ -411,18 +409,15 @@ fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup
             Some(keyed) => keyed,
             None => continue,
         };
-        let repr = format!(
-            "{}=>{}",
-            keyed.interface.to_token_stream(),
-            keyed.key_ty.to_token_stream()
-        );
-        if let Some(group) = groups.iter_mut().find(|group| group.repr == repr.as_str()) {
+        if let Some(group) = groups
+            .iter_mut()
+            .find(|group| group.interface == keyed.interface && group.key_ty == keyed.key_ty)
+        {
             group.components.push((index, component));
             continue;
         }
         groups.push(KeyedComponentGroup {
-            repr,
-            interface: keyed.interface.to_token_stream(),
+            interface: keyed.interface.clone(),
             key_ty: keyed.key_ty.clone(),
             components: vec![(index, component)],
         });
@@ -438,8 +433,8 @@ fn has_component_map_impl(
 ) -> TokenStream {
     let module_name = &module.metadata.identifier;
     let group_property = generate_name(index, "keyed_group", group.components[0].1.ty.span());
-    let interface = group.interface;
-    let key_ty = group.key_ty;
+    let interface = &group.interface;
+    let key_ty = &group.key_ty;
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     let build_entries: Vec<TokenStream> = group

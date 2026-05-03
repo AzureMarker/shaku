@@ -1,10 +1,8 @@
 //! Structures to hold useful module data
 
 use crate::parser::Parser;
-use quote::ToTokens;
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::hash::Hasher;
 use syn::parse::Parse;
 use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};
@@ -110,66 +108,26 @@ pub enum ComponentAttribute {
     Keyed(Box<KeyedComponentAttribute>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct OrderedComponentAttribute {
     pub interface: Type,
-    repr: String,
 }
 
 impl OrderedComponentAttribute {
     pub fn new(interface: Type) -> Self {
-        let repr = interface.to_token_stream().to_string();
-        Self { interface, repr }
+        Self { interface }
     }
 }
 
-impl PartialEq for OrderedComponentAttribute {
-    fn eq(&self, other: &Self) -> bool {
-        self.repr == other.repr
-    }
-}
-
-impl Eq for OrderedComponentAttribute {}
-
-impl Hash for OrderedComponentAttribute {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.repr.hash(state);
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct KeyedComponentAttribute {
     pub interface: Type,
     pub key_ty: Type,
-    repr: String,
 }
 
 impl KeyedComponentAttribute {
     pub fn new(interface: Type, key_ty: Type) -> Self {
-        let repr = format!(
-            "{}=>{}",
-            interface.to_token_stream(),
-            key_ty.to_token_stream()
-        );
-        Self {
-            interface,
-            key_ty,
-            repr,
-        }
-    }
-}
-
-impl PartialEq for KeyedComponentAttribute {
-    fn eq(&self, other: &Self) -> bool {
-        self.repr == other.repr
-    }
-}
-
-impl Eq for KeyedComponentAttribute {}
-
-impl Hash for KeyedComponentAttribute {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.repr.hash(state);
+        Self { interface, key_ty }
     }
 }
 
