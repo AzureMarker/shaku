@@ -6,9 +6,3 @@ error: Found unsupported injected type for `foos`. Use Arc<dyn Trait>, Vec<Arc<d
    |
 18 |     foos: Vec<Box<dyn Foo>>,
    |     ^^^^
-
-error[E0601]: `main` function not found in crate `$CRATE`
-  --> $DIR/inject_vec_non_arc.rs:21:25
-   |
-21 | impl Foo for NeedsVec {}
-   |                         ^ consider adding a `main` function to `$DIR/tests/ui/inject_vec_non_arc.rs`

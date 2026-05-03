@@ -19,3 +19,5 @@ struct NeedsVec {
 }
 
 impl Foo for NeedsVec {}
+
+fn main() {}

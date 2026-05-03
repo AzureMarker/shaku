@@ -1,6 +1,6 @@
 //! Providers do not yet support ordered component collection injection.
 
-use shaku::{module, Component, Interface, Provider};
+use shaku::{Component, Interface, Provider};
 use std::sync::Arc;
 
 trait Foo: Interface {}
@@ -20,9 +20,4 @@ struct FooProvider {
 
 impl Foo for FooProvider {}
 
-module! {
-    TestModule {
-        components = [FooImpl],
-        providers = [FooProvider]
-    }
-}
+fn main() {}
