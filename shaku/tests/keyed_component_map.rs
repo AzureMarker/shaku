@@ -162,9 +162,7 @@ fn resolves_keyed_component_map() {
     );
     assert_eq!(foos.get(&FooKind::Beta).map(|foo| foo.name()), Some("beta"));
 
-    let first = module.resolve_map() as *const HashMap<FooKind, Arc<dyn Foo>>;
-    let second = module.resolve_map() as *const HashMap<FooKind, Arc<dyn Foo>>;
-    assert_eq!(first, second);
+    assert!(std::ptr::eq(module.resolve_map(), module.resolve_map()));
 }
 
 #[test]
