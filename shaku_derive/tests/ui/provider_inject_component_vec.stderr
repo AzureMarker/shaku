@@ -1,8 +1,0 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
-error: Ordered component collection injection is not yet supported in Providers
-  --> $DIR/provider_inject_component_vec.rs:18:5
-   |
-18 |     foos: Vec<Arc<dyn Foo>>,
-   |     ^^^^

@@ -63,10 +63,9 @@ fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::Component => Ok(quote! {
             #property_name: module.resolve()
         }),
-        PropertyType::ComponentVec => Err(Error::new(
-            property.property_name.span(),
-            "Ordered component collection injection is not yet supported in Providers",
-        )),
+        PropertyType::ComponentVec => Ok(quote! {
+            #property_name: module.resolve_all().to_vec()
+        }),
         PropertyType::ComponentMap => Err(Error::new(
             property.property_name.span(),
             "Keyed component-map injection is not yet supported in Providers",
