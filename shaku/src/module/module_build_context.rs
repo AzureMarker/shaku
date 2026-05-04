@@ -75,7 +75,6 @@ impl<M: Module> ModuleBuildContext<M> {
             .map(|resolved| Arc::clone(&resolved.value))
             // Second check overridden component instances. Overrides remain keyed by interface and
             // are only valid for unique bindings.
-            // Second check overridden component fn set (will be placed into resolved components)
             .or_else(|| {
                 let component = self.component_overrides.get::<Arc<C::Interface>>()?.clone();
                 self.resolved_components
