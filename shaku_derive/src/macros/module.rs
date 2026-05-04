@@ -289,6 +289,7 @@ fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
     }
 }
 
+/// Resolve a multibound component from module storage
 fn resolve_multibound_component(index: usize, component: &ComponentItem) -> TokenStream {
     let component_ty = &component.ty;
     let property = generate_name(index, "component", component.ty.span());
@@ -318,6 +319,7 @@ struct OrderedComponentGroup<'a> {
     components: Vec<(usize, &'a ComponentItem)>,
 }
 
+/// Group ordered multibound components by interface
 fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentGroup<'a>> {
     let mut groups: Vec<OrderedComponentGroup<'a>> = Vec::new();
 
@@ -342,6 +344,7 @@ fn ordered_component_groups<'a>(module: &'a ModuleData) -> Vec<OrderedComponentG
     groups
 }
 
+/// Create a HasComponents impl for an ordered multibinding group
 fn has_components_impl(
     index: usize,
     group: OrderedComponentGroup<'_>,
@@ -396,6 +399,7 @@ fn has_components_impl(
     }
 }
 
+/// Group keyed multibound components by interface and key type
 fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup<'a>> {
     let mut groups: Vec<KeyedComponentGroup<'a>> = Vec::new();
 
@@ -421,6 +425,7 @@ fn keyed_component_groups<'a>(module: &'a ModuleData) -> Vec<KeyedComponentGroup
     groups
 }
 
+/// Create a HasComponentMap impl for a keyed multibinding group
 fn has_component_map_impl(
     index: usize,
     group: KeyedComponentGroup<'_>,
@@ -521,6 +526,7 @@ fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
     }
 }
 
+/// Create the property which holds an ordered multibinding group
 fn ordered_group_property(index: usize, group: &OrderedComponentGroup<'_>) -> TokenStream {
     let property = generate_name(index, "ordered_group", group.components[0].1.ty.span());
     let interface = &group.interface;
@@ -530,6 +536,7 @@ fn ordered_group_property(index: usize, group: &OrderedComponentGroup<'_>) -> To
     }
 }
 
+/// Create the property which holds a keyed multibinding group
 fn keyed_group_property(index: usize, group: &KeyedComponentGroup<'_>) -> TokenStream {
     let property = generate_name(index, "keyed_group", group.components[0].1.ty.span());
     let interface = &group.interface;
@@ -550,6 +557,7 @@ fn provider_property(index: usize, provider_ty: &Type) -> TokenStream {
     }
 }
 
+/// Create an initializer for an ordered multibinding group property
 fn ordered_group_build(index: usize) -> TokenStream {
     let property = generate_name(index, "ordered_group", Span::call_site());
 
@@ -558,6 +566,7 @@ fn ordered_group_build(index: usize) -> TokenStream {
     }
 }
 
+/// Create an initializer for a keyed multibinding group property
 fn keyed_group_build(index: usize) -> TokenStream {
     let property = generate_name(index, "keyed_group", Span::call_site());
 
@@ -566,6 +575,7 @@ fn keyed_group_build(index: usize) -> TokenStream {
     }
 }
 
+/// Validate that a keyed multibinding group has no duplicate keys
 fn validate_keyed_component_group(group: KeyedComponentGroup<'_>) -> TokenStream {
     let interface = group.interface;
     let key_ty = group.key_ty;
