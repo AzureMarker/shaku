@@ -76,12 +76,59 @@ impl ModuleItem<ComponentAttribute> {
     pub fn is_lazy(&self) -> bool {
         self.attributes.contains(&ComponentAttribute::Lazy)
     }
+
+    pub fn ordered(&self) -> Option<&OrderedComponentAttribute> {
+        self.attributes
+            .iter()
+            .find_map(|attribute| match attribute {
+                ComponentAttribute::Ordered(ordered) => Some(ordered.as_ref()),
+                ComponentAttribute::Keyed(_) | ComponentAttribute::Lazy => None,
+            })
+    }
+
+    pub fn keyed(&self) -> Option<&KeyedComponentAttribute> {
+        self.attributes
+            .iter()
+            .find_map(|attribute| match attribute {
+                ComponentAttribute::Keyed(keyed) => Some(keyed.as_ref()),
+                ComponentAttribute::Ordered(_) | ComponentAttribute::Lazy => None,
+            })
+    }
+
+    pub fn is_multibound(&self) -> bool {
+        self.ordered().is_some() || self.keyed().is_some()
+    }
 }
 
 /// Valid component attributes
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub enum ComponentAttribute {
     Lazy,
+    Ordered(Box<OrderedComponentAttribute>),
+    Keyed(Box<KeyedComponentAttribute>),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct OrderedComponentAttribute {
+    pub interface: Type,
+}
+
+impl OrderedComponentAttribute {
+    pub fn new(interface: Type) -> Self {
+        Self { interface }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct KeyedComponentAttribute {
+    pub interface: Type,
+    pub key_ty: Type,
+}
+
+impl KeyedComponentAttribute {
+    pub fn new(interface: Type, key_ty: Type) -> Self {
+        Self { interface, key_ty }
+    }
 }
 
 /// Valid provider attributes

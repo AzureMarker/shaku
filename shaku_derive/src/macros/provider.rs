@@ -63,6 +63,13 @@ fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::Component => Ok(quote! {
             #property_name: module.resolve()
         }),
+        PropertyType::ComponentVec => Ok(quote! {
+            #property_name: module.resolve_all().to_vec()
+        }),
+        PropertyType::ComponentMap => Err(Error::new(
+            property.property_name.span(),
+            "Keyed component-map injection is not yet supported in Providers",
+        )),
         PropertyType::Provided => Ok(quote! {
             #property_name: module.provide()?
         }),

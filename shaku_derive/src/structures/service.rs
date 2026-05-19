@@ -33,6 +33,8 @@ pub struct MetaData {
 pub enum PropertyType {
     Parameter,
     Component,
+    ComponentVec,
+    ComponentMap,
     Provided,
 }
 
@@ -43,6 +45,7 @@ pub struct Property {
     /// The full type if not a service.
     /// Otherwise, the interface type (the type inside the Arc or Box).
     pub ty: Type,
+    pub key_ty: Option<Type>,
     pub property_type: PropertyType,
     pub default: PropertyDefault,
     pub doc_comment: Vec<Attribute>,
@@ -51,7 +54,10 @@ pub struct Property {
 impl Property {
     pub fn is_service(&self) -> bool {
         match self.property_type {
-            PropertyType::Component | PropertyType::Provided => true,
+            PropertyType::Component
+            | PropertyType::ComponentVec
+            | PropertyType::ComponentMap
+            | PropertyType::Provided => true,
             PropertyType::Parameter => false,
         }
     }

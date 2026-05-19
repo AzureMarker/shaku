@@ -4,6 +4,8 @@ use crate::module::ModuleInterface;
 use crate::Module;
 use crate::ModuleBuildContext;
 use std::any::Any;
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::Arc;
 
 /// Components provide a service by implementing an interface. They may use
@@ -135,4 +137,36 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
     /// # }
     /// ```
     fn resolve_ref(&self) -> &I;
+}
+
+/// Indicates that a module contains multiple components which implement the same interface and can
+/// be resolved as a keyed map.
+pub trait HasComponentMap<K, I: Interface + ?Sized>: ModuleInterface
+where
+    K: Eq + Hash,
+{
+    /// Build the component map during module build.
+    fn build_component_map(context: &mut ModuleBuildContext<Self>) -> HashMap<K, Arc<I>>
+    where
+        Self: Module + Sized;
+
+    /// Get all registered components for the interface keyed by their key.
+    fn resolve_map(&self) -> &HashMap<K, Arc<I>>;
+}
+
+/// Indicates that a module contains multiple components which implement the same interface and can
+/// be resolved as an ordered collection.
+pub trait HasComponents<I: Interface + ?Sized>: ModuleInterface {
+    /// Build the ordered components during module build.
+    fn build_components(context: &mut ModuleBuildContext<Self>) -> Vec<Arc<I>>
+    where
+        Self: Module + Sized;
+
+    /// Get all registered components for the interface in declaration order.
+    fn resolve_all(&self) -> &[Arc<I>];
+}
+
+/// Associates a component type with a static key for keyed multibindings under a given interface.
+pub trait Keyed<I: Interface + ?Sized, K> {
+    fn key() -> K;
 }

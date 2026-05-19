@@ -2,9 +2,9 @@
 
 use crate::debug::get_debug_level;
 use crate::macros::common_output::create_dependency;
-use crate::structures::service::{Property, PropertyDefault, ServiceData};
+use crate::structures::service::{Property, PropertyDefault, PropertyType, ServiceData};
 use proc_macro2::TokenStream;
-use syn::{DeriveInput, Ident, Visibility};
+use syn::{DeriveInput, Error, Ident, Visibility};
 
 pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> {
     let service = ServiceData::from_derive_input(input)?;
@@ -18,7 +18,7 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
         .properties
         .iter()
         .map(create_resolve_property)
-        .collect();
+        .collect::<Result<_, _>>()?;
 
     let dependencies: Vec<TokenStream> = service
         .properties
@@ -83,17 +83,26 @@ pub fn expand_derive_component(input: &DeriveInput) -> syn::Result<TokenStream> 
     Ok(output)
 }
 
-fn create_resolve_property(property: &Property) -> TokenStream {
+fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
     let property_name = &property.property_name;
 
-    if property.is_service() {
-        quote! {
-            #property_name: M::build_component(context)
-        }
-    } else {
-        quote! {
+    match property.property_type {
+        PropertyType::Parameter => Ok(quote! {
             #property_name: params.#property_name
-        }
+        }),
+        PropertyType::Component => Ok(quote! {
+            #property_name: M::build_component(context)
+        }),
+        PropertyType::ComponentVec => Ok(quote! {
+            #property_name: M::build_components(context)
+        }),
+        PropertyType::ComponentMap => Ok(quote! {
+            #property_name: M::build_component_map(context)
+        }),
+        PropertyType::Provided => Err(Error::new(
+            property.property_name.span(),
+            "Provider dependencies are not allowed in Components",
+        )),
     }
 }
 

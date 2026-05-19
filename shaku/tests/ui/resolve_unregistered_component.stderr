@@ -1,7 +1,18 @@
+warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0277]: the trait bound `TestModule: HasComponent<(dyn ServiceTrait + 'static)>` is not satisfied
-  --> tests/ui/resolve_unregistered_component.rs:21:66
+  --> $DIR/resolve_unregistered_component.rs:21:66
    |
 21 |     let _service = HasComponent::<dyn ServiceTrait>::resolve_ref(&module);
-   |                    --------------------------------------------- ^^^^^^^ the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
+   |                    --------------------------------------------- ^^^^^^^ unsatisfied trait bound
    |                    |
    |                    required by a bound introduced by this call
+   |
+help: the trait `HasComponent<(dyn ServiceTrait + 'static)>` is not implemented for `TestModule`
+  --> $DIR/resolve_unregistered_component.rs:12:1
+   |
+12 | / module! {
+13 | |     TestModule {
+   | |______________^
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

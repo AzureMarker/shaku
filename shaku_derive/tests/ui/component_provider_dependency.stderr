@@ -1,8 +1,8 @@
 warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
   |
   = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
-error: Duplicate attribute
-  --> $DIR/duplicate_service_attribute.rs:12:31
+error: Provider dependencies are not allowed in Components
+  --> $DIR/component_provider_dependency.rs:17:5
    |
-12 |         components = [#[lazy] #[lazy] ComponentImpl],
-   |                               ^
+17 |     dependency: Box<dyn DependencyTrait>,
+   |     ^^^^^^^^^^

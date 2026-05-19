@@ -1,10 +1,13 @@
-error: Found non-Arc type annotated with #[shaku(inject)]
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
+error: Found unsupported injected type for `dependency`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
   --> $DIR/inject_non_arc.rs:18:5
    |
 18 |     dependency: Box<dyn DependencyTrait>,
    |     ^^^^^^^^^^
 
-error: Found non-Arc type annotated with #[shaku(inject)]
+error: Found unsupported injected type for `dependency`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
   --> $DIR/inject_non_arc.rs:26:5
    |
 26 |     dependency: Box<dyn DependencyTrait>,

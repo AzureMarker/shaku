@@ -1,0 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
+error: Found unsupported injected type for `dependencies`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>
+  --> $DIR/inject_hash_map_non_arc.rs:23:5
+   |
+23 |     dependencies: HashMap<DependencyKind, Box<dyn DependencyTrait>>,
+   |     ^^^^^^^^^^^^
