@@ -130,18 +130,20 @@
 //!
 //! Components may also contain [`PhantomData`] fields. Annotate these fields with
 //! `#[shaku(phantom)]` so the derive can initialize them automatically without treating them as
-//! component parameters or dependencies.
+//! component parameters or dependencies. If the marker only binds a type parameter and should not
+//! require that type to implement `Send + Sync`, use a function-pointer marker such as
+//! `PhantomData<fn() -> T>` instead of `PhantomData<T>`.
 //!
 //! ```
 //! # use shaku::{Component, Interface};
 //! # use std::marker::PhantomData;
 //! # trait TypedLogger<T>: Interface {}
-//! # impl<T: Send + Sync + 'static> TypedLogger<T> for TypedLoggerImpl<T> {}
+//! # impl<T: 'static> TypedLogger<T> for TypedLoggerImpl<T> {}
 //! #[derive(Component)]
 //! #[shaku(interface = TypedLogger<T>)]
-//! struct TypedLoggerImpl<T: Send + Sync + 'static> {
+//! struct TypedLoggerImpl<T: 'static> {
 //!     #[shaku(phantom)]
-//!     marker: PhantomData<T>,
+//!     marker: PhantomData<fn() -> T>,
 //! }
 //! ```
 //!

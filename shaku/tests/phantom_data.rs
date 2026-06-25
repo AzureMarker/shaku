@@ -1,5 +1,6 @@
 use shaku::{module, Component, HasComponent, HasProvider, Interface, Provider};
 use std::marker::PhantomData;
+use std::rc::Rc;
 
 trait ComponentTrait: Interface {
     fn value(&self) -> usize;
@@ -7,14 +8,14 @@ trait ComponentTrait: Interface {
 
 #[derive(Component)]
 #[shaku(interface = ComponentTrait)]
-struct PhantomComponent<T: Send + Sync + 'static> {
+struct PhantomComponent<T: 'static> {
     #[shaku(default = 17)]
     value: usize,
     #[shaku(phantom)]
-    marker: PhantomData<T>,
+    marker: PhantomData<fn() -> T>,
 }
 
-impl<T: Send + Sync + 'static> ComponentTrait for PhantomComponent<T> {
+impl<T: 'static> ComponentTrait for PhantomComponent<T> {
     fn value(&self) -> usize {
         self.value
     }
@@ -39,7 +40,7 @@ impl<T: 'static> ProviderTrait for PhantomProvider<T> {
 
 module! {
     TestModule {
-        components = [PhantomComponent<String>],
+        components = [PhantomComponent<Rc<()>>],
         providers = [PhantomProvider<String>]
     }
 }

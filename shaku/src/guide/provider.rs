@@ -138,7 +138,9 @@
 //!
 //! Providers may also contain [`PhantomData`] fields. Annotate these fields with
 //! `#[shaku(phantom)]` so the derive can initialize them automatically without treating them as
-//! dependencies.
+//! dependencies. If the marker only binds a type parameter and should not propagate auto-trait
+//! bounds from that type, use a function-pointer marker such as `PhantomData<fn() -> T>` instead of
+//! `PhantomData<T>`.
 //!
 //! ```
 //! # use shaku::Provider;
@@ -149,7 +151,7 @@
 //! #[shaku(interface = TypedRepository<T>)]
 //! struct TypedRepositoryImpl<T: 'static> {
 //!     #[shaku(phantom)]
-//!     marker: PhantomData<T>,
+//!     marker: PhantomData<fn() -> T>,
 //! }
 //! ```
 //!
