@@ -1,0 +1,8 @@
+warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
+  |
+  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
+error: Found non-PhantomData type annotated with #[shaku(phantom)]
+ --> $DIR/phantom_non_phantom_data.rs:9:5
+  |
+9 |     marker: String,
+  |     ^^^^^^

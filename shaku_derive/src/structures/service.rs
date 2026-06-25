@@ -36,6 +36,7 @@ pub enum PropertyType {
     ComponentVec,
     ComponentMap,
     Provided,
+    PhantomData,
 }
 
 /// Holds information about a service property.
@@ -52,14 +53,8 @@ pub struct Property {
 }
 
 impl Property {
-    pub fn is_service(&self) -> bool {
-        match self.property_type {
-            PropertyType::Component
-            | PropertyType::ComponentVec
-            | PropertyType::ComponentMap
-            | PropertyType::Provided => true,
-            PropertyType::Parameter => false,
-        }
+    pub fn is_parameter(&self) -> bool {
+        matches!(self.property_type, PropertyType::Parameter)
     }
 }
 

@@ -128,6 +128,23 @@
 //!
 //! (note: `#[shaku(default)]` will use the `Default` trait if no value is given for the property)
 //!
+//! Components may also contain [`PhantomData`] fields. Annotate these fields with
+//! `#[shaku(phantom)]` so the derive can initialize them automatically without treating them as
+//! component parameters or dependencies.
+//!
+//! ```
+//! # use shaku::{Component, Interface};
+//! # use std::marker::PhantomData;
+//! # trait TypedLogger<T>: Interface {}
+//! # impl<T: Send + Sync + 'static> TypedLogger<T> for TypedLoggerImpl<T> {}
+//! #[derive(Component)]
+//! #[shaku(interface = TypedLogger<T>)]
+//! struct TypedLoggerImpl<T: Send + Sync + 'static> {
+//!     #[shaku(phantom)]
+//!     marker: PhantomData<T>,
+//! }
+//! ```
+//!
 //! If you don't use the derive macro, add [`HasComponent`] bounds to your module generic and inject
 //! the dependencies manually with [`HasComponent::build_component`].
 //!
@@ -471,6 +488,7 @@
 //! [submodule guide]: submodules/index.html
 //! [`Interface`]: ../trait.Interface.html
 //! [`Component`]: ../trait.Component.html
+//! [`PhantomData`]: https://doc.rust-lang.org/std/marker/struct.PhantomData.html
 //! [`Arc`]: https://doc.rust-lang.org/std/sync/struct.Arc.html
 //! [`HasComponent`]: ../trait.HasComponent.html
 //! [`HasComponent::build_component`]: ../trait.HasComponent.html#tymethod.build_component

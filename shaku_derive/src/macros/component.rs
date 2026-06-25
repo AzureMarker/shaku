@@ -103,30 +103,42 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
             property.property_name.span(),
             "Provider dependencies are not allowed in Components",
         )),
+        PropertyType::PhantomData => Ok(quote! {
+            #property_name: ::std::marker::PhantomData
+        }),
     }
 }
 
 fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<TokenStream> {
-    if property.is_service() {
-        return None;
-    }
-
     let property_name = &property.property_name;
     let property_type = &property.ty;
     let doc_comment = &property.doc_comment;
 
-    Some(quote! {
-        #(#doc_comment)*
-        #vis #property_name: #property_type
-    })
+    match property.property_type {
+        PropertyType::Parameter => Some(quote! {
+            #(#doc_comment)*
+            #vis #property_name: #property_type
+        }),
+        PropertyType::PhantomData => Some(quote! {
+            #[doc(hidden)]
+            #vis #property_name: #property_type
+        }),
+        _ => None,
+    }
 }
 
 fn create_parameters_default(property: &Property, component_ident: &Ident) -> Option<TokenStream> {
-    if property.is_service() {
-        return None;
+    let property_name = &property.property_name;
+
+    if matches!(property.property_type, PropertyType::PhantomData) {
+        return Some(quote! {
+            #property_name: ::std::marker::PhantomData
+        });
     }
 
-    let property_name = &property.property_name;
+    if !property.is_parameter() {
+        return None;
+    }
 
     match &property.default {
         PropertyDefault::Provided(default_expr) => Some(quote! {

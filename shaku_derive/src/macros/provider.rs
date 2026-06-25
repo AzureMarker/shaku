@@ -77,5 +77,8 @@ fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
             property.property_name.span(),
             "Parameters are not allowed in Providers",
         )),
+        PropertyType::PhantomData => Ok(quote! {
+            #property_name: ::std::marker::PhantomData
+        }),
     }
 }

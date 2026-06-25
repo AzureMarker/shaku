@@ -7,7 +7,7 @@ pub fn create_dependency(property: &Property) -> Option<TokenStream> {
     let property_ty = &property.ty;
 
     match property.property_type {
-        PropertyType::Parameter => None,
+        PropertyType::Parameter | PropertyType::PhantomData => None,
         PropertyType::Component => Some(quote! {
             ::shaku::HasComponent<#property_ty>
         }),

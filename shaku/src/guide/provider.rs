@@ -136,6 +136,23 @@
 //! }
 //! ```
 //!
+//! Providers may also contain [`PhantomData`] fields. Annotate these fields with
+//! `#[shaku(phantom)]` so the derive can initialize them automatically without treating them as
+//! dependencies.
+//!
+//! ```
+//! # use shaku::Provider;
+//! # use std::marker::PhantomData;
+//! # trait TypedRepository<T> {}
+//! # impl<T: 'static> TypedRepository<T> for TypedRepositoryImpl<T> {}
+//! #[derive(Provider)]
+//! #[shaku(interface = TypedRepository<T>)]
+//! struct TypedRepositoryImpl<T: 'static> {
+//!     #[shaku(phantom)]
+//!     marker: PhantomData<T>,
+//! }
+//! ```
+//!
 //! ### Manually implement Provider
 //! Sometimes you have to manually implement provider when it's not as simple as constructing a new
 //! service directly from existing ones. This is the case for `DBConnection`, as it comes from a
@@ -443,6 +460,7 @@
 //! [`Interface`]: ../../trait.Interface.html
 //! [`Component`]: ../../trait.Component.html
 //! [`Provider`]: ../../trait.Provider.html
+//! [`PhantomData`]: https://doc.rust-lang.org/std/marker/struct.PhantomData.html
 //! [`Provider::provide`]: ../../trait.Provider.html#tymethod.provide
 //! [`HasProvider::provide`]: ../../trait.HasProvider.html#tymethod.provide
 //! [`with_provider_override`]: ../../struct.ModuleBuilder.html#method.with_provider_override

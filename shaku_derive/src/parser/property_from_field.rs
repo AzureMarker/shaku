@@ -20,6 +20,7 @@ impl Parser<Property> for Field {
     fn parse_as(&self) -> syn::Result<Property> {
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
+        let is_phantom = check_for_attr(consts::PHANTOM_ATTR_NAME, &self.attrs);
         let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
 
         let property_name = self.ident.clone().ok_or_else(|| {
@@ -32,8 +33,8 @@ impl Parser<Property> for Field {
             .cloned()
             .collect();
 
-        let property_type = match (is_injected, is_provided) {
-            (false, false) => {
+        let property_type = match (is_injected, is_provided, is_phantom) {
+            (false, false, false) => {
                 let property_default = get_shaku_attribute(&self.attrs)
                     .map(|attr| match attr.parse_args::<KeyValue<Expr>>().ok() {
                         Some(inner) => {
@@ -69,12 +70,39 @@ impl Parser<Property> for Field {
                     doc_comment,
                 });
             }
-            (false, true) => PropertyType::Provided,
-            (true, false) => PropertyType::Component,
-            (true, true) => {
+            (false, false, true) => {
+                if !is_phantom_data(&self.ty) {
+                    return Err(Error::new(
+                        property_name.span(),
+                        format!(
+                            "Found non-PhantomData type annotated with #[{}({})]",
+                            consts::ATTR_NAME,
+                            consts::PHANTOM_ATTR_NAME
+                        ),
+                    ));
+                }
+
+                return Ok(Property {
+                    property_name,
+                    ty: self.ty.clone(),
+                    key_ty: None,
+                    property_type: PropertyType::PhantomData,
+                    default: PropertyDefault::NotProvided,
+                    doc_comment,
+                });
+            }
+            (false, true, false) => PropertyType::Provided,
+            (true, false, false) => PropertyType::Component,
+            (true, true, _) => {
                 return Err(Error::new(
                     property_name.span(),
                     "Cannot inject and provide the same property",
+                ))
+            }
+            _ => {
+                return Err(Error::new(
+                    property_name.span(),
+                    "Cannot combine phantom with inject or provide",
                 ))
             }
         };
@@ -143,11 +171,16 @@ impl Parser<Property> for Field {
                     doc_comment,
                 })
             }
-            PropertyType::Parameter | PropertyType::ComponentVec | PropertyType::ComponentMap => {
-                unreachable!()
-            }
+            PropertyType::Parameter
+            | PropertyType::ComponentVec
+            | PropertyType::ComponentMap
+            | PropertyType::PhantomData => unreachable!(),
         }
     }
+}
+
+fn is_phantom_data(ty: &Type) -> bool {
+    angle_bracketed_args(ty, "PhantomData").is_some()
 }
 
 fn parse_vec_arc_interface(ty: &Type) -> Option<Type> {
