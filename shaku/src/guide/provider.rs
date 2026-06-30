@@ -143,15 +143,62 @@
 //! `PhantomData<T>`.
 //!
 //! ```
-//! # use shaku::Provider;
+//! # use shaku::{Interface, Provider};
+//! # use std::fmt;
 //! # use std::marker::PhantomData;
-//! # trait TypedRepository<T> {}
-//! # impl<T: 'static> TypedRepository<T> for TypedRepositoryImpl<T> {}
+//! # use std::ops::Deref;
+//! # #[derive(Debug)]
+//! # pub struct Error;
+//! # impl fmt::Display for Error {
+//! #     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result { write!(formatter, "command failed") }
+//! # }
+//! # impl std::error::Error for Error {}
+//! # #[derive(Debug)]
+//! # struct SmartCardError;
+//! # impl fmt::Display for SmartCardError {
+//! #     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result { write!(formatter, "smartcard failed") }
+//! # }
+//! # impl std::error::Error for SmartCardError {}
+//! # impl From<SmartCardError> for Error {
+//! #     fn from(_: SmartCardError) -> Self { Error }
+//! # }
+//! # trait SmartCard: Send + Sync {
+//! #     fn run(&self, input: &[u8]) -> Result<Vec<u8>, SmartCardError>;
+//! # }
+//! pub trait RunCommand<Input, Output>: Interface
+//! where
+//!     Input: Deref<Target = [u8]>,
+//!     Output: for<'a> From<&'a [u8]>,
+//! {
+//!     fn run(&self, input: &Input) -> Result<Output, Error>;
+//! }
+//!
 //! #[derive(Provider)]
-//! #[shaku(interface = TypedRepository<T>)]
-//! struct TypedRepositoryImpl<T: 'static> {
+//! #[shaku(interface = RunCommand<Input, Output>)]
+//! pub struct RunCommandExecuter<Input, Output>
+//! where
+//!     Input: Deref<Target = [u8]> + 'static,
+//!     Output: for<'a> From<&'a [u8]> + 'static,
+//! {
 //!     #[shaku(phantom)]
-//!     marker: PhantomData<fn() -> T>,
+//!     _input: PhantomData<fn() -> Input>,
+//!     #[shaku(phantom)]
+//!     _output: PhantomData<fn() -> Output>,
+//!     #[shaku(provide)]
+//!     smartcard: Box<dyn SmartCard>,
+//! }
+//!
+//! impl<Input, Output> RunCommand<Input, Output> for RunCommandExecuter<Input, Output>
+//! where
+//!     Input: Deref<Target = [u8]> + 'static,
+//!     Output: for<'a> From<&'a [u8]> + 'static,
+//! {
+//!     fn run(&self, input: &Input) -> Result<Output, Error> {
+//!         let input: &[u8] = input;
+//!         let output = self.smartcard.run(input).map_err(Error::from)?;
+//!
+//!         Ok(Output::from(output.as_slice()))
+//!     }
 //! }
 //! ```
 //!
