@@ -56,7 +56,7 @@ jobs:
           command: cargo test --no-default-features --features derive -- --skip compile_fail
   shaku-msrv:
     docker:
-      - image: rust:1.38.0
+      - image: rust:1.42.0
     steps:
       - checkout
       - remove-rust-toolchain
@@ -72,7 +72,7 @@ jobs:
       - code-check:
           check-args: "--locked"
       - test:
-          # Skip compile tests, as compiler messages are different in 1.38.0.
+          # Skip compile tests, as compiler messages are different in 1.42.0.
           test-args: "--locked -- --skip compile_fail"
 workflows:
   version: 2

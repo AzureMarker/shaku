@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2025-01-12]
+## [2026-06-30]
+### Breaking Changes
+- Minimum supported Rust version changed to 1.42.0 (from 1.38.0)
+
 ### shaku_axum 0.6.0
 #### Breaking Changes
 - Updated to axum 0.8 (thanks [@ethanhann](https://github.com/ethanhann))
