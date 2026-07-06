@@ -136,6 +136,9 @@
 //! }
 //! ```
 //!
+//! Provider fields can also use `#[shaku(force_default)]`. Such fields are always initialized with
+//! `Default::default()` when the provider is created, and their types must implement [`Default`].
+//!
 //! ### Manually implement Provider
 //! Sometimes you have to manually implement provider when it's not as simple as constructing a new
 //! service directly from existing ones. This is the case for `DBConnection`, as it comes from a

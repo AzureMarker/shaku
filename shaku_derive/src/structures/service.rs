@@ -32,6 +32,7 @@ pub struct MetaData {
 #[derive(Copy, Clone, Debug)]
 pub enum PropertyType {
     Parameter,
+    ForcedDefault,
     Component,
     ComponentVec,
     ComponentMap,
@@ -58,7 +59,7 @@ impl Property {
             | PropertyType::ComponentVec
             | PropertyType::ComponentMap
             | PropertyType::Provided => true,
-            PropertyType::Parameter => false,
+            PropertyType::Parameter | PropertyType::ForcedDefault => false,
         }
     }
 }

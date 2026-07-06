@@ -90,6 +90,9 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::Parameter => Ok(quote! {
             #property_name: params.#property_name
         }),
+        PropertyType::ForcedDefault => Ok(quote! {
+            #property_name: ::std::default::Default::default()
+        }),
         PropertyType::Component => Ok(quote! {
             #property_name: M::build_component(context)
         }),
@@ -107,7 +110,7 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
 }
 
 fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<TokenStream> {
-    if property.is_service() {
+    if property.is_service() || matches!(property.property_type, PropertyType::ForcedDefault) {
         return None;
     }
 
@@ -122,7 +125,7 @@ fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<T
 }
 
 fn create_parameters_default(property: &Property, component_ident: &Ident) -> Option<TokenStream> {
-    if property.is_service() {
+    if property.is_service() || matches!(property.property_type, PropertyType::ForcedDefault) {
         return None;
     }
 

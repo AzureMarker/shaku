@@ -3,4 +3,5 @@ pub const INTERFACE_ATTR_NAME: &str = "interface";
 pub const INJECT_ATTR_NAME: &str = "inject";
 pub const PROVIDE_ATTR_NAME: &str = "provide";
 pub const DEFAULT_ATTR_NAME: &str = "default";
+pub const FORCE_DEFAULT_ATTR_NAME: &str = "force_default";
 pub const DEBUG_ENV_VAR: &str = "SHAKU_CODEGEN_DEBUG";
