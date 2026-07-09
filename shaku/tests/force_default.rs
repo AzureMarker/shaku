@@ -51,6 +51,11 @@ module! {
 }
 
 #[test]
+fn component_force_default_field_is_not_parameter() {
+    let _parameters = ComponentImplParameters {};
+}
+
+#[test]
 fn component_force_default_field_uses_default() {
     let module = TestModule::builder().build();
     let component: &dyn ComponentTrait = module.resolve_ref();

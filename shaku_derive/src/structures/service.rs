@@ -58,8 +58,9 @@ impl Property {
             PropertyType::Component
             | PropertyType::ComponentVec
             | PropertyType::ComponentMap
-            | PropertyType::Provided => true,
-            PropertyType::Parameter | PropertyType::ForcedDefault => false,
+            | PropertyType::Provided
+            | PropertyType::ForcedDefault => true,
+            PropertyType::Parameter => false,
         }
     }
 }

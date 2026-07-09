@@ -110,7 +110,7 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
 }
 
 fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<TokenStream> {
-    if property.is_service() || matches!(property.property_type, PropertyType::ForcedDefault) {
+    if property.is_service() {
         return None;
     }
 
@@ -125,7 +125,7 @@ fn create_parameters_property(property: &Property, vis: &Visibility) -> Option<T
 }
 
 fn create_parameters_default(property: &Property, component_ident: &Ident) -> Option<TokenStream> {
-    if property.is_service() || matches!(property.property_type, PropertyType::ForcedDefault) {
+    if property.is_service() {
         return None;
     }
 
