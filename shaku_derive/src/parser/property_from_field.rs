@@ -16,11 +16,22 @@ fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     })
 }
 
+fn check_for_name_value_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
+    attrs.iter().any(|a| {
+        a.path.is_ident(consts::ATTR_NAME)
+            && a.parse_args::<KeyValue<Expr>>()
+                .map(|inner| inner.key == attr_name)
+                .unwrap_or(false)
+    })
+}
+
 impl Parser<Property> for Field {
     fn parse_as(&self) -> syn::Result<Property> {
         let is_injected = check_for_attr(consts::INJECT_ATTR_NAME, &self.attrs);
         let is_provided = check_for_attr(consts::PROVIDE_ATTR_NAME, &self.attrs);
-        let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
+        let has_default = check_for_attr(consts::DEFAULT_ATTR_NAME, &self.attrs)
+            || check_for_name_value_attr(consts::DEFAULT_ATTR_NAME, &self.attrs);
+        let has_force_default = check_for_attr(consts::FORCE_DEFAULT_ATTR_NAME, &self.attrs);
 
         let property_name = self.ident.clone().ok_or_else(|| {
             Error::new(self.span(), "Struct properties must be named".to_string())
@@ -32,8 +43,26 @@ impl Parser<Property> for Field {
             .cloned()
             .collect();
 
+        if has_force_default && (is_injected || is_provided || has_default) {
+            return Err(Error::new(
+                property_name.span(),
+                "Cannot combine force_default with inject, provide, or default",
+            ));
+        }
+
         let property_type = match (is_injected, is_provided) {
             (false, false) => {
+                if has_force_default {
+                    return Ok(Property {
+                        property_name,
+                        ty: self.ty.clone(),
+                        key_ty: None,
+                        property_type: PropertyType::ForcedDefault,
+                        default: PropertyDefault::NotProvided,
+                        doc_comment,
+                    });
+                }
+
                 let property_default = get_shaku_attribute(&self.attrs)
                     .map(|attr| match attr.parse_args::<KeyValue<Expr>>().ok() {
                         Some(inner) => {
@@ -143,7 +172,10 @@ impl Parser<Property> for Field {
                     doc_comment,
                 })
             }
-            PropertyType::Parameter | PropertyType::ComponentVec | PropertyType::ComponentMap => {
+            PropertyType::Parameter
+            | PropertyType::ForcedDefault
+            | PropertyType::ComponentVec
+            | PropertyType::ComponentMap => {
                 unreachable!()
             }
         }

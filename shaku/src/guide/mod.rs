@@ -237,6 +237,10 @@
 //! parameter should not have a default value, do not annotate it. This will
 //! cause module creation to panic if no value is provided for the parameter.
 //!
+//! Annotate a property with `#[shaku(force_default)]` when it should always be initialized with
+//! `Default::default()` and should not be exposed through the generated parameters type. The
+//! property's type must implement [`Default`], otherwise the derive fails to compile.
+//!
 //! ```
 //! # use shaku::{module, Component, Interface};
 //! # use std::sync::Arc;

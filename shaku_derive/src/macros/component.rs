@@ -90,6 +90,9 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::Parameter => Ok(quote! {
             #property_name: params.#property_name
         }),
+        PropertyType::ForcedDefault => Ok(quote! {
+            #property_name: ::std::default::Default::default()
+        }),
         PropertyType::Component => Ok(quote! {
             #property_name: M::build_component(context)
         }),
