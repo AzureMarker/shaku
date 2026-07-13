@@ -280,7 +280,7 @@ fn component_build(index: usize, component: &ComponentItem) -> TokenStream {
 
     if component.is_lazy() {
         quote! {
-            #property: ::shaku::OnceCell::new()
+            #property: ::shaku::__shaku_once_cell!()
         }
     } else {
         quote! {
@@ -517,7 +517,7 @@ fn component_property(index: usize, component: &ComponentItem) -> TokenStream {
 
     if component.is_lazy() {
         quote! {
-            #property: ::shaku::OnceCell<::std::sync::Arc<#interface>>
+            #property: ::shaku::__shaku_once_cell!(::std::sync::Arc<#interface>)
         }
     } else {
         quote! {
@@ -532,7 +532,7 @@ fn ordered_group_property(index: usize, group: &OrderedComponentGroup<'_>) -> To
     let interface = &group.interface;
 
     quote! {
-        #property: ::shaku::OnceCell<::std::vec::Vec<::std::sync::Arc<#interface>>>
+        #property: ::shaku::__shaku_once_cell!(::std::vec::Vec<::std::sync::Arc<#interface>>)
     }
 }
 
@@ -543,7 +543,7 @@ fn keyed_group_property(index: usize, group: &KeyedComponentGroup<'_>) -> TokenS
     let key_ty = &group.key_ty;
 
     quote! {
-        #property: ::shaku::OnceCell<::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>>>
+        #property: ::shaku::__shaku_once_cell!(::std::collections::HashMap<#key_ty, ::std::sync::Arc<#interface>>)
     }
 }
 
@@ -562,7 +562,7 @@ fn ordered_group_build(index: usize) -> TokenStream {
     let property = generate_name(index, "ordered_group", Span::call_site());
 
     quote! {
-        #property: ::shaku::OnceCell::new()
+        #property: ::shaku::__shaku_once_cell!()
     }
 }
 
@@ -571,7 +571,7 @@ fn keyed_group_build(index: usize) -> TokenStream {
     let property = generate_name(index, "keyed_group", Span::call_site());
 
     quote! {
-        #property: ::shaku::OnceCell::new()
+        #property: ::shaku::__shaku_once_cell!()
     }
 }
 

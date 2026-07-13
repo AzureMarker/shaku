@@ -37,13 +37,29 @@ pub mod guide;
 #[cfg(feature = "derive")]
 pub use {shaku_derive::module, shaku_derive::Component, shaku_derive::Provider};
 
-// Reexport OnceCell to support lazy components
 #[doc(hidden)]
 #[cfg(feature = "thread_safe")]
-pub use once_cell::sync::OnceCell;
+#[macro_export]
+macro_rules! __shaku_once_cell {
+    () => {
+        ::std::sync::OnceLock::new()
+    };
+    ($value:ty) => {
+        ::std::sync::OnceLock<$value>
+    };
+}
+
 #[doc(hidden)]
 #[cfg(not(feature = "thread_safe"))]
-pub use once_cell::unsync::OnceCell;
+#[macro_export]
+macro_rules! __shaku_once_cell {
+    () => {
+        ::std::cell::OnceCell::new()
+    };
+    ($value:ty) => {
+        ::std::cell::OnceCell<$value>
+    };
+}
 
 // Expose a flat module structure
 pub use crate::{component::*, module::*, provider::*};
