@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated dependencies, including the migration from `syn` 1 to `syn` 2.
+- Changed the minimum supported Rust version to 1.88.0.
+
 ## [2025-01-12]
 ### shaku_axum 0.6.0
 #### Breaking Changes

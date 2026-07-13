@@ -1,7 +1,6 @@
 use crate::consts;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
-use quote::ToTokens;
 use syn::spanned::Spanned;
 use syn::{
     AngleBracketedGenericArguments, Attribute, Error, Expr, Field, GenericArgument, Path,
@@ -80,10 +79,7 @@ impl Parser<Property> for Field {
                             if has_default {
                                 Ok(PropertyDefault::NotProvided)
                             } else {
-                                Err(Error::new(
-                                    attr.span(),
-                                    format!("Unknown attribute: '{}'", attr.meta.to_token_stream()),
-                                ))
+                                Err(Error::new(attr.span(), "Unknown attribute"))
                             }
                         }
                     })
