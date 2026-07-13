@@ -16,6 +16,7 @@ impl ComponentDependency for ComponentDependencyImpl {}
 #[shaku(interface = ComponentService)]
 struct ComponentServiceImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     component_dependency: Arc<dyn ComponentDependency>,
 }
 impl ComponentService for ComponentServiceImpl {}
@@ -24,6 +25,7 @@ impl ComponentService for ComponentServiceImpl {}
 #[shaku(interface = ProviderService)]
 struct ProviderServiceImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     component_dependency: Arc<dyn ComponentDependency>,
 }
 impl ProviderService for ProviderServiceImpl {}
@@ -50,16 +52,4 @@ module! {
 }
 
 #[test]
-fn compile_ok() {
-    let component = ComponentServiceImpl {
-        component_dependency: Arc::new(ComponentDependencyImpl),
-    };
-    let provider = ProviderServiceImpl {
-        component_dependency: Arc::new(ComponentDependencyImpl),
-    };
-    let _: Option<&dyn ComponentService> = None;
-    let _: Option<&dyn ProviderService> = None;
-
-    drop(component.component_dependency);
-    drop(provider.component_dependency);
-}
+fn compile_ok() {}

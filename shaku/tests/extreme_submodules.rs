@@ -46,20 +46,4 @@ module! {
 }
 
 #[test]
-fn compile_ok() {
-    let _: Option<&dyn Submodule1> = None;
-    let _: Option<&dyn Submodule2> = None;
-    let _: Option<&dyn Submodule3> = None;
-    let _: Option<&dyn Submodule4> = None;
-    let _: Option<&dyn Submodule5> = None;
-    let _: Option<&dyn Submodule6> = None;
-    let _: Option<&dyn Submodule7> = None;
-    let _: Option<&dyn Submodule8> = None;
-    let _: Option<&dyn Submodule9> = None;
-    let _: Option<&dyn Submodule10> = None;
-    let _: Option<&dyn Submodule11> = None;
-    let _: Option<&dyn Submodule12> = None;
-    let _: Option<&dyn Submodule13> = None;
-    let _: Option<&dyn Submodule14> = None;
-    let _: Option<&dyn Submodule15> = None;
-}
+fn compile_ok() {}

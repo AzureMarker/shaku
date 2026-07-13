@@ -40,9 +40,4 @@ mod services {
 }
 
 #[test]
-fn compile_ok() {
-    let _ = services::MyComponentImpl;
-    let _ = services::MyProviderImpl;
-    let _: Option<&dyn services::MyComponent> = None;
-    let _: Option<&dyn services::MyProvider> = None;
-}
+fn compile_ok() {}

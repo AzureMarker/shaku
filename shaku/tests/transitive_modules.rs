@@ -21,9 +21,11 @@ impl ProviderDependency for ProviderDependencyImpl {}
 #[shaku(interface = Service)]
 struct ServiceImpl {
     #[shaku(inject)]
+    #[allow(dead_code)]
     component_dependency: Arc<dyn ComponentDependency>,
 
     #[shaku(provide)]
+    #[allow(dead_code)]
     dependency: Box<dyn ProviderDependency>,
 }
 impl Service for ServiceImpl {}
@@ -63,13 +65,4 @@ module! {
 }
 
 #[test]
-fn compile_ok() {
-    let service = ServiceImpl {
-        component_dependency: Arc::new(ComponentDependencyImpl),
-        dependency: Box::new(ProviderDependencyImpl),
-    };
-    let _: Option<&dyn Service> = None;
-
-    drop(service.component_dependency);
-    drop(service.dependency);
-}
+fn compile_ok() {}
