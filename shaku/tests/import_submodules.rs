@@ -3,7 +3,17 @@ use shaku_derive::{module, Component, Provider};
 use std::sync::Arc;
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    let provider = MyProviderImpl {
+        component: Arc::new(MyComponentImpl),
+    };
+    let _: Option<&dyn MyComponent> = None;
+    let _: Option<&dyn MyProvider> = None;
+    let _: Option<&dyn Module1> = None;
+    let _: Option<&dyn Module2> = None;
+
+    drop(provider.component);
+}
 
 trait MyComponent: Interface {}
 trait MyProvider {}
@@ -20,7 +30,6 @@ impl MyComponent for MyComponentImpl {}
 #[shaku(interface = MyProvider)]
 struct MyProviderImpl {
     #[shaku(inject)]
-    #[allow(dead_code)]
     component: Arc<dyn MyComponent>,
 }
 impl MyProvider for MyProviderImpl {}

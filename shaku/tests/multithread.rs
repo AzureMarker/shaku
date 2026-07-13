@@ -1,7 +1,6 @@
 #![allow(clippy::disallowed_names, clippy::mutex_atomic)]
 #![cfg(feature = "thread_safe")]
 
-use rand::Rng;
 use shaku::{module, Component, HasComponent, Interface};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -55,10 +54,10 @@ fn simple_multithreaded_resolve_ref() {
 
         handles.push(
             thread::Builder::new()
-                .name(format!("reader #{}", &i))
+                .name(format!("reader #{}", i))
                 .spawn(move || {
                     // Inject some randomness in the test
-                    let sleep_ms = rand::thread_rng().gen_range(0..MAX_SLEEP_TIME);
+                    let sleep_ms = rand::random_range(0..MAX_SLEEP_TIME);
                     thread::sleep(Duration::from_millis(sleep_ms));
 
                     let foo: &dyn Foo = shared_module.resolve_ref();
@@ -89,19 +88,19 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
         handles.push(
             thread::Builder::new()
-                .name(format!("reader #{}", &i))
+                .name(format!("reader #{}", i))
                 .spawn(move || {
                     // Inject some randomness in the test
                     let handle = thread::current();
-                    let sleep_ms = rand::thread_rng().gen_range(0..MAX_SLEEP_TIME);
+                    let sleep_ms = rand::random_range(0..MAX_SLEEP_TIME);
                     thread::sleep(Duration::from_millis(sleep_ms));
 
                     // Resolve the module
-                    let use_mut = rand::thread_rng().gen_bool(0.5);
+                    let use_mut = rand::random_bool(0.5);
                     if use_mut {
                         // Set a new value
                         let foo: &dyn Foo = shared_module.resolve_ref();
-                        let new_value: usize = rand::thread_rng().gen_range(0..256);
+                        let new_value: usize = rand::random_range(0..256);
                         foo.set_value(new_value);
                         assert_eq!(foo.get_value(), new_value);
 
@@ -110,7 +109,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
                         println!(
                             "In thread {:?} > resolve ok > value changed to {}",
-                            &handle.name().unwrap(),
+                            handle.name().unwrap(),
                             new_value
                         );
                     } else {
@@ -121,7 +120,7 @@ fn simple_multithreaded_resolve_ref_n_mut() {
 
                         println!(
                             "In thread {:?} > resolve ok > value should be {}",
-                            &handle.name().unwrap(),
+                            handle.name().unwrap(),
                             data
                         );
                         assert_eq!(foo.get_value(), data);

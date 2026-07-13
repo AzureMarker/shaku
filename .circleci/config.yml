@@ -41,7 +41,7 @@ commands:
 jobs:
   shaku:
     docker:
-      - image: rust:1.94.1
+      - image: rust:1.97.0
     steps:
       - checkout
       - remove-rust-toolchain
@@ -56,7 +56,7 @@ jobs:
           command: cargo test --no-default-features --features derive -- --skip compile_fail
   shaku-msrv:
     docker:
-      - image: rust:1.38.0
+      - image: rust:1.88.0
     steps:
       - checkout
       - remove-rust-toolchain
@@ -64,15 +64,9 @@ jobs:
       - run:
           name: "Use MSRV Cargo.lock"
           command: cp Cargo.lock.msrv Cargo.lock
-      - run:
-          # The web frameworks have a higher MSRV, and simply using --exclude doesn't always work since Cargo tries to
-          # still build the dependency graph, but the old Cargo version can't parse some newer Cargo.toml files.
-          name: "Remove crates from workspace that require newer Rust versions"
-          command: sed -i -E '/shaku_actix|shaku_axum|shaku_rocket/d' Cargo.toml
       - code-check:
           check-args: "--locked"
       - test:
-          # Skip compile tests, as compiler messages are different in 1.38.0.
           test-args: "--locked -- --skip compile_fail"
 workflows:
   version: 2

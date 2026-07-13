@@ -1,6 +1,7 @@
 use crate::consts;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
+use quote::ToTokens;
 use syn::spanned::Spanned;
 use syn::{
     AngleBracketedGenericArguments, Attribute, Error, Expr, Field, GenericArgument, Path,
@@ -9,7 +10,7 @@ use syn::{
 
 fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
-        a.path.is_ident(consts::ATTR_NAME)
+        a.path().is_ident(consts::ATTR_NAME)
             && a.parse_args::<Path>()
                 .map(|p| p.is_ident(attr_name))
                 .unwrap_or(false)
@@ -18,7 +19,7 @@ fn check_for_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
 
 fn check_for_name_value_attr(attr_name: &str, attrs: &[Attribute]) -> bool {
     attrs.iter().any(|a| {
-        a.path.is_ident(consts::ATTR_NAME)
+        a.path().is_ident(consts::ATTR_NAME)
             && a.parse_args::<KeyValue<Expr>>()
                 .map(|inner| inner.key == attr_name)
                 .unwrap_or(false)
@@ -39,7 +40,7 @@ impl Parser<Property> for Field {
         let doc_comment = self
             .attrs
             .iter()
-            .filter(|attr| attr.path.is_ident("doc"))
+            .filter(|attr| attr.path().is_ident("doc"))
             .cloned()
             .collect();
 
@@ -81,7 +82,7 @@ impl Parser<Property> for Field {
                             } else {
                                 Err(Error::new(
                                     attr.span(),
-                                    format!("Unknown attribute: 'shaku{}'", attr.tokens),
+                                    format!("Unknown attribute: '{}'", attr.meta.to_token_stream()),
                                 ))
                             }
                         }

@@ -3,13 +3,12 @@
 use crate::parser::Parser;
 use std::collections::HashSet;
 use std::hash::Hash;
-use syn::parse::Parse;
 use syn::punctuated::Punctuated;
 use syn::{token, Attribute, Generics, Ident, Type, Visibility};
 
 pub type ComponentItem = ModuleItem<ComponentAttribute>;
 
-mod kw {
+pub(crate) mod kw {
     syn::custom_keyword!(components);
     syn::custom_keyword!(providers);
 }
@@ -41,21 +40,17 @@ pub struct Submodule {
 /// Services associated with a module/submodule
 #[derive(Debug)]
 pub struct ModuleServices {
-    pub components: ModuleItems<kw::components, ComponentAttribute>,
-    pub comma_token: syn::Token![,],
-    pub providers: ModuleItems<kw::providers, ProviderAttribute>,
+    pub components: ModuleItems<ComponentAttribute>,
+    pub providers: ModuleItems<ProviderAttribute>,
     pub trailing_comma: Option<syn::Token![,]>,
 }
 
 /// A list of components/providers
 #[derive(Debug)]
-pub struct ModuleItems<T: Parse, A: Eq + Hash>
+pub struct ModuleItems<A: Eq + Hash>
 where
     Attribute: Parser<A>,
 {
-    pub keyword_token: T,
-    pub eq_token: token::Eq,
-    pub bracket_token: token::Bracket,
     // Can't use syn::Token![,] here because of
     // https://github.com/rust-lang/rust/issues/50676
     pub items: Punctuated<ModuleItem<A>, token::Comma>,

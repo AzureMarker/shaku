@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/component_missing_dependency.rs:22:1
+  --> tests/ui/component_missing_dependency.rs:22:1
    |
 22 | / module! {
 23 | |     TestModule {
@@ -13,62 +10,64 @@ error[E0277]: the trait bound `TestModule: HasComponent<(dyn DependencyTrait + '
    | |_^ unsatisfied trait bound
    |
 help: the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
-  --> $DIR/component_missing_dependency.rs:22:1
+  --> tests/ui/component_missing_dependency.rs:22:1
    |
 22 | / module! {
 23 | |     TestModule {
    | |______________^
 help: the trait `HasComponent<<ComponentImpl as shaku::Component<TestModule>>::Interface>` is implemented for `TestModule`
-  --> $DIR/component_missing_dependency.rs:22:1
+  --> tests/ui/component_missing_dependency.rs:22:1
    |
 22 | / module! {
 23 | |     TestModule {
    | |______________^
 note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
-  --> $DIR/component_missing_dependency.rs:14:10
+  --> tests/ui/component_missing_dependency.rs:16:8
    |
 14 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 15 | #[shaku(interface = ComponentTrait)]
 16 | struct ComponentImpl {
    |        ^^^^^^^^^^^^^
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TestModule` cannot be shared between threads safely
-  --> $DIR/component_missing_dependency.rs:23:5
+  --> tests/ui/component_missing_dependency.rs:23:5
    |
 23 |     TestModule {
    |     ^^^^^^^^^^ `TestModule` cannot be shared between threads safely
    |
 help: the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
-  --> $DIR/component_missing_dependency.rs:22:1
+  --> tests/ui/component_missing_dependency.rs:22:1
    |
 22 | / module! {
 23 | |     TestModule {
    | |______________^
 help: the trait `HasComponent<<ComponentImpl as shaku::Component<TestModule>>::Interface>` is implemented for `TestModule`
-  --> $DIR/component_missing_dependency.rs:22:1
+  --> tests/ui/component_missing_dependency.rs:22:1
    |
 22 | / module! {
 23 | |     TestModule {
    | |______________^
 note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
-  --> $DIR/component_missing_dependency.rs:14:10
+  --> tests/ui/component_missing_dependency.rs:16:8
    |
 14 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 15 | #[shaku(interface = ComponentTrait)]
 16 | struct ComponentImpl {
    |        ^^^^^^^^^^^^^
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
 note: required because it appears within the type `TestModule`
-  --> $DIR/component_missing_dependency.rs:23:5
+  --> tests/ui/component_missing_dependency.rs:23:5
    |
 23 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
-  --> $DIR/module_traits.rs:36:19
+  --> src/module/module_traits.rs
    |
-36 | pub trait Module: ModuleInterface {
+   | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

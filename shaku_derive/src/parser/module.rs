@@ -1,6 +1,6 @@
 use crate::parser::Parser;
 use crate::structures::module::{
-    ComponentAttribute, KeyedComponentAttribute, ModuleData, ModuleItem, ModuleItems,
+    kw, ComponentAttribute, KeyedComponentAttribute, ModuleData, ModuleItem, ModuleItems,
     ModuleMetadata, ModuleServices, OrderedComponentAttribute, ProviderAttribute, Submodule,
 };
 use std::collections::HashSet;
@@ -22,7 +22,7 @@ impl Parse for ModuleData {
             return Err(content.error("expected `,`"));
         }
 
-        let submodules = content.parse_terminated(Submodule::parse)?;
+        let submodules = content.parse_terminated(Submodule::parse, syn::Token![,])?;
 
         Ok(ModuleData {
             metadata,
@@ -94,27 +94,40 @@ impl Parse for Submodule {
 
 impl Parse for ModuleServices {
     fn parse(input: ParseStream) -> syn::Result<Self> {
+        let components = input.parse()?;
+        input.parse::<syn::Token![,]>()?;
+
         Ok(ModuleServices {
-            components: input.parse()?,
-            comma_token: input.parse()?,
+            components,
             providers: input.parse()?,
             trailing_comma: input.parse()?,
         })
     }
 }
 
-impl<T: Parse, A: Eq + Hash> Parse for ModuleItems<T, A>
+fn parse_module_items<T: Parse, A: Eq + Hash>(input: ParseStream) -> syn::Result<ModuleItems<A>>
 where
     Attribute: Parser<A>,
 {
+    let content;
+    input.parse::<T>()?;
+    input.parse::<syn::Token![=]>()?;
+    syn::bracketed!(content in input);
+
+    Ok(ModuleItems {
+        items: content.parse_terminated(ModuleItem::parse, syn::Token![,])?,
+    })
+}
+
+impl Parse for ModuleItems<ComponentAttribute> {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let content;
-        Ok(ModuleItems {
-            keyword_token: input.parse()?,
-            eq_token: input.parse()?,
-            bracket_token: syn::bracketed!(content in input),
-            items: content.parse_terminated(ModuleItem::parse)?,
-        })
+        parse_module_items::<kw::components, ComponentAttribute>(input)
+    }
+}
+
+impl Parse for ModuleItems<ProviderAttribute> {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        parse_module_items::<kw::providers, ProviderAttribute>(input)
     }
 }
 
@@ -146,14 +159,14 @@ where
 
 impl Parser<ComponentAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ComponentAttribute> {
-        if self.path.is_ident("lazy") && self.tokens.is_empty() {
+        if self.path().is_ident("lazy") && matches!(self.meta, syn::Meta::Path(_)) {
             Ok(ComponentAttribute::Lazy)
-        } else if self.path.is_ident("ordered") {
+        } else if self.path().is_ident("ordered") {
             let interface: Type = self.parse_args()?;
             Ok(ComponentAttribute::Ordered(Box::new(
                 OrderedComponentAttribute::new(interface),
             )))
-        } else if self.path.is_ident("keyed") {
+        } else if self.path().is_ident("keyed") {
             let args: KeyedComponentAttributeArgs = self.parse_args()?;
             Ok(ComponentAttribute::Keyed(Box::new(
                 KeyedComponentAttribute::new(args.interface, args.key_ty),

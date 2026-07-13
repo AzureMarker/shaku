@@ -25,6 +25,7 @@ impl MyTrait for MyComponent {}
 #[test]
 fn simply_annotated_uses_normal_default() {
     let parameters = MyComponentParameters::default();
+    let _: Option<&dyn MyTrait> = None;
 
     assert_eq!(parameters.value_one, usize::default());
 }

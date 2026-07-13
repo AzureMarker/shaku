@@ -94,7 +94,7 @@ Shaku supports the latest stable release of Rust, plus the previous two versions
 at minimum (but possibly more). Changes to the minimum supported version will be
 noted in the changelog.
 
-Minimum supported version: 1.38.0
+Minimum supported version: 1.88.0
 
 ## Project Status
 The foundation of shaku's API is in place, and now the focus is to mature the

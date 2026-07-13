@@ -2,6 +2,7 @@
 name = "shaku_axum"
 version = "0.6.0"
 edition = "2018"
+rust-version = "1.88"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>", "Aaron Housh <dispersias@gmail.com>"]
 description = "Integration between shaku and the axum web framework"
 repository = "https://github.com/AzureMarker/shaku"
@@ -9,8 +10,8 @@ keywords = ["di", "ioc", "dependency", "dependency-injection", "axum"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-axum = "0.8"
+axum = "0.8.9"
 shaku = { version = ">= 0.5.0, < 0.7.0", path = "../shaku", features = ["thread_safe"] }
 
 [dev-dependencies]
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.52.3", features = ["full"] }

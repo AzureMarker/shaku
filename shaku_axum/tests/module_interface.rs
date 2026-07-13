@@ -34,7 +34,10 @@ async fn index(
 }
 
 #[test]
-fn compiles_ok() {}
+fn compiles_ok() {
+    let _ = MyComponentImpl;
+    let _ = MyProviderImpl;
+}
 
 #[test]
 fn constructs_axum_router() {

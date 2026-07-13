@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Parameters are not allowed in Providers
-  --> $DIR/provider_parameters.rs:10:5
+  --> tests/ui/provider_parameters.rs:10:5
    |
 10 |     value: usize,
    |     ^^^^^

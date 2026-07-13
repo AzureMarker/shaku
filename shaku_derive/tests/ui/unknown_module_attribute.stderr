@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Unknown attribute
-  --> $DIR/unknown_module_attribute.rs:12:23
+  --> tests/ui/unknown_module_attribute.rs:12:23
    |
 12 |         components = [#[unknown] ComponentImpl],
    |                       ^
