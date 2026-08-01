@@ -21,6 +21,8 @@ pub struct ModuleBuildContext<M: Module> {
     resolve_chain: Vec<ResolveStep>,
 }
 
+/// This wrapper is used to store multiple implementations of the same
+/// interface in a [`ComponentMap`].
 struct ResolvedComponent<C: 'static, I: ?Sized> {
     value: Arc<I>,
     _marker: PhantomData<C>,
