@@ -30,7 +30,7 @@ pub trait Provider<M: Module>: 'static {
 /// [`Provider::provide`]: trait.Provider.html#tymethod.provide
 /// [`ModuleBuilder::with_provider_override`]: struct.ModuleBuilder.html#method.with_provider_override
 #[cfg(not(feature = "thread_safe"))]
-pub type ProviderFn<M, I> = Box<dyn (Fn(&M) -> Result<Box<I>, Box<dyn Error>>)>;
+pub type ProviderFn<M, I> = Box<dyn Fn(&M) -> Result<Box<I>, Box<dyn Error>>>;
 /// The type signature of [`Provider::provide`]. This is used when overriding a
 /// provider via [`ModuleBuilder::with_provider_override`]
 ///

@@ -1,14 +1,11 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Struct properties must be named
-  --> $DIR/tuple_struct.rs:10:22
+  --> tests/ui/tuple_struct.rs:10:22
    |
 10 | struct ComponentImpl(usize);
    |                      ^^^^^
 
 error: Struct properties must be named
-  --> $DIR/tuple_struct.rs:15:21
+  --> tests/ui/tuple_struct.rs:15:21
    |
 15 | struct ProviderImpl(usize);
    |                     ^^^^^

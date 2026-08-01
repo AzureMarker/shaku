@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Found non-Box type annotated with #[shaku(provide)]
-  --> $DIR/provide_non_box.rs:18:5
+  --> tests/ui/provide_non_box.rs:18:5
    |
 18 |     dependency: Arc<dyn DependencyTrait>,
    |     ^^^^^^^^^^

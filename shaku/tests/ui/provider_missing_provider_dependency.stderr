@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 'static)>` is not satisfied
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
@@ -13,62 +10,64 @@ error[E0277]: the trait bound `TestModule: HasProvider<(dyn DependencyTrait + 's
    | |_^ unsatisfied trait bound
    |
 help: the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
    | |______________^
 help: the trait `HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>` is implemented for `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
    | |______________^
 note: required for `ProviderImpl` to implement `Provider<TestModule>`
-  --> $DIR/provider_missing_provider_dependency.rs:13:10
+  --> tests/ui/provider_missing_provider_dependency.rs:15:8
    |
 13 | #[derive(Provider)]
-   |          ^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          -------- type parameter would need to implement `Provider<TestModule>`
 14 | #[shaku(interface = ProviderTrait)]
 15 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = help: consider manually implementing `Provider<TestModule>` to avoid undesired bounds
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TestModule` cannot be shared between threads safely
-  --> $DIR/provider_missing_provider_dependency.rs:22:5
+  --> tests/ui/provider_missing_provider_dependency.rs:22:5
    |
 22 |     TestModule {
    |     ^^^^^^^^^^ `TestModule` cannot be shared between threads safely
    |
 help: the trait `HasProvider<(dyn DependencyTrait + 'static)>` is not implemented for `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
    | |______________^
 help: the trait `HasProvider<<ProviderImpl as Provider<TestModule>>::Interface>` is implemented for `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:21:1
+  --> tests/ui/provider_missing_provider_dependency.rs:21:1
    |
 21 | / module! {
 22 | |     TestModule {
    | |______________^
 note: required for `ProviderImpl` to implement `Provider<TestModule>`
-  --> $DIR/provider_missing_provider_dependency.rs:13:10
+  --> tests/ui/provider_missing_provider_dependency.rs:15:8
    |
 13 | #[derive(Provider)]
-   |          ^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          -------- type parameter would need to implement `Provider<TestModule>`
 14 | #[shaku(interface = ProviderTrait)]
 15 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
+   = help: consider manually implementing `Provider<TestModule>` to avoid undesired bounds
 note: required because it appears within the type `TestModule`
-  --> $DIR/provider_missing_provider_dependency.rs:22:5
+  --> tests/ui/provider_missing_provider_dependency.rs:22:5
    |
 22 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
-  --> $DIR/module_traits.rs:36:19
+  --> src/module/module_traits.rs
    |
-36 | pub trait Module: ModuleInterface {
+   | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

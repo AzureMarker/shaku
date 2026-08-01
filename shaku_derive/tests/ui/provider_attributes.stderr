@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Providers cannot have attributes
-  --> $DIR/provider_attributes.rs:15:22
+  --> tests/ui/provider_attributes.rs:15:22
    |
 15 |         providers = [#[lazy] ProviderImpl]
    |                      ^

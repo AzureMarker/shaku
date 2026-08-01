@@ -1,8 +1,5 @@
-warning: `$WORKSPACE/target/tests/shaku/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> $DIR/circular_dependency_compile_time.rs:28:1
+  --> tests/ui/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -13,44 +10,45 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> $DIR/circular_dependency_compile_time.rs:19:10
+  --> tests/ui/circular_dependency_compile_time.rs:21:8
    |
 19 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 20 | #[shaku(interface = Component2Trait)]
 21 | struct Component2 {
    |        ^^^^^^^^^^
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> $DIR/circular_dependency_compile_time.rs:29:5
+  --> tests/ui/circular_dependency_compile_time.rs:29:5
    |
 29 |     TestModule {
    |     ^^^^^^^^^^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> $DIR/circular_dependency_compile_time.rs:19:10
+  --> tests/ui/circular_dependency_compile_time.rs:21:8
    |
 19 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 20 | #[shaku(interface = Component2Trait)]
 21 | struct Component2 {
    |        ^^^^^^^^^^
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
 note: required because it appears within the type `TestModule`
-  --> $DIR/circular_dependency_compile_time.rs:29:5
+  --> tests/ui/circular_dependency_compile_time.rs:29:5
    |
 29 |     TestModule {
    |     ^^^^^^^^^^
    = note: required for `TestModule` to implement `ModuleInterface`
 note: required by a bound in `Module`
-  --> $DIR/module_traits.rs:36:19
+  --> src/module/module_traits.rs
    |
-36 | pub trait Module: ModuleInterface {
+   | pub trait Module: ModuleInterface {
    |                   ^^^^^^^^^^^^^^^ required by this bound in `Module`
-   = note: this error originates in the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component1Trait + 'static)>`
-  --> $DIR/circular_dependency_compile_time.rs:28:1
+  --> tests/ui/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -61,19 +59,20 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component2` to implement `shaku::Component<TestModule>`
-  --> $DIR/circular_dependency_compile_time.rs:19:10
+  --> tests/ui/circular_dependency_compile_time.rs:21:8
    |
 19 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 20 | #[shaku(interface = Component2Trait)]
 21 | struct Component2 {
    |        ^^^^^^^^^^
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
    = note: 1 redundant requirement hidden
    = note: required for `Component1` to implement `shaku::Component<TestModule>`
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn Component2Trait + 'static)>`
-  --> $DIR/circular_dependency_compile_time.rs:28:1
+  --> tests/ui/circular_dependency_compile_time.rs:28:1
    |
 28 | / module! {
 29 | |     TestModule {
@@ -84,13 +83,14 @@ error[E0275]: overflow evaluating the requirement `TestModule: HasComponent<(dyn
    | |_^
    |
 note: required for `Component1` to implement `shaku::Component<TestModule>`
-  --> $DIR/circular_dependency_compile_time.rs:10:10
+  --> tests/ui/circular_dependency_compile_time.rs:12:8
    |
 10 | #[derive(Component)]
-   |          ^^^^^^^^^ unsatisfied trait bound introduced in this `derive` macro
+   |          --------- type parameter would need to implement `shaku::Component<TestModule>`
 11 | #[shaku(interface = Component1Trait)]
 12 | struct Component1 {
    |        ^^^^^^^^^^
+   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
    = note: 1 redundant requirement hidden
    = note: required for `Component2` to implement `shaku::Component<TestModule>`
-   = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Component` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)

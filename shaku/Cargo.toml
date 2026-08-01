@@ -8,15 +8,15 @@ readme = "../README.md"
 keywords = ["di", "ioc", "dependency", "inversion", "dependency-injection"]
 license = "MIT/Apache-2.0"
 edition = "2018"
+rust-version = "1.88"
 
 [dependencies]
 shaku_derive = { version = "~0.6.0", path = "../shaku_derive", optional = true }
 anymap2 = "0.13.0"
-once_cell = "1.5"
 
 [dev-dependencies]
-rand = "0.8"
-trybuild = "=1.0.18"
+rand = "0.10"
+trybuild = "=1.0.118"
 
 [features]
 default = ["thread_safe", "derive"]

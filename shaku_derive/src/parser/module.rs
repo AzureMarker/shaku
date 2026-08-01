@@ -22,7 +22,7 @@ impl Parse for ModuleData {
             return Err(content.error("expected `,`"));
         }
 
-        let submodules = content.parse_terminated(Submodule::parse)?;
+        let submodules = content.parse_terminated(Submodule::parse, syn::Token![,])?;
 
         Ok(ModuleData {
             metadata,
@@ -113,7 +113,7 @@ where
             keyword_token: input.parse()?,
             eq_token: input.parse()?,
             bracket_token: syn::bracketed!(content in input),
-            items: content.parse_terminated(ModuleItem::parse)?,
+            items: content.parse_terminated(ModuleItem::parse, syn::Token![,])?,
         })
     }
 }
@@ -146,14 +146,14 @@ where
 
 impl Parser<ComponentAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ComponentAttribute> {
-        if self.path.is_ident("lazy") && self.tokens.is_empty() {
+        if self.path().is_ident("lazy") && matches!(self.meta, syn::Meta::Path(_)) {
             Ok(ComponentAttribute::Lazy)
-        } else if self.path.is_ident("ordered") {
+        } else if self.path().is_ident("ordered") {
             let interface: Type = self.parse_args()?;
             Ok(ComponentAttribute::Ordered(Box::new(
                 OrderedComponentAttribute::new(interface),
             )))
-        } else if self.path.is_ident("keyed") {
+        } else if self.path().is_ident("keyed") {
             let args: KeyedComponentAttributeArgs = self.parse_args()?;
             Ok(ComponentAttribute::Keyed(Box::new(
                 KeyedComponentAttribute::new(args.interface, args.key_ty),

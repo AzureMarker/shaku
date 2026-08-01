@@ -1,14 +1,11 @@
-warning: `$WORKSPACE/target/tests/shaku_derive/.cargo/config` is deprecated in favor of `config.toml`
-  |
-  = help: if you need to support cargo 1.38 or earlier, you can symlink `config` to `config.toml`
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
- --> $DIR/interface_not_name_value.rs:9:1
+ --> tests/ui/interface_not_name_value.rs:9:1
   |
 9 | #[shaku(interface(ComponentTrait))]
   | ^
 
 error: Invalid attribute format. The attribute must be in name-value form. Example: #[shaku(interface = <your trait>)]
-  --> $DIR/interface_not_name_value.rs:14:1
+  --> tests/ui/interface_not_name_value.rs:14:1
    |
 14 | #[shaku(interface(ProviderTrait))]
    | ^

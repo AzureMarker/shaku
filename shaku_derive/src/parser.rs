@@ -17,5 +17,7 @@ pub trait Parser<T: Sized> {
 
 /// Find the #[shaku(...)] attribute
 fn get_shaku_attribute(attrs: &[Attribute]) -> Option<&Attribute> {
-    attrs.iter().find(|a| a.path.is_ident(consts::ATTR_NAME))
+    attrs
+        .iter()
+        .find(|attribute| attribute.path().is_ident(consts::ATTR_NAME))
 }
