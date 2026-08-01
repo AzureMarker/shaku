@@ -443,7 +443,7 @@ fn has_component_map_impl(
         .map(|(_, component)| {
             let component_ty = &component.ty;
             quote! {
-                let key = <#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key();
+                let key = <#component_ty as ::shaku::Keyed>::KEY;
                 let component = context.build_component::<#component_ty>();
                 map.insert(key, component);
             }
@@ -458,7 +458,7 @@ fn has_component_map_impl(
             let resolve_component = resolve_multibound_component(*index, component);
             quote! {
                 #resolve_component
-                let key = <#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key();
+                let key = <#component_ty as ::shaku::Keyed>::KEY;
                 map.insert(key, ::std::sync::Arc::clone(component));
             }
         })
@@ -586,7 +586,7 @@ fn validate_keyed_component_group(group: KeyedComponentGroup<'_>) -> TokenStream
             let component_ty = &component.ty;
             quote! {
                 assert!(
-                    keys.insert(<#component_ty as ::shaku::Keyed<#interface, #key_ty>>::key()),
+                    keys.insert(<#component_ty as ::shaku::Keyed>::KEY),
                     "duplicate keyed component key for interface {}",
                     ::std::any::type_name::<#interface>()
                 );

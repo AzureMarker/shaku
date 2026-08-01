@@ -143,7 +143,7 @@ pub trait HasComponent<I: Interface + ?Sized>: ModuleInterface {
 /// be resolved as a keyed map.
 pub trait HasComponentMap<K, I: Interface + ?Sized>: ModuleInterface
 where
-    K: Eq + Hash,
+    K: Eq + Hash + Clone,
 {
     /// Build the component map during module build.
     fn build_component_map(context: &mut ModuleBuildContext<Self>) -> HashMap<K, Arc<I>>
@@ -166,7 +166,8 @@ pub trait HasComponents<I: Interface + ?Sized>: ModuleInterface {
     fn resolve_all(&self) -> &[Arc<I>];
 }
 
-/// Associates a component type with a static key for keyed multibindings under a given interface.
-pub trait Keyed<I: Interface + ?Sized, K> {
-    fn key() -> K;
+/// Associates a component type with a static key for keyed multibindings.
+pub trait Keyed {
+    type KeyType: Eq + Hash + Clone;
+    const KEY: Self::KeyType;
 }

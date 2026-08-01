@@ -38,10 +38,9 @@ impl Foo for FooAlpha {
     }
 }
 
-impl Keyed<dyn Foo, FooKind> for FooAlpha {
-    fn key() -> FooKind {
-        FooKind::Alpha
-    }
+impl Keyed for FooAlpha {
+    type KeyType = FooKind;
+    const KEY: Self::KeyType = FooKind::Alpha;
 }
 
 #[derive(Component)]
@@ -54,10 +53,9 @@ impl Foo for FooBeta {
     }
 }
 
-impl Keyed<dyn Foo, FooKind> for FooBeta {
-    fn key() -> FooKind {
-        FooKind::Beta
-    }
+impl Keyed for FooBeta {
+    type KeyType = FooKind;
+    const KEY: Self::KeyType = FooKind::Beta;
 }
 
 #[derive(Component)]
@@ -116,10 +114,9 @@ impl<M: Module> Component<M> for LazyFooAlpha {
     }
 }
 
-impl Keyed<dyn Foo, FooKind> for LazyFooAlpha {
-    fn key() -> FooKind {
-        FooKind::Alpha
-    }
+impl Keyed for LazyFooAlpha {
+    type KeyType = FooKind;
+    const KEY: Self::KeyType = FooKind::Alpha;
 }
 
 struct LazyProvidedFooAlpha;
@@ -140,10 +137,9 @@ impl<M: Module> Component<M> for LazyProvidedFooAlpha {
     }
 }
 
-impl Keyed<dyn Foo, FooKind> for LazyProvidedFooAlpha {
-    fn key() -> FooKind {
-        FooKind::Alpha
-    }
+impl Keyed for LazyProvidedFooAlpha {
+    type KeyType = FooKind;
+    const KEY: Self::KeyType = FooKind::Alpha;
 }
 
 #[derive(Component)]
@@ -156,10 +152,9 @@ impl Foo for DuplicateFooAlpha {
     }
 }
 
-impl Keyed<dyn Foo, FooKind> for DuplicateFooAlpha {
-    fn key() -> FooKind {
-        FooKind::Alpha
-    }
+impl Keyed for DuplicateFooAlpha {
+    type KeyType = FooKind;
+    const KEY: Self::KeyType = FooKind::Alpha;
 }
 
 module! {

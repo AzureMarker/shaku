@@ -1,0 +1,59 @@
+error[E0308]: mismatched types
+  --> tests/ui/keyed_component_wrong_key_impl.rs:27:1
+   |
+27 | / module! {
+28 | |     TestModule {
+29 | |         components = [
+30 | |             #[keyed(dyn Foo, FooKind)]
+...  |
+35 | | }
+   | | ^
+   | | |
+   | |_expected `FooKind`, found `BarKind`
+   |   arguments to this method are incorrect
+   |
+note: method defined here
+  --> $RUST/std/src/collections/hash/set.rs
+   |
+   |     pub fn insert(&mut self, value: T) -> bool {
+   |            ^^^^^^
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+  --> tests/ui/keyed_component_wrong_key_impl.rs:27:1
+   |
+27 | / module! {
+28 | |     TestModule {
+29 | |         components = [
+30 | |             #[keyed(dyn Foo, FooKind)]
+...  |
+35 | | }
+   | | ^
+   | | |
+   | | expected `HashMap<FooKind, Arc<dyn Foo>>`, found `HashMap<BarKind, Arc<dyn Foo>>`
+   | | expected `HashMap<FooKind, Arc<(dyn Foo + 'static)>>` because of return type
+   | |_this argument has type `BarKind`...
+   |   ... which causes `map` to have type `HashMap<BarKind, Arc<dyn Foo>>`
+   |
+   = note: expected struct `HashMap<FooKind, Arc<(dyn Foo + 'static)>>`
+              found struct `HashMap<BarKind, Arc<dyn Foo>>`
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0308]: mismatched types
+  --> tests/ui/keyed_component_wrong_key_impl.rs:27:1
+   |
+27 | / module! {
+28 | |     TestModule {
+29 | |         components = [
+30 | |             #[keyed(dyn Foo, FooKind)]
+...  |
+35 | | }
+   | | ^
+   | | |
+   | | expected `HashMap<FooKind, Arc<dyn Foo>>`, found `HashMap<BarKind, Arc<dyn Foo>>`
+   | |_this argument has type `BarKind`...
+   |   ... which causes `map` to have type `HashMap<BarKind, Arc<dyn Foo>>`
+   |
+   = note: expected struct `HashMap<FooKind, Arc<(dyn Foo + 'static)>>`
+              found struct `HashMap<BarKind, Arc<dyn Foo>>`
+   = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
