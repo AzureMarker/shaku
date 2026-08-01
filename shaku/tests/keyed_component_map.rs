@@ -1,11 +1,14 @@
 use shaku::{
-    module, Component, HasComponent, HasComponentMap, Interface, Keyed, Module, ModuleBuildContext,
+    module, Component, HasComponent, HasComponentMap, HasProvider, Interface, Keyed, Module,
+    ModuleBuildContext,
 };
+use shaku_derive::Provider;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
 static LAZY_KEYED_BUILDS: AtomicUsize = AtomicUsize::new(0);
+static LAZY_KEYED_PROVIDER_BUILDS: AtomicUsize = AtomicUsize::new(0);
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum FooKind {
@@ -18,6 +21,10 @@ trait Foo: Interface {
 }
 
 trait Runner: Interface {
+    fn names(&self) -> Vec<&'static str>;
+}
+
+trait ProvidedRunner {
     fn names(&self) -> Vec<&'static str>;
 }
 
@@ -72,6 +79,25 @@ impl Runner for RunnerImpl {
     }
 }
 
+#[derive(Provider)]
+#[shaku(interface = ProvidedRunner)]
+struct ProvidedRunnerImpl {
+    #[shaku(inject)]
+    foos: HashMap<FooKind, Arc<dyn Foo>>,
+}
+
+impl ProvidedRunner for ProvidedRunnerImpl {
+    fn names(&self) -> Vec<&'static str> {
+        let mut names = self
+            .foos
+            .values()
+            .map(|component| component.name())
+            .collect::<Vec<_>>();
+        names.sort_unstable();
+        names
+    }
+}
+
 struct LazyFooAlpha;
 
 impl Foo for LazyFooAlpha {
@@ -91,6 +117,30 @@ impl<M: Module> Component<M> for LazyFooAlpha {
 }
 
 impl Keyed<dyn Foo, FooKind> for LazyFooAlpha {
+    fn key() -> FooKind {
+        FooKind::Alpha
+    }
+}
+
+struct LazyProvidedFooAlpha;
+
+impl Foo for LazyProvidedFooAlpha {
+    fn name(&self) -> &'static str {
+        "alpha"
+    }
+}
+
+impl<M: Module> Component<M> for LazyProvidedFooAlpha {
+    type Interface = dyn Foo;
+    type Parameters = ();
+
+    fn build(_: &mut ModuleBuildContext<M>, _: Self::Parameters) -> Box<Self::Interface> {
+        LAZY_KEYED_PROVIDER_BUILDS.fetch_add(1, Ordering::SeqCst);
+        Box::new(Self)
+    }
+}
+
+impl Keyed<dyn Foo, FooKind> for LazyProvidedFooAlpha {
     fn key() -> FooKind {
         FooKind::Alpha
     }
@@ -121,7 +171,7 @@ module! {
             FooBeta,
             RunnerImpl
         ],
-        providers = []
+        providers = [ProvidedRunnerImpl]
     }
 }
 
@@ -133,6 +183,17 @@ module! {
             LazyFooAlpha
         ],
         providers = []
+    }
+}
+
+module! {
+    TestLazyKeyedProviderModule {
+        components = [
+            #[lazy]
+            #[keyed(dyn Foo, FooKind)]
+            LazyProvidedFooAlpha
+        ],
+        providers = [ProvidedRunnerImpl]
     }
 }
 
@@ -166,6 +227,14 @@ fn resolves_keyed_component_map() {
 }
 
 #[test]
+fn provider_can_inject_keyed_component_map() {
+    let module = TestModule::builder().build();
+
+    let runner: Box<dyn ProvidedRunner> = module.provide().unwrap();
+    assert_eq!(runner.names(), vec!["alpha", "beta"]);
+}
+
+#[test]
 fn lazy_keyed_component_builds_on_first_map_resolution() {
     LAZY_KEYED_BUILDS.store(0, Ordering::SeqCst);
     let module = TestLazyKeyedModule::builder().build();
@@ -181,6 +250,22 @@ fn lazy_keyed_component_builds_on_first_map_resolution() {
 
     let _foos_again: &HashMap<FooKind, Arc<dyn Foo>> = module.resolve_map();
     assert_eq!(LAZY_KEYED_BUILDS.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn lazy_keyed_component_builds_once_when_injected_into_provider() {
+    LAZY_KEYED_PROVIDER_BUILDS.store(0, Ordering::SeqCst);
+    let module = TestLazyKeyedProviderModule::builder().build();
+
+    assert_eq!(LAZY_KEYED_PROVIDER_BUILDS.load(Ordering::SeqCst), 0);
+
+    let runner: Box<dyn ProvidedRunner> = module.provide().unwrap();
+    assert_eq!(LAZY_KEYED_PROVIDER_BUILDS.load(Ordering::SeqCst), 1);
+    assert_eq!(runner.names(), vec!["alpha"]);
+
+    let runner_again: Box<dyn ProvidedRunner> = module.provide().unwrap();
+    assert_eq!(LAZY_KEYED_PROVIDER_BUILDS.load(Ordering::SeqCst), 1);
+    assert_eq!(runner_again.names(), vec!["alpha"]);
 }
 
 #[test]
