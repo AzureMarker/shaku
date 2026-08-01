@@ -45,11 +45,14 @@ module! {
         use BaseModule {
             // Both of these services depend on ComponentDependency, but it does
             // not need to be imported here.
-            components = [ComponentService],
-            providers = [ProviderService]
+            components = [dyn ComponentService],
+            providers = [dyn ProviderService]
         }
     }
 }
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<TestModule> = None;
+}

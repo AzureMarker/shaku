@@ -36,7 +36,7 @@ module! {
         providers = [],
 
         use MyModule<C> {
-            components = [DbPool<C>],
+            components = [dyn DbPool<C>],
             providers = []
         }
     }

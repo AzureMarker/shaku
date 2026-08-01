@@ -27,23 +27,26 @@ module! {
         components = [],
         providers = [],
 
-        use Submodule1 { components = [], providers = [] },
-        use Submodule2 { components = [], providers = [] },
-        use Submodule3 { components = [], providers = [] },
-        use Submodule4 { components = [], providers = [] },
-        use Submodule5 { components = [], providers = [] },
-        use Submodule6 { components = [], providers = [] },
-        use Submodule7 { components = [], providers = [] },
-        use Submodule8 { components = [], providers = [] },
-        use Submodule9 { components = [], providers = [] },
-        use Submodule10 { components = [], providers = [] },
-        use Submodule11 { components = [], providers = [] },
-        use Submodule12 { components = [], providers = [] },
-        use Submodule13 { components = [], providers = [] },
-        use Submodule14 { components = [], providers = [] },
-        use Submodule15 { components = [], providers = [] },
+        use dyn Submodule1 { components = [], providers = [] },
+        use dyn Submodule2 { components = [], providers = [] },
+        use dyn Submodule3 { components = [], providers = [] },
+        use dyn Submodule4 { components = [], providers = [] },
+        use dyn Submodule5 { components = [], providers = [] },
+        use dyn Submodule6 { components = [], providers = [] },
+        use dyn Submodule7 { components = [], providers = [] },
+        use dyn Submodule8 { components = [], providers = [] },
+        use dyn Submodule9 { components = [], providers = [] },
+        use dyn Submodule10 { components = [], providers = [] },
+        use dyn Submodule11 { components = [], providers = [] },
+        use dyn Submodule12 { components = [], providers = [] },
+        use dyn Submodule13 { components = [], providers = [] },
+        use dyn Submodule14 { components = [], providers = [] },
+        use dyn Submodule15 { components = [], providers = [] },
     }
 }
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<TestModule> = None;
+}

@@ -2,6 +2,7 @@ use syn::parse::{Parse, ParseStream};
 
 pub struct KeyValue<V: Parse> {
     pub key: syn::Ident,
+    #[allow(unused)]
     pub eq_token: syn::Token![=],
     pub value: V,
 }

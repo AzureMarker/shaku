@@ -16,7 +16,7 @@ module! {
         components = [TestComponentImpl],
         providers = [],
 
-        use TestSubmodule {
+        use dyn TestSubmodule {
             components = [],
             providers = []
         }

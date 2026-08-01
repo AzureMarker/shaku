@@ -44,8 +44,8 @@ module! {
 
         // Re-export BaseModule
         use BaseModule {
-            components = [ComponentDependency],
-            providers = [ProviderDependency]
+            components = [dyn ComponentDependency],
+            providers = [dyn ProviderDependency]
         }
     }
 }
@@ -58,11 +58,14 @@ module! {
         providers = [ServiceImpl],
 
         use MiddleModule {
-            components = [ComponentDependency],
-            providers = [ProviderDependency]
+            components = [dyn ComponentDependency],
+            providers = [dyn ProviderDependency]
         }
     }
 }
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<TopModule> = None;
+}

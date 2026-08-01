@@ -233,7 +233,6 @@ fn module_impl(module: &ModuleData, capture_build_context: bool) -> TokenStream 
 
     quote! {
         impl #impl_generics ::shaku::Module for #module_name #ty_generics #where_clause {
-            #[allow(bare_trait_objects)]
             type Submodules = (#(::std::sync::Arc<#submodule_types>),*);
 
             fn build(mut context: ::shaku::ModuleBuildContext<Self>) -> Self {
@@ -263,7 +262,6 @@ fn module_builder(module: &ModuleData) -> TokenStream {
 
     quote! {
         impl #impl_generics #module_name #ty_generics #where_clause {
-            #[allow(bare_trait_objects)]
             #visibility fn builder(
                 #(#submodule_names: ::std::sync::Arc<#submodule_types>),*
             ) -> ::shaku::ModuleBuilder<Self> {
@@ -608,7 +606,6 @@ fn submodule_property(index: usize, submodule: &Submodule) -> TokenStream {
     let submodule_ty = &submodule.ty;
 
     quote! {
-        #[allow(bare_trait_objects)]
         #property: ::std::sync::Arc<#submodule_ty>
     }
 }
@@ -686,7 +683,6 @@ fn has_subcomponent_impl(
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     quote! {
-        #[allow(bare_trait_objects)]
         impl #impl_generics ::shaku::HasComponent<#component_ty> for #module_name #ty_generics #where_clause {
             fn build_component(
                 context: &mut ::shaku::ModuleBuildContext<Self>
@@ -719,7 +715,6 @@ fn has_subprovider_impl(
     let (impl_generics, ty_generics, where_clause) = module.metadata.generics.split_for_impl();
 
     quote! {
-        #[allow(bare_trait_objects)]
         impl #impl_generics ::shaku::HasProvider<#provider_ty> for #module_name #ty_generics #where_clause {
             fn provide(&self) -> ::std::result::Result<
                 ::std::boxed::Box<#provider_ty>,

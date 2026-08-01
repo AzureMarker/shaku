@@ -53,13 +53,13 @@ module! {
         components = [],
         providers = [ServiceImpl],
 
-        use ComponentModule {
-            components = [ComponentDependency],
+        use dyn ComponentModule {
+            components = [dyn ComponentDependency],
             providers = []
         },
-        use ProviderModule {
+        use dyn ProviderModule {
             components = [],
-            providers = [ProviderDependency]
+            providers = [dyn ProviderDependency]
         }
     }
 }

@@ -42,6 +42,7 @@ pub struct Submodule {
 #[derive(Debug)]
 pub struct ModuleServices {
     pub components: ModuleItems<kw::components, ComponentAttribute>,
+    #[allow(unused)]
     pub comma_token: syn::Token![,],
     pub providers: ModuleItems<kw::providers, ProviderAttribute>,
     pub trailing_comma: Option<syn::Token![,]>,
@@ -53,8 +54,11 @@ pub struct ModuleItems<T: Parse, A: Eq + Hash>
 where
     Attribute: Parser<A>,
 {
+    #[allow(unused)]
     pub keyword_token: T,
+    #[allow(unused)]
     pub eq_token: token::Eq,
+    #[allow(unused)]
     pub bracket_token: token::Bracket,
     // Can't use syn::Token![,] here because of
     // https://github.com/rust-lang/rust/issues/50676

@@ -2,6 +2,7 @@
 
 use shaku::{Component, Interface};
 
+#[allow(unused)]
 trait MyTrait: Interface {}
 
 // Notice this struct does not implement Default

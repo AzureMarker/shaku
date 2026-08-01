@@ -34,7 +34,10 @@ async fn index(
 }
 
 #[test]
-fn compiles_ok() {}
+fn compiles_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<MyModuleImpl> = None;
+}
 
 #[test]
 fn constructs_axum_router() {

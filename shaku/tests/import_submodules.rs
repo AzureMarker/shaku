@@ -3,7 +3,12 @@ use shaku_derive::{module, Component, Provider};
 use std::sync::Arc;
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<Module1Impl> = None;
+    let _: Option<Module2Impl> = None;
+    let _: Option<RootModule> = None;
+}
 
 trait MyComponent: Interface {}
 trait MyProvider {}
@@ -37,8 +42,8 @@ module! {
         components = [],
         providers = [MyProviderImpl],
 
-        use Module1 {
-            components = [MyComponent],
+        use dyn Module1 {
+            components = [dyn MyComponent],
             providers = []
         }
     }
@@ -49,9 +54,9 @@ module! {
         components = [],
         providers = [],
 
-        use Module2 {
+        use dyn Module2 {
             components = [],
-            providers = [MyProvider]
+            providers = [dyn MyProvider]
         }
     }
 }

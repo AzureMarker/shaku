@@ -9,7 +9,7 @@ module! {
         providers = [MyProviderImpl],
 
         use ServicesModule {
-            components = [MyComponent],
+            components = [dyn MyComponent],
             providers = []
         }
     }
@@ -40,4 +40,7 @@ mod services {
 }
 
 #[test]
-fn compile_ok() {}
+fn compile_ok() {
+    // Make the unused warnings on types go away
+    let _: Option<TestModule> = None;
+}
