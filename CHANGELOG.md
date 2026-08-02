@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### shaku_derive 0.6.3
+#### Changed
+- Updated `syn` from version 2 to 3.
+
 ## [0.6.3]
 ### shaku 0.6.3
 #### Added
