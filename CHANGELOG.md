@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## shaku 0.6.3
-### Added
+## [0.6.3]
+### shaku 0.6.3
+#### Added
 - Components can now have multiple implementations as part of a single module. This is achieved through
   `#[ordered(dyn Foo)]` and `#[keyed(dyn Foo, FooKind)]` attributes in the module declaration. Components and Providers
   can inject these implementations via `Vec<Arc<dyn Foo>>` and `HashMap<FooKind, Arc<dyn Foo>>` respectively.
@@ -16,12 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Default::default()` value via `#[forced_default]`.
   For more details, see https://github.com/AzureMarker/shaku/pull/60.
 
-### Changed
+#### Changed
 - Updated dependencies, including dropping `once_cell` in favor of std.
 - Changed the minimum supported Rust version from 1.38.0 to 1.88.0.
 
-## shaku_derive 0.6.2
-### Changed
+### shaku_derive 0.6.2
+#### Changed
 - Updated dependencies, including migrating from `syn` 1 to `syn` 2.
 - Changed the minimum supported Rust version from 1.38.0 to 1.88.0.
 
@@ -278,7 +279,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/4d2057504f036665e04b92417841f77e27cd3446...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/c6ab9d1d148206595bde0e0c485dca8d75ab9cb7...HEAD
+[0.6.3]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.3
 [2025-01-12]: https://github.com/AzureMarker/shaku/commit/4d2057504f036665e04b92417841f77e27cd3446
 [2024-05-19]: https://github.com/AzureMarker/shaku/commit/318619b80311266ecf66caa7d49e19b46a86c040
 [2023-04-20]: https://github.com/AzureMarker/shaku/commit/c33b8e5258f6440b47ee8532168d7cdc91eb263b
