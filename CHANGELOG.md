@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2026-08-01]
 ### shaku_derive 0.6.3
 #### Changed
 - Updated `syn` from version 2 to 3.
@@ -283,7 +284,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 
-[Unreleased]: https://github.com/AzureMarker/shaku/compare/c6ab9d1d148206595bde0e0c485dca8d75ab9cb7...HEAD
+[Unreleased]: https://github.com/AzureMarker/shaku/compare/8283f330c2bf93f33df3ba37d3ade65671b92e11...HEAD
+[2026-08-01]: https://github.com/AzureMarker/shaku/commit/8283f330c2bf93f33df3ba37d3ade65671b92e11
 [0.6.3]: https://github.com/AzureMarker/shaku/releases/tag/v0.6.3
 [2025-01-12]: https://github.com/AzureMarker/shaku/commit/4d2057504f036665e04b92417841f77e27cd3446
 [2024-05-19]: https://github.com/AzureMarker/shaku/commit/318619b80311266ecf66caa7d49e19b46a86c040
