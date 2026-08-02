@@ -6,9 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## shaku 0.6.3
+### Added
+- Components can now have multiple implementations as part of a single module. This is achieved through
+  `#[ordered(dyn Foo)]` and `#[keyed(dyn Foo, FooKind)]` attributes in the module declaration. Components and Providers
+  can inject these implementations via `Vec<Arc<dyn Foo>>` and `HashMap<FooKind, Arc<dyn Foo>>` respectively.
+  For more details, see https://github.com/AzureMarker/shaku/pull/58.
+- Parameters (non-injected struct fields) can now be removed from the generated Parameters struct by enforcing the
+  `Default::default()` value via `#[forced_default]`.
+  For more details, see https://github.com/AzureMarker/shaku/pull/60.
+
 ### Changed
-- Updated dependencies, including the migration from `syn` 1 to `syn` 2.
-- Changed the minimum supported Rust version to 1.88.0.
+- Updated dependencies, including dropping `once_cell` in favor of std.
+- Changed the minimum supported Rust version from 1.38.0 to 1.88.0.
+
+## shaku_derive 0.6.2
+### Changed
+- Updated dependencies, including migrating from `syn` 1 to `syn` 2.
+- Changed the minimum supported Rust version from 1.38.0 to 1.88.0.
 
 ## [2025-01-12]
 ### shaku_axum 0.6.0
