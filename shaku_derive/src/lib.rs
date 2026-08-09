@@ -134,8 +134,8 @@ pub fn provider(input: TokenStream) -> TokenStream {
 ///         components = [],
 ///         providers = [],
 ///
-///         use MyModule {
-///             components = [MyComponent],
+///         use dyn MyModule {
+///             components = [dyn MyComponent],
 ///             providers = []
 ///         }
 ///     }

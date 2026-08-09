@@ -102,8 +102,8 @@ fn create_resolve_property(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::ComponentMap => Ok(quote! {
             #property_name: M::build_component_map(context)
         }),
-        PropertyType::Provided => Err(Error::new(
-            property.property_name.span(),
+        PropertyType::Provided => Err(Error::new_spanned(
+            &property.property_name,
             "Provider dependencies are not allowed in Components",
         )),
     }

@@ -6,7 +6,6 @@ use crate::structures::module::{
 use std::collections::HashSet;
 use std::hash::Hash;
 use syn::parse::{Parse, ParseStream};
-use syn::spanned::Spanned;
 use syn::{Attribute, Error, Generics, Type};
 
 impl Parse for ModuleData {
@@ -71,8 +70,8 @@ impl Parse for Submodule {
         // Make sure components don't use attributes
         for component in &services.components.items {
             if !component.attributes.is_empty() {
-                return Err(syn::Error::new(
-                    component.ty.span(),
+                return Err(syn::Error::new_spanned(
+                    &component.ty,
                     "Submodule components cannot have attributes",
                 ));
             }
@@ -81,8 +80,8 @@ impl Parse for Submodule {
         // Make sure providers don't use attributes
         for provider in &services.providers.items {
             if !provider.attributes.is_empty() {
-                return Err(syn::Error::new(
-                    provider.ty.span(),
+                return Err(syn::Error::new_spanned(
+                    &provider.ty,
                     "Submodule providers cannot have attributes",
                 ));
             }
@@ -131,7 +130,10 @@ where
             let attr = unparsed_attr.parse_as()?;
 
             if attributes.contains(&attr) {
-                return Err(syn::Error::new(unparsed_attr.span(), "Duplicate attribute"));
+                return Err(syn::Error::new_spanned(
+                    &unparsed_attr,
+                    "Duplicate attribute",
+                ));
             }
 
             attributes.insert(attr);
@@ -159,14 +161,14 @@ impl Parser<ComponentAttribute> for Attribute {
                 KeyedComponentAttribute::new(args.interface, args.key_ty),
             )))
         } else {
-            Err(Error::new(self.span(), "Unknown attribute".to_string()))
+            Err(Error::new_spanned(self, "Unknown attribute".to_string()))
         }
     }
 }
 
 impl Parser<ProviderAttribute> for Attribute {
     fn parse_as(&self) -> syn::Result<ProviderAttribute> {
-        Err(Error::new(self.span(), "Providers cannot have attributes"))
+        Err(Error::new_spanned(self, "Providers cannot have attributes"))
     }
 }
 

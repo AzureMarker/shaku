@@ -2,4 +2,4 @@ error: Providers cannot have attributes
   --> tests/ui/provider_attributes.rs:15:22
    |
 15 |         providers = [#[lazy] ProviderImpl]
-   |                      ^
+   |                      ^^^^^^^

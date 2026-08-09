@@ -75,8 +75,8 @@ fn create_property_assignment(property: &Property) -> syn::Result<TokenStream> {
         PropertyType::ForcedDefault => Ok(quote! {
             #property_name: ::std::default::Default::default()
         }),
-        PropertyType::Parameter => Err(Error::new(
-            property.property_name.span(),
+        PropertyType::Parameter => Err(Error::new_spanned(
+            &property.property_name,
             "Parameters are not allowed in Providers",
         )),
     }

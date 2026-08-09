@@ -1,7 +1,6 @@
 use crate::consts;
 use crate::parser::{get_shaku_attribute, KeyValue, Parser};
 use crate::structures::service::{Property, PropertyDefault, PropertyType};
-use syn::spanned::Spanned;
 use syn::{
     AngleBracketedGenericArguments, Attribute, Error, Expr, Field, GenericArgument, Path,
     PathArguments, Type, TypePath,
@@ -34,7 +33,7 @@ impl Parser<Property> for Field {
         let has_force_default = check_for_attr(consts::FORCE_DEFAULT_ATTR_NAME, &self.attrs);
 
         let property_name = self.ident.clone().ok_or_else(|| {
-            Error::new(self.span(), "Struct properties must be named".to_string())
+            Error::new_spanned(self, "Struct properties must be named".to_string())
         })?;
         let doc_comment = self
             .attrs
@@ -44,8 +43,8 @@ impl Parser<Property> for Field {
             .collect();
 
         if has_force_default && (is_injected || is_provided || has_default) {
-            return Err(Error::new(
-                property_name.span(),
+            return Err(Error::new_spanned(
+                &property_name,
                 "Cannot combine force_default with inject, provide, or default",
             ));
         }
@@ -69,8 +68,8 @@ impl Parser<Property> for Field {
                             if inner.key == consts::DEFAULT_ATTR_NAME {
                                 Ok(PropertyDefault::Provided(Box::new(inner.value)))
                             } else {
-                                Err(Error::new(
-                                    inner.key.span(),
+                                Err(Error::new_spanned(
+                                    &inner.key,
                                     format!("Unknown shaku attribute: '{}'", inner.key),
                                 ))
                             }
@@ -79,7 +78,7 @@ impl Parser<Property> for Field {
                             if has_default {
                                 Ok(PropertyDefault::NotProvided)
                             } else {
-                                Err(Error::new(attr.span(), "Unknown attribute"))
+                                Err(Error::new_spanned(attr, "Unknown attribute"))
                             }
                         }
                     })
@@ -98,8 +97,8 @@ impl Parser<Property> for Field {
             (false, true) => PropertyType::Provided,
             (true, false) => PropertyType::Component,
             (true, true) => {
-                return Err(Error::new(
-                    property_name.span(),
+                return Err(Error::new_spanned(
+                    &property_name,
                     "Cannot inject and provide the same property",
                 ))
             }
@@ -130,8 +129,8 @@ impl Parser<Property> for Field {
                 }
 
                 let interface_ty = parse_wrapper_interface(&self.ty, "Arc").ok_or_else(|| {
-                    Error::new(
-                        property_name.span(),
+                    Error::new_spanned(
+                        &property_name,
                         format!(
                             "Found unsupported injected type for `{}`. Use Arc<dyn Trait>, Vec<Arc<dyn Trait>>, or HashMap<K, Arc<dyn Trait>>",
                             property_name
@@ -150,8 +149,8 @@ impl Parser<Property> for Field {
             }
             PropertyType::Provided => {
                 let interface_ty = parse_wrapper_interface(&self.ty, "Box").ok_or_else(|| {
-                    Error::new(
-                        property_name.span(),
+                    Error::new_spanned(
+                        &property_name,
                         format!(
                             "Found non-Box type annotated with #[{}({})]",
                             consts::ATTR_NAME,

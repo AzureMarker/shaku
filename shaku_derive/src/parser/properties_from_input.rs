@@ -6,8 +6,8 @@ impl Parser<Vec<Property>> for DeriveInput {
     fn parse_as(&self) -> syn::Result<Vec<Property>> {
         match &self.data {
             Data::Struct(data) => data.fields.iter().map(Field::parse_as).collect(),
-            _ => Err(Error::new(
-                self.ident.span(),
+            _ => Err(Error::new_spanned(
+                &self.ident,
                 "Only structs are currently supported".to_string(),
             )),
         }

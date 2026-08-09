@@ -2,4 +2,4 @@ error: Unknown attribute
  --> tests/ui/unknown_property_attribute.rs:9:5
   |
 9 |     #[shaku(unknown)]
-  |     ^
+  |     ^^^^^^^^^^^^^^^^^
