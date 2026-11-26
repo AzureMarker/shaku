@@ -1,6 +1,6 @@
 [package]
 name = "shaku"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["Mark Drobnak <mark.drobnak@gmail.com>"]
 description = "Compile Time Dependency Injection for Rust"
 repository = "https://github.com/AzureMarker/shaku"
@@ -12,7 +12,7 @@ rust-version = "1.88"
 
 [dependencies]
 shaku_derive = { version = "~0.6.0", path = "../shaku_derive", optional = true }
-anymap2 = "0.13.0"
+anymap3 = "1.1.0"
 
 [dev-dependencies]
 rand = "0.10"

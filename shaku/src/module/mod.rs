@@ -9,14 +9,14 @@ pub use self::module_builder::ModuleBuilder;
 pub use self::module_traits::{Module, ModuleInterface};
 
 #[cfg(not(feature = "thread_safe"))]
-type AnyType = dyn anymap2::any::Any;
+type AnyType = dyn std::any::Any;
 #[cfg(feature = "thread_safe")]
-type AnyType = dyn anymap2::any::Any + Send + Sync;
+type AnyType = dyn std::any::Any + Send + Sync;
 
 #[cfg(not(feature = "thread_safe"))]
-type ParamAnyType = dyn anymap2::any::Any;
+type ParamAnyType = dyn std::any::Any;
 #[cfg(feature = "thread_safe")]
-type ParamAnyType = dyn anymap2::any::Any + Send;
+type ParamAnyType = dyn std::any::Any + Send;
 
-type ComponentMap = anymap2::Map<AnyType>;
-type ParameterMap = anymap2::Map<ParamAnyType>;
+type ComponentMap = anymap3::Map<AnyType>;
+type ParameterMap = anymap3::Map<ParamAnyType>;
