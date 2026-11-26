@@ -29,7 +29,6 @@ note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
 15 | #[shaku(interface = ComponentTrait)]
 16 | struct ComponentImpl {
    |        ^^^^^^^^^^^^^
-   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
    = note: this error originates in the macro `module` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TestModule` cannot be shared between threads safely
@@ -58,7 +57,6 @@ note: required for `ComponentImpl` to implement `shaku::Component<TestModule>`
 15 | #[shaku(interface = ComponentTrait)]
 16 | struct ComponentImpl {
    |        ^^^^^^^^^^^^^
-   = help: consider manually implementing `shaku::Component<TestModule>` to avoid undesired bounds
 note: required because it appears within the type `TestModule`
   --> tests/ui/component_missing_dependency.rs:23:5
    |

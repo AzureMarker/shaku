@@ -15,11 +15,11 @@ help: the trait `HasComponent<(dyn DependencyTrait + 'static)>` is not implement
 22 | / module! {
 23 | |     TestModule {
    | |______________^
-help: the trait `Provider<M>` is implemented for `ProviderImpl`
+help: the trait `Provider<M>` is conditionally implemented for `ProviderImpl`
   --> tests/ui/provider_missing_component_dependency.rs:14:10
    |
 14 | #[derive(Provider)]
-   |          ^^^^^^^^
+   |          ^^^^^^^^ unsatisfied requirement introduced here: `TestModule: HasComponent<(dyn DependencyTrait + 'static)>`
 note: required for `ProviderImpl` to implement `Provider<TestModule>`
   --> tests/ui/provider_missing_component_dependency.rs:16:8
    |
@@ -28,7 +28,6 @@ note: required for `ProviderImpl` to implement `Provider<TestModule>`
 15 | #[shaku(interface = ProviderTrait)]
 16 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
-   = help: consider manually implementing `Provider<TestModule>` to avoid undesired bounds
    = note: this error originates in the macro `module` which comes from the expansion of the derive macro `Provider` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0277]: `TestModule` cannot be shared between threads safely
@@ -51,7 +50,6 @@ note: required for `ProviderImpl` to implement `Provider<TestModule>`
 15 | #[shaku(interface = ProviderTrait)]
 16 | struct ProviderImpl {
    |        ^^^^^^^^^^^^
-   = help: consider manually implementing `Provider<TestModule>` to avoid undesired bounds
 note: required because it appears within the type `TestModule`
   --> tests/ui/provider_missing_component_dependency.rs:23:5
    |
